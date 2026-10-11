@@ -31,7 +31,7 @@ Nobody on the team writes Rust, so Claude writes the Solana program, using Ancho
 
 ```
 agora/
-├── backend/                  .NET solution: ASP.NET Core minimal API, net10.0
+├── backend/                  .NET solution (net10.0): API, Admin tool, end-to-end tests
 ├── frontend/                 Angular app (not created yet)
 ├── program/                  Solana program (Anchor workspace)
 ├── docs/PLAN.md              detailed product plan
@@ -40,7 +40,9 @@ agora/
 └── skills-lock.json          source and hash of installed skills
 ```
 
-The backend is still the default template: `Program.cs` maps no endpoints, and `colosseumbackend.http` points at the template's `/weatherforecast`. `Wallet.cs` is a placeholder with an off-chain `Balance`, which breaks the no-custody rule. Rethink it before building on it.
+**Backend** (`backend/colosseumbackend`): ASP.NET Core controllers → services → repositories, EF Core on SQLite, wallet sign-in with a JWT in an HttpOnly cookie. All off-chain Solana code is in `Solana/`: `AgoraProgram` builds instructions (account order must match the program's `#[derive(Accounts)]` structs), `SolanaGateway` reads accounts and builds *unsigned* transactions, `OnchainAccounts` decodes them (field order must match `state.rs`). The backend holds no keys. Code follows the team's coding-conventions skill (result wrappers, single exit outside controllers, constants, logging in services).
+
+**Admin tool** (`backend/colosseumbackend.Admin`): signs with the deploy wallet; `init` (one-time program setup + test stablecoin), `fund <wallet>` (devnet SOL + test tokens for demo users), `status`.
 
 ## Commands
 
@@ -50,7 +52,15 @@ dotnet build
 dotnet run --project colosseumbackend                          # http://localhost:5107
 dotnet run --project colosseumbackend --launch-profile https   # https://localhost:7005
 ```
-In Development, the OpenAPI document is at `/openapi/v1.json`.
+In Development, the OpenAPI document is at `/openapi/v1.json`, and a missing `Jwt:SigningKey` is replaced by a random one (sessions end on restart). Elsewhere set it with `dotnet user-secrets set Jwt:SigningKey <base64, 32+ bytes>`.
+
+```bash
+dotnet ef migrations add <Name> --project colosseumbackend --output-dir Data/Migrations   # after `dotnet tool restore`
+dotnet run --project colosseumbackend.Admin -- status        # or: init | fund <wallet> [tokens] [sol]
+dotnet test                                                  # end-to-end on devnet; needs the program deployed + initialized
+```
+
+The end-to-end tests run against devnet, not a local validator: `solana-test-validator` (Agave 4.3) can't start on Windows. They fund throwaway wallets from the deploy wallet (~0.02 SOL each).
 
 Solana program (run from `program/`, native Windows, no WSL): `cargo build-sbf --manifest-path programs/agora/Cargo.toml`, then `cargo test --manifest-path programs/agora/Cargo.toml` (needs the OpenSSL env vars from [program/README.md](program/README.md)).
 
