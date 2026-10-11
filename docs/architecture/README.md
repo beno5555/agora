@@ -14,8 +14,8 @@ Technical design for the hackathon alpha. Product rules and the reasons behind t
 
 ```
  Angular app ───REST (JSON)───▶ .NET API ───▶ SQLite (EF Core)
-   │ Phantom Connect                │
-   │ builds + signs Solana txs      │ reads deal accounts (Solana JSON-RPC)
+   │ Phantom Connect                │ builds unsigned txs, reads deal accounts
+   │ signs + sends txs              │ (C#, Solnet + Solana JSON-RPC)
    ▼                                ▼
          Agora program (Anchor) on Solana devnet
          one account per deal; tokens held in a vault the program controls
@@ -23,7 +23,7 @@ Technical design for the hackathon alpha. Product rules and the reasons behind t
 
 ## Key decisions
 
-1. **The frontend builds and signs every transaction** with the Anchor TypeScript client and the user's wallet. The backend holds no Solana keys and never moves funds, which enforces the "app never holds user funds" rule by construction.
+1. **All Solana logic outside the on-chain program is C#.** The backend builds each transaction *unsigned* (Solnet) and returns it base64-encoded. The frontend only asks the wallet to sign and send it. The backend holds no Solana keys and can't move funds: a transaction does nothing without the user's signature, and the wallet shows what it does before they approve. Rust is used only for the on-chain program, because Solana programs can't be written in C#.
 2. **The chain is the source of truth for money and deal status.** The backend stores what doesn't belong on-chain (listings, descriptions, in-game names, notifications) and keeps a *copy* of each deal's on-chain state for fast pages and lists.
 3. **Syncing:** after every successful transaction, the frontend calls `POST /api/deals/{id}/sync`. The backend then reads the deal account from the RPC and updates its copy. A background job re-syncs open deals every minute to catch anything missed.
 4. **Time limits are checked by the program**, using the on-chain clock, whenever someone calls an instruction. Nothing on Solana runs by itself, so the overdue actions ("refund if not delivered", "claim after review") are buttons the right user presses. The deal page shows them as soon as they're allowed. An automatic "crank" can come after the alpha.

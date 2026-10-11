@@ -36,9 +36,10 @@ Listing body: `{ gameId, type: "service" | "item", title, description, price, mi
 ## Deals
 | Method | Path | Notes |
 |---|---|---|
-| POST | `/api/deals` 🔒 | `{ listingId, buyerNote }` (e.g. in-game name). Creates a draft deal with a fresh `dealId` and returns the exact `create_deal` arguments plus the Deal PDA. The frontend then builds and signs the transaction |
+| POST | `/api/deals` 🔒 | `{ listingId, buyerNote }` (e.g. in-game name). Creates a draft deal with a fresh `dealId` and returns `{ deal, transaction }`: the unsigned `create_deal` transaction (base64) for the buyer's wallet to sign and send |
 | GET | `/api/deals/{id}` 🔒 | buyer or seller only; off-chain details + mirrored on-chain state + `allowedActions` for the caller |
 | GET | `/api/me/deals` 🔒 | `?role=buyer\|seller&status=` |
+| POST | `/api/deals/{id}/tx` 🔒 | `{ action, parts?, buyerAmount? }` where `action` is one of `allowedActions`. Returns the unsigned transaction (base64), with the caller as fee payer and signer |
 | POST | `/api/deals/{id}/sync` 🔒 | `{ signature }`; backend re-reads the Deal account (or confirms it was closed) and updates the copy and notifications |
 
 `allowedActions` (e.g. `["confirm", "raise_dispute"]`) is worked out from status, role and the on-chain clock. The frontend uses it to decide which buttons to show. The program still enforces the rules itself.
@@ -56,8 +57,10 @@ Notifications are created when a sync sees a state change: a new deal, accepted,
 ## Background job
 A hosted service re-syncs every open deal once a minute (one `getMultipleAccounts` RPC call per 100 deals) and creates "time limit ends soon" or "you can now claim/refund" notifications.
 
-## Reading the chain from .NET
-Plain JSON-RPC over `HttpClient` (`getAccountInfo` / `getMultipleAccounts` with base64 encoding), then decode the `Deal` layout by hand: 8-byte Anchor discriminator, then fields in order, little-endian. That avoids depending on a C# Solana SDK. PDAs are worked out in the frontend and returned by `POST /api/deals`, so the backend doesn't need to derive them.
+## Solana from .NET
+- **Library:** [Solnet](https://github.com/bmresearch/Solnet) (`Solnet.Rpc`, `Solnet.Wallet`, `Solnet.Programs`) for RPC calls, PDA derivation and building transactions. Its last NuGet release is from 2022 (targets net6.0, which runs on net10). The repo is still active, and Solana's transaction format hasn't changed. If it causes trouble, the few pieces we need are small enough to write ourselves.
+- **Building instructions:** an Anchor instruction is `sha256("global:<instruction_name>")[0..8]` followed by the Borsh-encoded arguments, plus the account list in the order of the program's `#[derive(Accounts)]` struct. Keep one C# class (`AgoraInstructions`) with a method per instruction. If the user has no token account yet, add a "create associated token account (idempotent)" instruction first.
+- **Reading deals:** `getAccountInfo` / `getMultipleAccounts` (base64), then decode the `Deal` layout: 8-byte Anchor discriminator, then fields in order, little-endian (Borsh; `Option` is a 1-byte tag).
 
 ## Errors
 RFC 7807 problem details (`Results.Problem` / `Results.ValidationProblem`).
