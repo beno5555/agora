@@ -1,6 +1,19 @@
-@colosseumbackend_HostAddress = http://localhost:5107
+@host = http://localhost:5107
 
-GET {{colosseumbackend_HostAddress}}/weatherforecast/
+GET {{host}}/api/config
 Accept: application/json
 
 ###
+
+GET {{host}}/api/games
+Accept: application/json
+
+###
+
+GET {{host}}/api/listings?game=fortnite
+Accept: application/json
+
+###
+
+GET {{host}}/api/auth/nonce?wallet=Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9
+Accept: application/json

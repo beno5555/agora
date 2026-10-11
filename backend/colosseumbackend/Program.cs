@@ -1,3 +1,7 @@
+using colosseumbackend.Data;
+using colosseumbackend.Extensions;
+using Microsoft.EntityFrameworkCore;
+
 namespace colosseumbackend;
 
 public class Program
@@ -6,23 +10,32 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
-        builder.Services.AddAuthorization();
-
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+        builder.Services.AddApplicationOptions(builder.Configuration);
+        builder.Services.AddApplicationServices(builder.Configuration);
+        builder.Services.AddSolana();
+        builder.Services.AddWalletAuthentication(builder.Configuration, builder.Environment);
+        builder.Services.AddApplicationRateLimiting();
         builder.Services.AddOpenApi();
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
+        using (var scope = app.Services.CreateScope())
+        {
+            scope.ServiceProvider.GetRequiredService<AgoraDbContext>().Database.Migrate();
+        }
+
+        app.UseExceptionHandler();
+
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
         }
 
         app.UseHttpsRedirection();
-
+        app.UseAuthentication();
+        app.UseRateLimiter();
         app.UseAuthorization();
+        app.MapControllers();
 
         app.Run();
     }

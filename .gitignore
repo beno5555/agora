@@ -42,3 +42,8 @@ id.json
 
 # Claude Code (per-user settings stay local; skills are shared)
 .claude/settings.local.json
+
+# Local SQLite databases
+*.db
+*.db-shm
+*.db-wal

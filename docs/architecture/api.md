@@ -1,6 +1,6 @@
 # Backend REST API
 
-ASP.NET Core minimal API under `/api`, JSON only. 🔒 = needs a session (see [auth.md](auth.md)); the caller's wallet is `User.sub`. Amounts are strings of token base units (u64 doesn't fit safely in a JavaScript number). Times are ISO 8601 UTC.
+ASP.NET Core controllers under `/api`, JSON only; enums travel as their names (`"Confirm"`, `"AwaitingSeller"`). Responses use one envelope: `{ succeeded, message, data }`. 🔒 = needs a session (see [auth.md](auth.md)); the caller's wallet is `User.sub`. Amounts are strings of token base units (u64 doesn't fit safely in a JavaScript number). Times are ISO 8601 UTC.
 
 ## Config
 | Method | Path | Returns |

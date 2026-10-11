@@ -42,17 +42,20 @@ Fund movements are never stored as the truth. The `Deal*` mirror columns are a c
 | `ListingId` | FK → Listing | the listing terms are copied into the deal on-chain at creation |
 | `BuyerWallet`, `SellerWallet` | FK → User | |
 | `BuyerNote` | string? | in-game name or instructions; visible to both parties only |
-| `Status` | enum | `Draft` (off-chain only), then the on-chain states: `AwaitingSeller`, `Active`, `Delivered`, `Disputed`, `Completed`, `Refunded`, `Cancelled` |
+| `Status` | enum | `Draft` (off-chain only; becomes `Expired` if never funded), the on-chain open states `AwaitingSeller`, `Active`, `Delivered`, `Disputed`, then the final outcomes `Completed`, `Split`, `Undelivered`, `SellerRefunded`, `Cancelled` |
 | `Price`, `Milestones`, `MilestonesReleased`, `BuyerDeposit`, `SellerDeposit` | | copied from the chain |
 | `AcceptedAt`, `DeliveredAt` | DateTimeOffset? | copied from the chain |
 | `DeliveryDeadline` | DateTimeOffset? | computed |
 | `SplitOfferBy`, `SplitOfferBuyerAmount` | string?, long? | copied from the chain |
 | `LastSignature` | string? | last transaction seen |
+| `DeadlineReminderSent`, `RefundNoticeSent` | bool | so each deadline notification goes out once |
 | `CreatedAt`, `SyncedAt` | DateTimeOffset | |
 
-When a deal closes on-chain, its account disappears. The sync then sets the final status from the last transaction's logs/events (`Completed`, `Refunded` or `Cancelled`) and keeps the row as history.
+When a deal closes on-chain, its account disappears. The sync then sets the final status from the `DealClosed` event in the closing transaction's logs and keeps the row as history.
 
 **Notification**: `Id`, `Wallet` (FK), `DealId` (FK?), `Kind` (enum), `CreatedAt`, `ReadAt?`.
+
+**ActionLog**: `Id`, `Action` (`{Service}.{Method}`), `Entity`, `EntityId`, `Succeeded`, `Wallet?` (null for background jobs), `Details`, `CreatedAt`. Business outcomes written by services; failures always, data changes on success.
 
 ## Indexes
 `Listing(GameId, IsActive)`, `Listing(SellerWallet)`, `Deal(BuyerWallet)`, `Deal(SellerWallet)`, `Deal(Status)` (for the background job), `Notification(Wallet, ReadAt)`.
