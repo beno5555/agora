@@ -9,7 +9,7 @@ Anchor program, written in Rust, deployed to devnet. It holds each deal's paymen
 | `Config` | `["config"]` | `admin`, `mint`, `treasury` (token account for fees), `fee_bps` (200 = 2%), `min_deposit_bps`, `bump` |
 | `Deal` | `["deal", buyer, deal_id: u64 LE]` | see below |
 | Vault | `["vault", deal]` | token account for `mint`, authority = `Deal` PDA |
-| `Reputation` | `["rep", wallet]` | `wallet`, `deals_completed`, `deals_disputed`, `deals_refunded`, `volume`, `bump` |
+| `Reputation` | `["rep", wallet]` | `wallet`, `deals_completed`, `deals_disputed`, `deals_undelivered`, `volume` |
 
 The buyer is part of the `Deal` seed so that nobody else can claim a `deal_id` first and block a buyer's deal. The backend picks `deal_id` (a random u64).
 
@@ -50,7 +50,7 @@ The buyer is part of the `Deal` seed so that nobody else can claim a `deal_id` f
                 (stays locked until the two agree)
 ```
 
-`seller_refund` (seller gives everything back) is allowed from any open state. Closed deals return the rent to the buyer by closing the `Deal` and vault accounts.
+`seller_refund` (seller gives everything back) is allowed from any open state. Finished deals close their `Deal` and vault accounts (rent goes back to the buyer). Only open states exist on-chain; the outcome (`Completed`, `Split`, `Undelivered`, `SellerRefunded`, `Cancelled`) is reported in the `DealClosed` event.
 
 ## Instructions
 
@@ -83,4 +83,4 @@ Allowing `confirm` in `Active` lets service buyers confirm match by match before
 - Deposit sizes and review periods per listing type.
 
 ## Build and test
-Anchor CLI with Rust and the Solana CLI. On Windows, use WSL. TypeScript tests with `anchor test` on a local validator cover each path in the state diagram. The generated IDL (`target/idl/agora.json`) is copied to the frontend for its client.
+Code is in `program/`. Setup and commands: [program/README.md](../../program/README.md).

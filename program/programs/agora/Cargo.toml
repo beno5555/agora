@@ -1,0 +1,28 @@
+[package]
+name = "agora"
+version = "0.1.0"
+description = "Agora: P2P deals with two-sided deposits"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "agora"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+custom-heap = []
+custom-panic = []
+anchor-debug = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = { version = "0.32.2", features = ["init-if-needed"] }
+anchor-spl = "0.32.2"
+
+[dev-dependencies]
+litesvm = "0.7.1"
+solana-sdk = "2.3"

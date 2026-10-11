@@ -33,6 +33,7 @@ Nobody on the team writes Rust, so Claude writes the Solana program, using Ancho
 agora/
 ├── backend/                  .NET solution: ASP.NET Core minimal API, net10.0
 ├── frontend/                 Angular app (not created yet)
+├── program/                  Solana program (Anchor workspace)
 ├── docs/PLAN.md              detailed product plan
 ├── docs/architecture/        technical design: program, auth, API, data model, frontend
 ├── .claude/skills/colosseum-copilot/   project-scoped Claude skill
@@ -49,7 +50,9 @@ dotnet build
 dotnet run --project colosseumbackend                          # http://localhost:5107
 dotnet run --project colosseumbackend --launch-profile https   # https://localhost:7005
 ```
-In Development, the OpenAPI document is at `/openapi/v1.json`. There are no tests or lint setup yet.
+In Development, the OpenAPI document is at `/openapi/v1.json`.
+
+Solana program (run from `program/`, native Windows, no WSL): `cargo build-sbf --manifest-path programs/agora/Cargo.toml`, then `cargo test --manifest-path programs/agora/Cargo.toml` (needs the OpenSSL env vars from [program/README.md](program/README.md)).
 
 ## Claude tooling
 
