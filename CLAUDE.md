@@ -8,7 +8,7 @@ It is also meant to be shared with regular Claude chats (for example as claude.a
 
 **Agora** is a global P2P marketplace on Solana for gaming items, in-game currencies and game services (such as paid carries). With each deal, both buyer and seller lock a deposit. If they disagree, the funds stay locked until they agree or one accepts the other's offer to split. Nobody outside decides.
 
-**The full product plan is in [`docs/PLAN.md`](docs/PLAN.md):** settlement rules, fees, the alpha build plan, positioning and research evidence. Read it before working on product or architecture. Keep plan details there, not here.
+**The full product plan is in [`docs/PLAN.md`](docs/PLAN.md):** settlement rules, fees, the alpha build plan, positioning and research evidence. Read it before working on product or architecture. Keep plan details there, not here. **The technical design is in [`docs/architecture/`](docs/architecture/README.md):** read the relevant file before writing code.
 
 - **Event:** Colosseum's Crypto World's Fair (Build Station Tbilisi; partners Colosseum, Superteam Georgia, Solana). https://colosseum.com/worldsfair/resources
 - **Submission deadline:** 2026-10-13 06:59 UTC. The team aims to submit on Oct 12. **Presentation:** Oct 14.
@@ -34,6 +34,7 @@ agora/
 ├── backend/                  .NET solution: ASP.NET Core minimal API, net10.0
 ├── frontend/                 Angular app (not created yet)
 ├── docs/PLAN.md              detailed product plan
+├── docs/architecture/        technical design: program, auth, API, data model, frontend
 ├── .claude/skills/colosseum-copilot/   project-scoped Claude skill
 └── skills-lock.json          source and hash of installed skills
 ```
