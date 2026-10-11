@@ -31,7 +31,7 @@ ASP.NET Core minimal API under `/api`, JSON only. 🔒 = needs a session (see [a
 | PATCH | `/api/listings/{id}` 🔒 | seller only; edits apply to future deals only |
 | POST | `/api/listings/{id}/pause` 🔒 / `/resume` 🔒 | seller only |
 
-Listing body: `{ gameId, type: "service" | "item", title, description, price, milestones, unitLabel ("match", "hour", …), buyerDeposit, sellerDeposit, deliveryWindowHours, reviewPeriodHours }`. The backend validates the program's rules ahead of time (`price % milestones == 0`, minimum deposits), so users don't sign transactions that will fail.
+Listing body: `{ gameId, type: "service" | "item", title, description, price, milestones, unitLabel ("match", "hour", …), deliveryWindow: "1h" | "6h" | "24h" | "3d" }`. No deposits: the program works them out per deal (see [program.md](program.md#deposits)). `GET /api/listings/{id}` returns a deposit *preview* for the signed-in buyer, computed with the same formula from both on-chain records. The backend validates the program's rules ahead of time (`price % milestones == 0`), so users don't sign transactions that will fail.
 
 ## Deals
 | Method | Path | Notes |
@@ -55,7 +55,7 @@ Drafts that aren't funded within 30 minutes are discarded.
 Notifications are created when a sync sees a state change: a new deal, accepted, delivered, a confirmed part, disputed, a split offered, closed, and "time limit ends soon".
 
 ## Background job
-A hosted service re-syncs every open deal once a minute (one `getMultipleAccounts` RPC call per 100 deals) and creates "time limit ends soon" or "you can now claim/refund" notifications.
+A hosted service re-syncs every open deal once a minute (one `getMultipleAccounts` RPC call per 100 deals) and creates "delivery deadline ends soon" and "you can now take a refund" notifications.
 
 ## Solana from .NET
 - **Library:** [Solnet](https://github.com/bmresearch/Solnet) (`Solnet.Rpc`, `Solnet.Wallet`, `Solnet.Programs`) for RPC calls, PDA derivation and building transactions. Its last NuGet release is from 2022 (targets net6.0, which runs on net10). The repo is still active, and Solana's transaction format hasn't changed. If it causes trouble, the few pieces we need are small enough to write ourselves.

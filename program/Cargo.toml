@@ -11,3 +11,8 @@ codegen-units = 1
 opt-level = 3
 incremental = false
 codegen-units = 1
+
+# No debug symbols for host builds (tests): Windows Defender locks the .pdb
+# files while scanning them, which breaks linking.
+[profile.dev]
+debug = false

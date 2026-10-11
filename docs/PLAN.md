@@ -14,28 +14,30 @@ The detailed product plan. Team decisions and Claude proposals are marked; propo
 ## Proposed settlement rules by listing type (Claude proposal)
 | Type | Examples | Seller paid when |
 |---|---|---|
-| Services | Play-along carries, coaching, raid help | Buyer confirms per match/hour, or review time limit passes |
-| In-game handovers | Currency, items traded in game | Buyer confirms, or review time limit passes |
+| Services | Play-along carries, coaching, raid help | Buyer confirms per match/hour |
+| In-game handovers | Currency, items traded in game | Buyer confirms |
 | Steam items | CS2 skins | After the 7-day trade-reversal window, if item still in buyer's inventory |
 | Codes (later) | Gift cards, keys | After a short complaint window |
 
 - If the seller doesn't mark the deal delivered by its deadline, the buyer is refunded automatically.
-- During the review time limit, the buyer can raise a disagreement, which stops the automatic payout.
-- Deposits get smaller as a user's record improves.
+- Either side can open a disagreement once the deal is under way.
+- Deposits are set automatically from each party's on-chain record and the price: smaller as the record grows relative to the deal size, larger after missed deliveries. Nobody enters them. Formula: [architecture/program.md](architecture/program.md#deposits).
 
 Not allowed: account sales; services that require logging into the buyer's account; currency a game bans selling or that can't be transferred (Fortnite V-Bucks can't be transferred or gifted between accounts).
 
 Team decisions (2026-10-11):
 - If the seller accepts but misses the delivery deadline, the buyer gets the refund **plus the seller's deposit**.
 - If buyer and seller never agree, the funds stay locked forever (alpha).
+- Deposits are dynamic (reputation + price); sellers don't enter them. More variables can be added later.
+- No review time limit for now: after delivery, the seller is paid only when the buyer confirms. Dispute resolution will be designed later.
 
-Open decisions: review time limits per listing type, deposit sizes.
+Open decisions: how disagreements get resolved; the deposit formula's exact numbers (devnet values in program.md).
 
 ## Fee
 - About 2% per deal. Compare Eldorado.gg, where a $5 carry costs the buyer $5.70 and the seller gets $4.50 (see Evidence).
 
 ## Alpha (hackathon) build plan
-- **Solana program (Anchor, written by Claude):** create and fund a deal (payment plus both deposits), mark delivered, confirm (fully or per milestone), refund if not delivered by the deadline, claim after the review time limit, raise a disagreement, offer and accept a split, reputation per wallet. Devnet, test USDC or CASH.
+- **Solana program (Anchor, written by Claude):** create and fund a deal (payment plus both deposits), mark delivered, confirm (fully or per milestone), refund if not delivered by the deadline, raise a disagreement, offer and accept a split, reputation per wallet. Devnet, test USDC or CASH.
 - **Backend (.NET):** listings, game storefronts, deal pages, notifications, time-limit countdowns.
 - **Frontend (Angular):** storefronts, deal-link page, email sign-in via Phantom Connect (the event's recommended embedded wallet), split offers on the deal page.
 - **Mate and Dato (proposed):** recruit 10–20 real carriers and coaches, run devnet test deals, collect quotes.

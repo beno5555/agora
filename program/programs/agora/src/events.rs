@@ -8,6 +8,8 @@ pub struct DealCreated {
     pub buyer: Pubkey,
     pub seller: Pubkey,
     pub price: u64,
+    pub buyer_deposit: u64,
+    pub seller_deposit: u64,
 }
 
 #[event]

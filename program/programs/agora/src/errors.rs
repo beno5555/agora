@@ -8,10 +8,8 @@ pub enum AgoraError {
     SameParty,
     #[msg("Price must be positive and divisible by the number of milestones")]
     InvalidPrice,
-    #[msg("Deposit is below the minimum")]
-    DepositTooLow,
-    #[msg("Time limits must be positive")]
-    InvalidTimeLimit,
+    #[msg("Delivery window must be between 1 minute and 30 days")]
+    InvalidDeliveryWindow,
     #[msg("Only the buyer can do this")]
     NotBuyer,
     #[msg("Only the seller can do this")]
@@ -26,10 +24,6 @@ pub enum AgoraError {
     DeliveryDeadlinePassed,
     #[msg("The delivery deadline has not passed yet")]
     DeliveryDeadlineNotPassed,
-    #[msg("The review period has ended")]
-    ReviewPeriodEnded,
-    #[msg("The review period has not ended yet")]
-    ReviewPeriodNotEnded,
     #[msg("Split amount exceeds what remains")]
     InvalidSplit,
     #[msg("There is no split offer to accept")]

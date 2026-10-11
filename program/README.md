@@ -40,6 +40,6 @@ solana-keygen new                     # first time: your deploy wallet (~/.confi
 solana airdrop 2                      # or https://faucet.solana.com
 solana program deploy target/deploy/agora.so --program-id target/deploy/agora-keypair.json
 ```
-Then call `init_config` once, with the devnet USDC mint, the treasury token account, `fee_bps = 200` and the chosen `min_deposit_bps`.
+Then call `init_config` once, with the devnet USDC mint, the treasury token account, `fee_bps = 200` and the deposit parameters (devnet values in [program.md](../docs/architecture/program.md#deposits)).
 
 `target/deploy/agora-keypair.json` decides the program ID and is gitignored. Only the person who deploys needs it; keep a backup. If it's lost, a fresh build creates a new ID, and `declare_id!` plus the backend config must be updated.

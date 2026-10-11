@@ -8,8 +8,8 @@ The Angular app talks to the .NET API for everything off-chain, and to Solana di
 |---|---|---|
 | `/` | Home: games, featured listings | browse |
 | `/g/:slug` | Game storefront: listings for one game, filter by type | open a listing |
-| `/l/:id` | Listing (**the deal link sellers share**): terms, deposits, seller's on-chain record | **Buy** → sign in if needed → `create_deal` |
-| `/d/:id` | Deal page: status, timeline, countdowns, buyer note | buttons from `allowedActions`: accept, mark delivered, confirm N parts, dispute, offer/accept split, claim, refund, cancel |
+| `/l/:id` | Listing (**the deal link sellers share**): terms, deposit preview (worked out from both on-chain records), seller's on-chain record | **Buy** → sign in if needed → `create_deal` |
+| `/d/:id` | Deal page: status, timeline, countdowns, buyer note | buttons from `allowedActions`: accept, mark delivered, confirm N parts, dispute, offer/accept split, refund, cancel |
 | `/sell` | Create/edit a listing | |
 | `/me` | Dashboard: my deals (buying/selling), my listings, notifications | |
 | `/u/:wallet` | Public profile + reputation | |

@@ -18,26 +18,34 @@ use state::*;
 
 declare_id!("J4fL4Q8nnndro2xmVdCayRt5apXhexkkVQoqqwf4AKi4");
 
-const MAX_BPS: u16 = 10_000;
-
 #[program]
 pub mod agora {
     use super::*;
 
-    pub fn init_config(ctx: Context<InitConfig>, fee_bps: u16, min_deposit_bps: u16) -> Result<()> {
-        require!(fee_bps <= MAX_BPS && min_deposit_bps <= MAX_BPS, AgoraError::InvalidConfig);
+    pub fn init_config(ctx: Context<InitConfig>, fee_bps: u16, deposit: DepositParams) -> Result<()> {
+        require!(fee_bps <= MAX_BPS && deposit.is_valid(), AgoraError::InvalidConfig);
         ctx.accounts.config.set_inner(Config {
             admin: ctx.accounts.admin.key(),
             mint: ctx.accounts.mint.key(),
             treasury: ctx.accounts.treasury.key(),
             fee_bps,
-            min_deposit_bps,
+            deposit,
             bump: ctx.bumps.config,
         });
         Ok(())
     }
 
-    /// Buyer opens a deal and locks the price plus their deposit.
+    /// Admin tunes the fee and deposit formula. Applies to deals created afterwards.
+    pub fn update_config(ctx: Context<UpdateConfig>, fee_bps: u16, deposit: DepositParams) -> Result<()> {
+        require!(fee_bps <= MAX_BPS && deposit.is_valid(), AgoraError::InvalidConfig);
+        let config = &mut ctx.accounts.config;
+        config.fee_bps = fee_bps;
+        config.deposit = deposit;
+        Ok(())
+    }
+
+    /// Buyer opens a deal and locks the price plus their deposit. Both deposits
+    /// are worked out here from each party's on-chain record and the price.
     pub fn create_deal(ctx: Context<CreateDeal>, deal_id: u64, terms: DealTerms) -> Result<()> {
         let buyer = ctx.accounts.buyer.key();
         require_keys_neq!(buyer, terms.seller, AgoraError::SameParty);
@@ -45,20 +53,19 @@ pub mod agora {
             terms.price > 0 && terms.milestones > 0 && terms.price % terms.milestones as u64 == 0,
             AgoraError::InvalidPrice
         );
-        let min_deposit = (terms.price as u128 * ctx.accounts.config.min_deposit_bps as u128
-            / MAX_BPS as u128) as u64;
         require!(
-            terms.buyer_deposit >= min_deposit && terms.seller_deposit >= min_deposit,
-            AgoraError::DepositTooLow
+            (MIN_DELIVERY_WINDOW..=MAX_DELIVERY_WINDOW).contains(&terms.delivery_window),
+            AgoraError::InvalidDeliveryWindow
         );
-        require!(
-            terms.delivery_window > 0 && terms.review_period > 0,
-            AgoraError::InvalidTimeLimit
-        );
+        let params = ctx.accounts.config.deposit;
+        let buyer_deposit =
+            params.amount(Reputation::load(&ctx.accounts.buyer_rep).as_ref(), terms.price);
+        let seller_deposit =
+            params.amount(Reputation::load(&ctx.accounts.seller_rep).as_ref(), terms.price);
 
         let amount = terms
             .price
-            .checked_add(terms.buyer_deposit)
+            .checked_add(buyer_deposit)
             .ok_or(AgoraError::Overflow)?;
         transfer_checked(
             CpiContext::new(
@@ -82,10 +89,9 @@ pub mod agora {
             price: terms.price,
             milestones: terms.milestones,
             milestones_released: 0,
-            buyer_deposit: terms.buyer_deposit,
-            seller_deposit: terms.seller_deposit,
+            buyer_deposit,
+            seller_deposit,
             delivery_window: terms.delivery_window,
-            review_period: terms.review_period,
             accepted_at: 0,
             delivered_at: 0,
             status: DealStatus::AwaitingSeller,
@@ -99,6 +105,8 @@ pub mod agora {
             buyer,
             seller: terms.seller,
             price: terms.price,
+            buyer_deposit,
+            seller_deposit,
         });
         Ok(())
     }
@@ -128,7 +136,7 @@ pub mod agora {
         Ok(())
     }
 
-    /// Seller marks the deal delivered. The buyer's review period starts now.
+    /// Seller marks the deal delivered, before the delivery deadline.
     pub fn mark_delivered(ctx: Context<DealAction>) -> Result<()> {
         let deal = &mut ctx.accounts.deal;
         require_keys_eq!(ctx.accounts.actor.key(), deal.seller, AgoraError::NotSeller);
@@ -144,16 +152,15 @@ pub mod agora {
         Ok(())
     }
 
-    /// Buyer raises a disagreement during the review period. Everything stays
-    /// locked until the parties agree (confirm, split, or seller refund).
+    /// Either party opens a disagreement once the deal is under way. Everything
+    /// stays locked until they agree (confirm, split, or seller refund).
     pub fn raise_dispute(ctx: Context<DealAction>) -> Result<()> {
+        let actor = ctx.accounts.actor.key();
         let deal = &mut ctx.accounts.deal;
-        require_keys_eq!(ctx.accounts.actor.key(), deal.buyer, AgoraError::NotBuyer);
-        require!(deal.status == DealStatus::Delivered, AgoraError::InvalidState);
-        let now = Clock::get()?.unix_timestamp;
+        require!(actor == deal.buyer || actor == deal.seller, AgoraError::NotParty);
         require!(
-            now < deal.delivered_at + deal.review_period,
-            AgoraError::ReviewPeriodEnded
+            matches!(deal.status, DealStatus::Active | DealStatus::Delivered),
+            AgoraError::InvalidState
         );
         deal.status = DealStatus::Disputed;
         deal.disputed = true;
@@ -204,20 +211,6 @@ pub mod agora {
             s.finalize(Outcome::Completed)?;
         }
         Ok(())
-    }
-
-    /// Seller takes the rest once the review period passes without a disagreement.
-    pub fn claim_after_review(ctx: Context<Settle>) -> Result<()> {
-        let s = ctx.accounts;
-        s.require_seller()?;
-        require!(s.deal.status == DealStatus::Delivered, AgoraError::InvalidState);
-        let now = Clock::get()?.unix_timestamp;
-        require!(
-            now >= s.deal.delivered_at + s.deal.review_period,
-            AgoraError::ReviewPeriodNotEnded
-        );
-        s.pay_seller(s.deal.remaining())?;
-        s.finalize(Outcome::Completed)
     }
 
     /// Buyer takes back the rest, plus the seller's deposit, if the seller
@@ -288,7 +281,14 @@ pub struct InitConfig<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(deal_id: u64)]
+pub struct UpdateConfig<'info> {
+    pub admin: Signer<'info>,
+    #[account(mut, seeds = [b"config"], bump = config.bump, has_one = admin)]
+    pub config: Account<'info, Config>,
+}
+
+#[derive(Accounts)]
+#[instruction(deal_id: u64, terms: DealTerms)]
 pub struct CreateDeal<'info> {
     #[account(mut)]
     pub buyer: Signer<'info>,
@@ -319,6 +319,12 @@ pub struct CreateDeal<'info> {
         constraint = buyer_token.mint == mint.key() @ AgoraError::WrongTokenAccount
     )]
     pub buyer_token: InterfaceAccount<'info, TokenAccount>,
+    /// CHECK: address fixed by the seeds; empty for a wallet with no history.
+    #[account(seeds = [b"rep", buyer.key().as_ref()], bump)]
+    pub buyer_rep: UncheckedAccount<'info>,
+    /// CHECK: address fixed by the seeds; empty for a wallet with no history.
+    #[account(seeds = [b"rep", terms.seller.as_ref()], bump)]
+    pub seller_rep: UncheckedAccount<'info>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }

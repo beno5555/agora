@@ -29,8 +29,7 @@ Fund movements are never stored as the truth. The `Deal*` mirror columns are a c
 | `Price` | long | total, base units |
 | `Milestones` | int | 1 for items |
 | `UnitLabel` | string | "match", "hour", … |
-| `BuyerDeposit`, `SellerDeposit` | long | |
-| `DeliveryWindowSeconds`, `ReviewPeriodSeconds` | long | |
+| `DeliveryWindowSeconds` | long | from the presets (1h, 6h, 24h, 3d). Deposits aren't stored on listings; the program works them out per deal |
 | `IsActive` | bool | paused = false |
 | `CreatedAt` | DateTimeOffset | |
 
@@ -46,7 +45,7 @@ Fund movements are never stored as the truth. The `Deal*` mirror columns are a c
 | `Status` | enum | `Draft` (off-chain only), then the on-chain states: `AwaitingSeller`, `Active`, `Delivered`, `Disputed`, `Completed`, `Refunded`, `Cancelled` |
 | `Price`, `Milestones`, `MilestonesReleased`, `BuyerDeposit`, `SellerDeposit` | | copied from the chain |
 | `AcceptedAt`, `DeliveredAt` | DateTimeOffset? | copied from the chain |
-| `DeliveryDeadline`, `ReviewEndsAt` | DateTimeOffset? | computed |
+| `DeliveryDeadline` | DateTimeOffset? | computed |
 | `SplitOfferBy`, `SplitOfferBuyerAmount` | string?, long? | copied from the chain |
 | `LastSignature` | string? | last transaction seen |
 | `CreatedAt`, `SyncedAt` | DateTimeOffset | |
