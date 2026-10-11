@@ -28,7 +28,7 @@ Technical design for the hackathon alpha. Product rules and the reasons behind t
 3. **Syncing:** after every successful transaction, the frontend calls `POST /api/deals/{id}/sync`. The backend then reads the deal account from the RPC and updates its copy. A background job re-syncs open deals every minute to catch anything missed.
 4. **Time limits are checked by the program**, using the on-chain clock, whenever someone calls an instruction. Nothing on Solana runs by itself, so the overdue action ("refund if not delivered") is a button the buyer presses. The deal page shows them as soon as they're allowed. An automatic "crank" can come after the alpha.
 5. **Identity = wallet address**, everywhere. See [auth.md](auth.md).
-6. **Token:** one SPL stablecoin mint set in the program's config. Devnet USDC for the alpha. The program uses Anchor's `token_interface`, so Token-2022 mints (possibly CASH; verify) also work.
+6. **Token:** one SPL stablecoin mint set in the program's config. For the alpha it's a test stablecoin we create on devnet with the Admin tool (`init`), so demo users can be funded freely (`fund`). The program uses Anchor's `token_interface`, so Token-2022 mints (possibly CASH; verify) also work.
 
 ## Demo scope
 
@@ -42,6 +42,6 @@ Single-delivery items work through the same path with `milestones = 1`. Steam it
 | | Value |
 |---|---|
 | Cluster | Solana devnet |
-| Stablecoin | Devnet USDC, `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` (verify on Circle's faucet page) |
+| Stablecoin | Agora test token (6 decimals), created by `colosseumbackend.Admin init`; its address goes in `Solana:Mint` |
 | Backend | `http://localhost:5107` (dev) |
 | Frontend | Angular dev server, proxying `/api` to the backend |
