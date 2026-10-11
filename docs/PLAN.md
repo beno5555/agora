@@ -25,7 +25,11 @@ The detailed product plan. Team decisions and Claude proposals are marked; propo
 
 Not allowed: account sales; services that require logging into the buyer's account; currency a game bans selling or that can't be transferred (Fortnite V-Bucks can't be transferred or gifted between accounts).
 
-Open decisions: what happens if buyer and seller never agree, review time limits per listing type, deposit sizes.
+Team decisions (2026-10-11):
+- If the seller accepts but misses the delivery deadline, the buyer gets the refund **plus the seller's deposit**.
+- If buyer and seller never agree, the funds stay locked forever (alpha).
+
+Open decisions: review time limits per listing type, deposit sizes.
 
 ## Fee
 - About 2% per deal. Compare Eldorado.gg, where a $5 carry costs the buyer $5.70 and the seller gets $4.50 (see Evidence).

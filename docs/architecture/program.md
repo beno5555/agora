@@ -77,9 +77,11 @@ Allowing `confirm` in `Active` lets service buyers confirm match by match before
 
 **Events:** each instruction emits an Anchor event (`DealCreated`, `DealAccepted`, `Delivered`, `Confirmed`, `Disputed`, `SplitProposed`, `DealClosed`) for indexing later.
 
+## Decided
+- **Disputes that never end:** a `Disputed` deal stays locked forever (team decision for the alpha).
+- **Seller's deposit on non-delivery:** goes to the buyer as compensation (team decision).
+
 ## Open (from PLAN.md)
-- **Disputes that never end:** a `Disputed` deal currently stays locked forever.
-- **Seller's deposit on non-delivery:** this design gives it to the buyer as compensation. Confirm with the team.
 - Deposit sizes and review periods per listing type.
 
 ## Build and test
