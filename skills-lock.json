@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "colosseum-copilot": {
+      "source": "ColosseumOrg/colosseum-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/colosseum-copilot/SKILL.md",
+      "computedHash": "3bcf07d49b68dc2a93270c82f00e075b2bfe815a53e954289677887823b9f2a2"
+    }
+  }
+}

@@ -1,0 +1,44 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vs/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+**/appsettings.*.local.json
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+/packages/
+_ReSharper.Caches/
+riderModule.iml
+TestResults/
+
+# Angular / Node
+node_modules/
+dist/
+.angular/
+coverage/
+npm-debug.log*
+yarn-error.log*
+
+# Solana / Anchor
+target/
+.anchor/
+test-ledger/
+# Wallet keypairs must never be committed
+*keypair*.json
+id.json
+
+# Claude Code (per-user settings stay local; skills are shared)
+.claude/settings.local.json
