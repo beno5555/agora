@@ -41,7 +41,8 @@ import { WalletAddress } from '../../shared/wallet-address';
         <p>
           <a [routerLink]="['/u', l.seller.wallet]">{{
             l.seller.displayName || 'Seller profile'
-          }}</a>
+          }}</a
+          >&ngsp;
           <app-wallet-address [wallet]="l.seller.wallet" />
         </p>
         <app-reputation [reputation]="l.sellerReputation" />

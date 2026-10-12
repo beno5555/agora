@@ -312,12 +312,12 @@ interface Outcome {
           }
           <dt>Buyer</dt>
           <dd>
-            <a [routerLink]="['/u', d.buyerWallet]">profile</a>
+            <a [routerLink]="['/u', d.buyerWallet]">profile</a>&ngsp;
             <app-wallet-address [wallet]="d.buyerWallet" />
           </dd>
           <dt>Seller</dt>
           <dd>
-            <a [routerLink]="['/u', d.sellerWallet]">profile</a>
+            <a [routerLink]="['/u', d.sellerWallet]">profile</a>&ngsp;
             <app-wallet-address [wallet]="d.sellerWallet" />
           </dd>
           @if (d.buyerNote) {
