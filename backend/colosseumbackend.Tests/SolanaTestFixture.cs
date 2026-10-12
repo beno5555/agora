@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using colosseumbackend.Admin;
@@ -7,6 +8,7 @@ using colosseumbackend.Dtos;
 using colosseumbackend.Solana;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Mvc.Testing.Handlers;
 using Microsoft.Extensions.Options;
 using Solnet.Wallet;
 using Solnet.Wallet.Utilities;
@@ -29,6 +31,7 @@ public class SolanaTestFixture : IAsyncLifetime
     private const int    SignatureOffset = 1;  // after the one-byte signature count
     private const int    SignatureLength = 64;
 
+    private int                             _clientCount;
     private string                          _databasePath = string.Empty;
     private WebApplicationFactory<Program>? _factory;
 
@@ -75,15 +78,21 @@ public class SolanaTestFixture : IAsyncLifetime
         }
     }
 
-    /// <summary>An HTTP client with its own cookie jar, served over https so the Secure session cookie is kept.</summary>
+    /// <summary>
+    /// An HTTP client with its own cookie jar, served over https so the Secure session cookie is kept.
+    /// Each client gets its own remote IP, like a real user: without one, every signed-out request
+    /// shares a single rate-limit partition and the suite's sign-ins exceed the auth limit.
+    /// </summary>
     public HttpClient CreateClient()
     {
-        return _factory!.CreateClient(new WebApplicationFactoryClientOptions
+        int clientNumber = Interlocked.Increment(ref _clientCount);
+        var remoteIp     = new IPAddress([10, 0, (byte)(clientNumber >> 8), (byte)clientNumber]);
+        var server       = _factory!.Server;
+
+        return new HttpClient(new CookieContainerHandler { InnerHandler = server.CreateHandler(context => context.Connection.RemoteIpAddress = remoteIp) })
         {
-            BaseAddress       = new Uri("https://localhost"),
-            HandleCookies     = true,
-            AllowAutoRedirect = false,
-        });
+            BaseAddress = new Uri("https://localhost"),
+        };
     }
 
     /// <summary>A new wallet with SOL for fees and test tokens.</summary>
