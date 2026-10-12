@@ -213,7 +213,12 @@ export class Deal {
   protected readonly released = computed(() => this.perPart() * BigInt(this.deal()?.milestonesReleased ?? 0));
   protected readonly remaining = computed(() => BigInt(this.deal()?.price ?? 0) - this.released());
   protected readonly buyerDeposit = computed(() => BigInt(this.deal()?.buyerDeposit ?? 0));
-  protected readonly sellerDeposit = computed(() => BigInt(this.deal()?.sellerDeposit ?? 0));
+  /** Set when the deal is created, but only in the vault once the seller accepts. */
+  protected readonly sellerDeposit = computed(() => {
+    const d = this.deal();
+    const sellerHasPaid = !!d && d.status !== 'AwaitingSeller';
+    return sellerHasPaid ? BigInt(d.sellerDeposit) : 0n;
+  });
   protected readonly locked = computed(() =>
     this.isLocked() ? this.remaining() + this.buyerDeposit() + this.sellerDeposit() : 0n,
   );
