@@ -23,6 +23,13 @@ It is also meant to be shared with regular Claude chats (for example as claude.a
 
 Nobody on the team writes Rust, so Claude writes the Solana program, using Anchor.
 
+### Team workflow
+- **Ownership:** Sandro owns `backend/` and `program/`; Saba owns `frontend/`. Work only in your owner's area, even if a fix for the other side seems obvious and small.
+- **`docs/architecture/api.md` is the contract between frontend and backend.** The frontend codes only against it. If something there looks wrong or missing while working on the frontend, don't change the backend to fix it — report it (file, endpoint, what's wrong) so Sandro can decide and make the change himself, in the same commit as the matching `api.md` update.
+- **Shared docs:** `CLAUDE.md`, `docs/PLAN.md`, `docs/architecture/*` (except `frontend.md`) and `STATUS.md` are Sandro's to change; `frontend.md` is Saba's. Either side can ask the other for a change instead of making it directly.
+- **Git:** both work on `main` directly for this hackathon (no feature branches yet, since the two areas don't overlap). `git pull --rebase` before starting and before pushing; commit and push small and often so neither side drifts far behind. Never push a change inside the other person's owned folder.
+- **Push promptly:** commit and push finished doc or code changes right away, without waiting to be asked each time, so the other side always has the latest `api.md`/`frontend.md` on GitHub.
+
 ### Rules
 - The app never holds user funds. Money moves only through the on-chain program and users' own wallets.
 - The product must depend on Solana; it should not work without it.
