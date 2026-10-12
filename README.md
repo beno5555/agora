@@ -97,4 +97,4 @@ This is a hackathon alpha on devnet. The program has not been audited. Known lim
 | Sandro | Backend |
 | Saba | Frontend |
 | Mate | Product |
-| Dato | |
+| Dato | Designer |
