@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="backend/colosseumbackend.Admin/colosseumbackend.Admin.csproj" />
+  <Project Path="backend/colosseumbackend.Tests/colosseumbackend.Tests.csproj" />
+  <Project Path="backend/colosseumbackend/colosseumbackend.csproj" />
+</Solution>
