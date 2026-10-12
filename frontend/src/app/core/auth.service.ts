@@ -52,12 +52,7 @@ export class AuthService {
     this.busy.set(true);
     try {
       const wallet = await this.wallet.connect();
-      const { message } = await this.api.get<{ message: string }>('/api/auth/nonce', { wallet });  
-      // const { message } = await this.api.get<{ message: string }>('/api/auth/nonce', {
-      //   wallet,
-      //   // Phantom only shows the request if the message's domain equals this page's host.
-      //   domain: window.location.host,
-      // });
+      const { message } = await this.api.get<{ message: string }>('/api/auth/nonce', { wallet });
       const signature = await this.wallet.signMessage(new TextEncoder().encode(message));
       const user = await this.api.post<FullUserDto>('/api/auth/verify', { wallet, message, signature });
       this.user.set(user);
