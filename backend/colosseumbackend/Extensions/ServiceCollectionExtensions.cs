@@ -1,3 +1,4 @@
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.Json.Serialization;
@@ -12,6 +13,7 @@ using colosseumbackend.Repositories;
 using colosseumbackend.Services;
 using colosseumbackend.Solana;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -30,6 +32,32 @@ public static class ServiceCollectionExtensions
         services.Configure<AuthOptions>(configuration.GetSection(AuthOptions.SectionName));
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.Configure<DealSyncOptions>(configuration.GetSection(DealSyncOptions.SectionName));
+        services.Configure<HostingOptions>(configuration.GetSection(HostingOptions.SectionName));
+        return services;
+    }
+
+    /// <summary>
+    /// Behind a proxy, X-Forwarded-For/-Proto give the client's real IP (for the rate limits) and scheme.
+    /// Trusted only from loopback (the default) plus the proxies listed in <see cref="HostingOptions"/>.
+    /// Also the health check the host or an uptime monitor polls.
+    /// </summary>
+    public static IServiceCollection AddHosting(this IServiceCollection services, IConfiguration configuration)
+    {
+        var hostingOptions = configuration.GetSection(HostingOptions.SectionName).Get<HostingOptions>() ?? new HostingOptions();
+
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            foreach (string proxy in hostingOptions.KnownProxies)
+            {
+                options.KnownProxies.Add(IPAddress.Parse(proxy));
+            }
+            foreach (string network in hostingOptions.KnownNetworks)
+            {
+                options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse(network));
+            }
+        });
+        services.AddHealthChecks();
         return services;
     }
 

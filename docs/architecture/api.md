@@ -4,7 +4,7 @@ The contract the Angular app codes against. Source of truth: `backend/colosseumb
 
 ## Conventions
 
-- **Base URL:** `/api`. Locally the API runs on `http://localhost:5107` (`dotnet run --project colosseumbackend` from `backend/`). There is **no CORS**: the frontend reaches it through the Angular dev-server proxy (see [frontend.md](frontend.md#dev-setup)).
+- **Base URL:** `/api`. Locally the API runs on `http://localhost:5107` (`dotnet run --project colosseumbackend` from `backend/`). There is **no CORS**: the frontend reaches it through the Angular dev-server proxy (see [frontend.md](frontend.md#dev-setup)). When hosted, the backend serves the Angular build itself from the same origin, so keep `/api` a relative path.
 - **JSON** is camelCase.
 - **Enums** travel as their C# names in PascalCase: `"Service"`, `"AwaitingSeller"`, `"MarkDelivered"`. Send them the same way. Exception: `role` is a plain lowercase string, `"buyer"` or `"seller"`.
 - **Amounts** are strings of token base units, e.g. `"15000000"` = 15 tokens at 6 decimals. u64 doesn't fit safely in a JS number. Use `mintDecimals` from `/api/config` to format, and keep them as `bigint` or string in code.

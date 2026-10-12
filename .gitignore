@@ -23,6 +23,8 @@ obj/
 _ReSharper.Caches/
 riderModule.iml
 TestResults/
+# The frontend build is copied here at deploy time; the source lives in frontend/
+backend/colosseumbackend/wwwroot/
 
 # Angular / Node
 node_modules/

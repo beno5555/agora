@@ -76,4 +76,11 @@ public static class Constants
     public const string SessionCookieName = "agora_session";
     public const int    NonceBytes        = 16;
     #endregion
+
+    #region Hosting
+    public const string HealthCheckPath    = "/health";
+    public const string FrontendIndexFile  = "index.html";
+    /// <summary>Unknown API routes stay 404 instead of falling back to the frontend's index page.</summary>
+    public const string ApiFallbackPattern = "/api/{**path}";
+    #endregion
 }
