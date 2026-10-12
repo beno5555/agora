@@ -20,7 +20,7 @@ Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro
 1. **Saba:** the Angular app, starting with the listing page, the deal page and wallet sign-in (the demo path).
 2. **Sandro/Claude:** `Admin fund` demo wallets on request. Support the frontend: fix whatever the real UI uncovers.
 3. **Mate and Dato:** the demo script (a listing with the `2m` deadline shows the missed-deadline refund live), the pitch, the video, test carriers and coaches.
-4. **Everyone, by Oct 12:** repo README, demo video, Colosseum form, in the team's own words.
+4. **Everyone, by Oct 12:** repo README (Claude's draft is in `README.md`; rewrite it), demo video, Colosseum form, in the team's own words.
 
 ## Things to know
 - **Devnet RPC:** `Solana__RpcUrl` is set to Sandro's Helius devnet URL on his PC; the API, the Admin tool and the tests all use it (else the public devnet RPC, which throttles). It contains an API key: never commit it.
