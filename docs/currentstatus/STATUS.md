@@ -14,7 +14,7 @@ A snapshot of where things stand, kept short; history is in `git log`. Plan: [`.
 | Frontend | **Not started; the critical path.** Everything it needs is in [`api.md`](../architecture/api.md) and [`frontend.md`](../architecture/frontend.md). |
 | Demo, pitch, submission | Not started. |
 
-Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro's PC only): ~1.65 SOL. A full test run uses ~0.3 SOL (the faucet at https://faucet.solana.com tops it up), and each funded demo wallet 0.05.
+Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro's PC only): **~0.5 SOL, needs a top-up** before funding demo wallets. A full test run uses ~0.3 SOL (the faucet at https://faucet.solana.com tops it up), and each funded demo wallet 0.05.
 
 ## Next steps
 1. **Saba:** the Angular app, starting with the listing page, the deal page and wallet sign-in (the demo path).
