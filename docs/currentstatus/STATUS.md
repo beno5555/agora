@@ -9,16 +9,16 @@ A snapshot of where things stand, kept short; history is in `git log`. Plan: [`.
 | Part | State |
 |---|---|
 | Solana program | **Deployed to devnet** (`J4fL4Q8nnndro2xmVdCayRt5apXhexkkVQoqqwf4AKi4`) and initialized. Test stablecoin `7FutDfvw3Whjv6PcwCYdYb3FV25EHc3TRiUA4zw8pj21`. 8 program tests pass. No security review yet: devnet only. |
-| Backend API | Complete for the alpha. **12 end-to-end tests pass on devnet** (through Helius): a full deal paid match by match, a dispute settled by a split, a missed 2-minute deadline refunded with the seller's deposit, my listings, access checks, validation, sign-in replay and impostor signatures. |
+| Backend API | Complete for the alpha. **15 end-to-end tests pass on devnet** (through Helius): a full deal paid match by match, a dispute settled by a split, a missed 2-minute deadline refunded with the seller's deposit, my listings, access checks, validation, sign-in replay and impostor signatures. |
 | Admin tool | `init` done. `fund <wallet>` gives a demo wallet 100 test tokens + 0.05 devnet SOL. |
-| Frontend | **First version pushed Oct 12** (`c4a2126`, Angular 21): every page in [`frontend.md`](../architecture/frontend.md) (home, game, listing, deal, sell, `/me` with pause/resume and profile editing, the `/u/:wallet` profile); sign-in with the Phantom browser extension (not Phantom Connect yet); every deal action through the backend-built transaction, with polling, the deadline refetch and a "where the money goes" table. `ng build` passes (~0.7 MB). **Clicked through end to end on devnet (Oct 12)** by an automated browser run (Chrome driven by Playwright, with a stand-in for Phantom that signs with throwaway keys): a deal paid match by match, the `2m` missed-deadline refund, pause/resume, profile editing, the public profile. All passed. **Not yet tried with the real Phantom extension.** |
+| Frontend | **First version pushed Oct 12** (`c4a2126`, Angular 21): every page in [`frontend.md`](../architecture/frontend.md) (home, game, listing, deal, sell, `/me` with pause/resume and profile editing, the `/u/:wallet` profile); sign-in with the Phantom browser extension (not Phantom Connect yet); every deal action through the backend-built transaction, with polling, the deadline refetch and a "where the money goes" table. `ng build` passes (~0.7 MB). **Clicked through end to end on devnet (Oct 12)** by an automated browser run (Chrome driven by Playwright, with a stand-in for Phantom that signs with throwaway keys): a deal paid match by match, the `2m` missed-deadline refund, pause/resume, profile editing, the public profile. All passed. **Sandro then tried most of it by hand with the real Phantom extension (Oct 12–13): fine.** |
 | Demo, pitch, submission | Not started. |
 
 Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro's PC only): ~5.5 SOL (topped up Oct 12). A full test run uses ~0.3 SOL (the faucet at https://faucet.solana.com tops it up), and each funded demo wallet 0.05.
 
 ## Next steps
-1. **Sandro:** try the demo path once with the real Phantom extension and two funded accounts (list → buy → accept → deliver → confirm; and the `2m` missed-deadline refund), ideally on the hosted site. The flows already pass in the automated run; this checks Phantom itself (devnet mode, its signing popups).
-2. **Sandro:** `Admin fund` demo wallets on request.
+1. **Sandro:** host the app (see [Hosting](#hosting-backend-required)), then run the demo path once on the hosted site with the real Phantom extension: list → buy → accept → deliver → confirm, and the `2m` missed-deadline refund.
+2. **Sandro:** `Admin fund` demo wallets on request. Open question for the access instructions in the Colosseum form: judges can't fund themselves, because the backend holds no keys and only the Admin tool can. Decide how a judge gets test tokens and devnet SOL (Sandro funds on request, or a few pre-funded demo accounts).
 3. **Mate and Dato:** the demo script (a listing with the `2m` deadline shows the missed-deadline refund live), the pitch, the video, test carriers and coaches.
 4. **Everyone, by Oct 12:** repo README (Claude's draft is in `README.md`; rewrite it), demo video, Colosseum form, in the team's own words.
 5. **Sandro, required:** pick the host and deploy, see [Hosting](#hosting-backend-required) below. The backend code for it is done. The project must be hosted at a public link.
@@ -54,6 +54,13 @@ dotnet colosseumbackend.dll
 A quick tunnel's URL usually changes on every start, and `Auth__Domain` must match it each time, so a fixed hostname is much better. Verify the tunnel product's behavior before relying on it.
 
 **Frontend side:** nothing to configure. The app already calls `/api` as a relative path, and the Phantom browser extension needs no origin registration (only Phantom Connect would, if it replaces the extension later). Phantom checks that the sign-in message's domain matches the page, which is why `Auth__Domain` must be the public host.
+
+**Good to know when hosting (Oct 13):**
+- The frontend build is `npm ci` then `npx ng build` in `frontend/`, output in `frontend/dist/frontend/browser/` (~0.7 MB). In the automated browser run, the only console error was a `401` on `/api/me` for signed-out visitors, which is normal.
+- Database migrations run at startup, so a fresh `agora.db` on the host is fine. The newest one (`ListingUnitEnum`) applies without warnings.
+- A running backend locks `bin/Debug`, so a build or test in another terminal needs `-c Release`.
+- The access instructions for judges should say: install Phantom, turn on Testnet Mode and pick Solana Devnet (Settings → Developer Settings), and expect Phantom to show our test token as "unknown" (backlog item in [`BACKLOG.md`](BACKLOG.md)). They also need funding, see Next steps.
+- `Auth__Domain` must be the exact public host, or Phantom warns on sign-in.
 
 **How to check it works** (from a phone on mobile data, not the dev PC): `GET https://<host>/health` and `/api/config` return 200; sign in with Phantom with no domain warning; the session cookie sticks across a reload; two devices signing in at once don't hit `429` (that proves the per-IP limit sees real client IPs); the app opens a deal page end to end.
 

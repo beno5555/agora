@@ -80,7 +80,7 @@ Frontend: see [`docs/architecture/frontend.md`](docs/architecture/frontend.md#de
 ### Tests
 
 - **Program:** 8 tests in [LiteSVM](https://github.com/LiteSVM/litesvm); setup in [`program/README.md`](program/README.md).
-- **API:** 12 end-to-end tests against the deployed program on devnet (`dotnet test` from `backend/`): a full deal paid match by match, a dispute settled by a split, a missed deadline refunded with the seller's deposit, access checks and sign-in attacks. They need a funded devnet wallet that owns the test stablecoin.
+- **API:** 15 end-to-end tests against the deployed program on devnet (`dotnet test` from `backend/`): a full deal paid match by match, a dispute settled by a split, a missed deadline refunded with the seller's deposit, access checks and sign-in attacks. They need a funded devnet wallet that owns the test stablecoin.
 
 ## Status and limits
 
