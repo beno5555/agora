@@ -21,11 +21,11 @@ Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro
 2. **Sandro/Claude:** `Admin fund` demo wallets on request. Support the frontend: fix whatever the real UI uncovers.
 3. **Mate and Dato:** the demo script (a listing with the `2m` deadline shows the missed-deadline refund live), the pitch, the video, test carriers and coaches.
 4. **Everyone, by Oct 12:** repo README (Claude's draft is in `README.md`; rewrite it), demo video, Colosseum form, in the team's own words.
-5. **Sandro, optional, undecided:** backend hosting prep, see [Hosting preparation](#hosting-preparation-backend-optional-undecided) below.
+5. **Sandro, required:** backend hosting prep, see [Hosting preparation](#hosting-preparation-backend-required) below. The project must be hosted at a public link.
 
-## Hosting preparation (backend, optional, undecided)
+## Hosting preparation (backend, required)
 
-**Status of the decision:** the default is *local demo plus video*. Whether a public link is needed is **unconfirmed**: neither the [official rules](https://colosseum.com/legal/Crypto%20World's%20Fair%20Hackathon%20Rules.pdf) nor Colosseum's submission FAQ require one, but the submission form has `liveProductLink` and `liveProductAccessInstructions` fields (both empty, requirement unknown), and Sandro heard a live link is needed. **Ask the Build Station Tbilisi / Superteam Georgia organizers:** is the link for their local presentation (Oct 14) or for the Colosseum form, and must it stay up after Oct 14? Where to host (a tunnel from Sandro's PC as the last resort, or a real host) is **not decided**. The list below is host-independent, so it can be done first. It is all in `backend/`, Sandro's area, except where noted. Nothing here is started.
+**Decision (Sandro): the project definitely needs a public host. This is not up for discussion.** A live link goes into the Colosseum form (`liveProductLink`, plus `liveProductAccessInstructions` for how a judge signs in and gets test tokens) and is shown at the Oct 14 presentation. The rules and FAQ were checked and don't mention a link, so the exact requirement is unknown, but we host regardless. Still to ask the Build Station Tbilisi / Superteam Georgia organizers: how long the link must stay up after Oct 14. *Where* to host is still open: a real host is preferred, and a tunnel from Sandro's PC is the last resort, since it dies when the PC sleeps. The list below is host-independent, so it can be done first. It is all in `backend/`, Sandro's area, except where noted. Nothing here is started.
 
 **Why it's needed.** Behind any reverse proxy or tunnel, Kestrel sees plain `http` from the proxy's IP, which breaks three things:
 - **Rate limits:** every signed-out visitor shares the proxy's IP, so all of them together get 20 sign-in calls a minute ([`ServiceCollectionExtensions.cs`](../../backend/colosseumbackend/Extensions/ServiceCollectionExtensions.cs), `FixedWindow` keys on the wallet, else `RemoteIpAddress`).
@@ -42,7 +42,7 @@ Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro
    - `AllowedHosts`: the public host instead of `*`.
    - `ASPNETCORE_ENVIRONMENT=Production` turns Swagger and the OpenAPI document **off** (they are Development-only); decide whether the demo needs them.
 3. **One origin for the frontend and the API.** The API has no CORS and the cookie is same-site, so the Angular app and `/api` must share a host. Either the backend serves the Angular build from `wwwroot` (`UseDefaultFiles`, `UseStaticFiles`, then `MapFallbackToFile("index.html")` after `MapControllers`, leaving `/api/*` alone), or a reverse proxy routes `/api` to the backend and everything else to the app. The first is one process and one URL. It needs Saba's build output (`frontend/dist/...`) copied into `wwwroot`, so **ask Saba** for the build command and output path. Not possible until the frontend exists.
-4. **Health check (optional).** `MapHealthChecks("/health")`, for the host's or Sandro's uptime check.
+4. **Health check.** `MapHealthChecks("/health")`, for the host's or Sandro's uptime check.
 5. **Write down how to run it** in this file or `README.md`: `dotnet publish -c Release`, the environment variables above, and, if a tunnel is used, the tunnel command. A quick tunnel's URL usually changes on every start, and `Auth__Domain` has to match it each time, so a fixed hostname is much better. Verify the tunnel product's behavior before relying on it.
 
 **Frontend side (Saba, for later):** register the public origin in the Phantom Connect developer portal alongside `localhost:4200`, and build the app with `/api` as a relative path so it works on any host.
@@ -51,7 +51,7 @@ Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro
 
 ## Things to know
 - **Devnet RPC:** `Solana__RpcUrl` is set to Sandro's Helius devnet URL on his PC; the API, the Admin tool and the tests all use it (else the public devnet RPC, which throttles). It contains an API key: never commit it.
-- **Rate limits are per wallet, else per client IP.** Behind a proxy or tunnel they need forwarded-headers handling first; see [Hosting preparation](#hosting-preparation-backend-optional-undecided).
+- **Rate limits are per wallet, else per client IP.** Behind a proxy or tunnel they need forwarded-headers handling first; see [Hosting preparation](#hosting-preparation-backend-required).
 - **Phantom sign-in:** the message's domain is `localhost:4200` in Development (matches `ng serve`). If Phantom still warns, `Auth:Domain` must match the page host.
 - **Windows Defender** sometimes locks freshly built files, so a build can fail once and pass on retry.
 - **Program tests** need OpenSSL environment variables; see `program/README.md`.
