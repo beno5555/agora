@@ -28,9 +28,10 @@ namespace colosseumbackend.Data.Migrations
                 $"WHEN '{unit.ToLowerInvariant()}' THEN '{unit}' WHEN '{Plural(unit)}' THEN '{unit}'"));
             migrationBuilder.Sql($"UPDATE Listings SET Unit = CASE lower(trim(UnitLabel)) {cases} ELSE NULL END;");
 
-            migrationBuilder.DropColumn(
-                name: "UnitLabel",
-                table: "Listings");
+            // Plain SQL instead of DropColumn: EF's SQLite provider drops a column by rebuilding the whole
+            // table, which needs PRAGMA foreign_keys outside a transaction and risks a half-applied migration.
+            // SQLite 3.35+ drops an unindexed column in place.
+            migrationBuilder.Sql("ALTER TABLE Listings DROP COLUMN UnitLabel;");
         }
 
         /// <inheritdoc />
@@ -46,9 +47,7 @@ namespace colosseumbackend.Data.Migrations
 
             migrationBuilder.Sql("UPDATE Listings SET UnitLabel = lower(coalesce(Unit, 'part'));");
 
-            migrationBuilder.DropColumn(
-                name: "Unit",
-                table: "Listings");
+            migrationBuilder.Sql("ALTER TABLE Listings DROP COLUMN Unit;");
         }
 
         private static string Plural(string unit)
