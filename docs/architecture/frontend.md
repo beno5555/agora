@@ -6,14 +6,17 @@ The app talks to the .NET API for everything off-chain. For anything involving m
 
 ## Stack and layout
 
-- Angular (latest), standalone components, signals, `HttpClient` with `withFetch()` and an interceptor. Put it in `frontend/` at the repo root.
-- Solana in the browser: `@solana/web3.js` (only to deserialize transactions), `bs58` (signatures), and the Phantom SDK.
+- Angular 21 in `frontend/`: standalone components with inline templates, signals, route params bound to inputs (`withComponentInputBinding`), `HttpClient` with `withFetch()` and an interceptor. One global stylesheet, `src/styles.css`.
+- Solana in the browser: `@solana/web3.js` (only to deserialize transactions), `bs58` (signatures), and Phantom's injected provider (`window.phantom.solana`, the browser extension).
 
 ```
 frontend/src/app/
-  core/       api.service.ts, wallet.service.ts, auth.service.ts, deal-action.service.ts,
-              config.service.ts, notification.service.ts, auth.interceptor.ts, models.ts (types from api.md)
-  shared/     amount.pipe.ts (base units → "15.00"), countdown, wallet-address (short + copy), explorer-link
+  core/       api.service.ts (unwraps the envelope, throws ApiError), wallet.service.ts, auth.service.ts,
+              auth.guard.ts, auth.interceptor.ts, deal-action.service.ts, config.service.ts,
+              notification.service.ts, toast.service.ts, models.ts (types from api.md)
+  shared/     amount.pipe.ts (base units ↔ "15.00"), countdown + clock.service (one shared tick),
+              wallet-address (short + copy), explorer-link, listing-card, reputation, status-badge,
+              delivery-window ("24h" → "24 hours"), plural ("3 matches")
   pages/      home, game, listing, deal, sell, me, profile
 ```
 
@@ -58,7 +61,7 @@ Status badges: Draft/AwaitingSeller neutral, Active/Delivered blue, Disputed amb
 
 ## Wallet and sign-in
 
-- **Phantom.** Phantom Connect adds email sign-in with an embedded wallet: https://docs.phantom.com/phantom-connect. If its setup costs time, start with the injected `window.phantom.solana` provider (extension), behind the same `WalletService` interface.
+- **Phantom.** `WalletService` uses the injected `window.phantom.solana` provider (the browser extension); without it, Connect opens Phantom's download page. Phantom Connect (email sign-in with an embedded wallet, https://docs.phantom.com/phantom-connect) can replace it later behind the same `WalletService` interface.
 - **Phantom must be set to devnet** (Settings → Developer settings → Testnet mode), or it simulates against mainnet and shows errors.
 - `WalletService`: `connect()`, `disconnect()`, `publicKey` (signal), `signMessage(bytes)`, `signAndSendTransaction(tx)`. If the wallet's account changes, log out: the session belongs to the old wallet.
 - `AuthService`: nonce → `signMessage(new TextEncoder().encode(message))` → `bs58.encode(signature)` → verify ([api.md](api.md#auth)). On app start, `GET /api/me` tells whether the cookie is still valid.
@@ -70,10 +73,10 @@ Status badges: Draft/AwaitingSeller neutral, Active/Delivered blue, Disputed amb
 A `DealActionService` runs the flow in [api.md](api.md#the-transaction-flow-every-on-chain-action) for every on-chain action. The UI-specific parts:
 
 ```ts
-const tx = Transaction.from(Buffer.from(res.data.transaction, 'base64'));   // legacy tx, @solana/web3.js
-const { signature } = await wallet.signAndSendTransaction(tx);
+const tx = Transaction.from(Uint8Array.from(atob(transaction), c => c.charCodeAt(0)));   // legacy tx, @solana/web3.js
+const signature = await this.wallet.signAndSendTransaction(tx);                          // base58
 ```
-Check which form the Phantom SDK expects (transaction object or raw bytes); this is the only place that changes. `Buffer` needs the `buffer` polyfill, or decode with `Uint8Array.from(atob(b64), c => c.charCodeAt(0))`.
+The injected Phantom provider takes the `Transaction` object; `WalletService.signAndSendTransaction` is the only place that changes if a different wallet SDK wants raw bytes. Decoding with `atob` avoids needing a `Buffer` polyfill.
 
 - Show "Confirming on Solana…" while sync runs (up to 30 s), then replace the page state with the returned deal.
 - If the user rejects in the wallet, do nothing.
@@ -88,10 +91,11 @@ Check which form the Phantom SDK expects (transaction object or raw bytes); this
 ## Dev setup
 
 1. Backend: from `backend/`, `dotnet run --project colosseumbackend` (`http://localhost:5107`).
-2. `frontend/proxy.conf.json`, used by `ng serve --proxy-config proxy.conf.json` (the API has no CORS; the proxy keeps the cookie same-origin):
+2. Frontend: from `frontend/`, `npm ci` once, then `npm start` (`ng serve` on `http://localhost:4200`). `angular.json` points `ng serve` at `proxy.conf.json` (the API has no CORS; the proxy keeps the cookie same-origin):
    ```json
    { "/api": { "target": "http://localhost:5107", "secure": false, "changeOrigin": false } }
    ```
+   Production build: `npx ng build` → `dist/frontend/browser/`, which the backend serves from its `wwwroot` when hosted (see `STATUS.md`, Hosting).
 3. Develop in Chrome, Edge or Firefox: they accept the `Secure` session cookie on `http://localhost`; Safari doesn't.
 4. **Two wallets per deal** (buyer ≠ seller): two Phantom accounts or two browser profiles. Each needs test tokens and devnet SOL: send the addresses to Sandro, who runs `Admin fund <wallet>` (100 tokens + 0.05 SOL).
 5. **Demo:** a listing with the `2m` deadline lets you show buy → accept → missed deadline → refund plus the seller's deposit live (covered by an end-to-end test).
