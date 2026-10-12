@@ -13,7 +13,8 @@ systemctl start agora
 
 # Migrations run at startup, so give it a moment before declaring failure.
 for _ in $(seq 1 30); do
-    if curl -fsS http://localhost:8080/health > /dev/null; then
+    # -fs: quiet while the app is still starting (connection refused is expected for the first seconds).
+    if curl -fs http://localhost:8080/health > /dev/null; then
         echo "App is up (health check on localhost:8080 passed)"
         exit 0
     fi
