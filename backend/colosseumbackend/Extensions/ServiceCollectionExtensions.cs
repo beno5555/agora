@@ -117,6 +117,20 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>Names the API in Swagger UI, and drops the "Servers" dropdown: the UI always calls the host it was served from.</summary>
+    public static IServiceCollection AddApplicationOpenApi(this IServiceCollection services)
+    {
+        services.AddOpenApi(options => options.AddDocumentTransformer((document, _, _) =>
+        {
+            document.Info.Title       = "Agora API";
+            document.Info.Version     = "v1";
+            document.Info.Description = "P2P marketplace on Solana for gaming items, currencies and services.";
+            document.Servers          = [];
+            return Task.CompletedTask;
+        }));
+        return services;
+    }
+
     /// <summary>Signed-in callers are limited per wallet, everyone else per IP; a global limiter backs both.</summary>
     public static IServiceCollection AddApplicationRateLimiting(this IServiceCollection services)
     {

@@ -15,7 +15,7 @@ public class Program
         builder.Services.AddSolana();
         builder.Services.AddWalletAuthentication(builder.Configuration, builder.Environment);
         builder.Services.AddApplicationRateLimiting();
-        builder.Services.AddOpenApi();
+        builder.Services.AddApplicationOpenApi();
 
         var app = builder.Build();
 
