@@ -53,7 +53,7 @@ dotnet colosseumbackend.dll
 ```
 A quick tunnel's URL usually changes on every start, and `Auth__Domain` must match it each time, so a fixed hostname is much better. Verify the tunnel product's behavior before relying on it.
 
-**Frontend side:** register the public origin in the Phantom Connect developer portal alongside `localhost:4200`, and build the app with `/api` as a relative path so it works on any host.
+**Frontend side:** nothing to configure. The app already calls `/api` as a relative path, and the Phantom browser extension needs no origin registration (only Phantom Connect would, if it replaces the extension later). Phantom checks that the sign-in message's domain matches the page, which is why `Auth__Domain` must be the public host.
 
 **How to check it works** (from a phone on mobile data, not the dev PC): `GET https://<host>/health` and `/api/config` return 200; sign in with Phantom with no domain warning; the session cookie sticks across a reload; two devices signing in at once don't hit `429` (that proves the per-IP limit sees real client IPs); the app opens a deal page end to end.
 
