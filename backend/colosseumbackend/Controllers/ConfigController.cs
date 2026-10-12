@@ -30,7 +30,6 @@ public class ConfigController : BaseController
         response.Ok(new ConfigDto
         {
             Cluster               = _solanaOptions.Cluster,
-            RpcUrl                = _solanaOptions.RpcUrl,
             ProgramId             = _solanaOptions.ProgramId,
             Mint                  = _solanaOptions.Mint,
             MintDecimals          = _solanaOptions.MintDecimals,

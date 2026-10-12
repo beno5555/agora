@@ -46,6 +46,16 @@ public class ListingService : BaseService
         return response;
     }
 
+    /// <summary>The caller's own listings, paused ones included (the seller dashboard).</summary>
+    public async Task<ListResponse<FullListingDto>> GetMineAsync(string sellerWallet, PageQuery pageQuery)
+    {
+        var response = new ListResponse<FullListingDto>();
+        var listings = await _listingRepository.GetBySellerAsync(sellerWallet, pageQuery.PageNumber, pageQuery.PageSize);
+
+        response.Ok(listings.Select(ListingMapper.ToFull).ToList(), ResponseMessages.ListingsRetrieved);
+        return response;
+    }
+
     /// <summary>
     /// The shareable deal link. Includes the seller's on-chain record and, for a signed-in buyer,
     /// the deposits the program would set if they bought now.

@@ -55,6 +55,20 @@ public class ListingRepository : BaseRepository<Listing>
                            .FirstOrDefaultAsync(listing => listing.Id == id && listing.SellerWallet == sellerWallet);
     }
 
+    /// <summary>All of the seller's listings, paused ones included, newest first.</summary>
+    public async Task<List<Listing>> GetBySellerAsync(string sellerWallet, int pageNumber, int pageSize)
+    {
+        int size = ClampPageSize(pageSize);
+        return await _dbSet.AsNoTracking()
+            .Include(listing => listing.Game)
+            .Include(listing => listing.Seller)
+            .Where(listing => listing.SellerWallet == sellerWallet)
+            .OrderByDescending(listing => listing.CreatedAt)
+            .Skip((Math.Max(pageNumber, 1) - 1) * size)
+            .Take(size)
+            .ToListAsync();
+    }
+
     public async Task<List<Listing>> GetActiveBySellerAsync(string sellerWallet)
     {
         return await _dbSet.AsNoTracking()

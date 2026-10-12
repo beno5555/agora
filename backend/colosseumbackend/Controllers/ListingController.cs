@@ -26,6 +26,13 @@ public class ListingController : BaseController
         return Ok(await _listingService.SearchAsync(query));
     }
 
+    [HttpGet("~/api/me/listings")]
+    [EnableRateLimiting(RateLimitConfig.Policies.Read)]
+    public async Task<ActionResult<ListResponse<FullListingDto>>> GetMine([FromQuery] PageQuery pageQuery)
+    {
+        return Ok(await _listingService.GetMineAsync(GetWallet(), pageQuery));
+    }
+
     [HttpGet("{id:guid}")]
     [AllowAnonymous]
     [EnableRateLimiting(RateLimitConfig.Policies.Read)]

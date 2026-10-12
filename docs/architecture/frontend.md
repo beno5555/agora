@@ -26,12 +26,10 @@ frontend/src/app/
 | `/l/:id` | Listing, **the deal link sellers share** | `GET /api/listings/:id` | terms, seller's on-chain record, deposit preview; **Buy** (with an optional note such as an in-game name) |
 | `/d/:id` | **Deal page** | `GET /api/deals/:id` | status timeline, countdown, vault breakdown, buttons from `allowedActions` |
 | `/sell`, `/sell/:id` | Create or edit a listing | `GET /api/games`, `GET /api/config`, `POST`/`PATCH /api/listings` | deadline dropdown from `deliveryWindows` (label `2m` "2 minutes (demo)"), preselect `defaultDeliveryWindow` |
-| `/me` | Dashboard: my deals (buying / selling tabs), my listings (pause/resume), notifications, profile | `GET /api/me/deals?role=`, `GET /api/users/{me}`, `GET /api/me/notifications`, `PATCH /api/me` | |
+| `/me` | Dashboard: my deals (buying / selling tabs), my listings (pause/resume), notifications, profile | `GET /api/me/deals?role=`, `GET /api/me/listings`, `GET /api/me/notifications`, `PATCH /api/me` | |
 | `/u/:wallet` | Public profile: on-chain reputation + active listings | `GET /api/users/:wallet` | |
 
 `/d/:id`, `/sell` and `/me` need a session; their guard asks the user to connect and sign in. Everything else works signed out.
-
-There's no "my listings" endpoint: use `activeListings` from `GET /api/users/{myWallet}`. It only lists active ones, so remember the IDs paused in this session to show them as paused.
 
 ## The deal page (the heart of the demo)
 
@@ -65,7 +63,7 @@ Status badges: Draft/AwaitingSeller neutral, Active/Delivered blue, Disputed amb
 - `WalletService`: `connect()`, `disconnect()`, `publicKey` (signal), `signMessage(bytes)`, `signAndSendTransaction(tx)`. If the wallet's account changes, log out: the session belongs to the old wallet.
 - `AuthService`: nonce → `signMessage(new TextEncoder().encode(message))` → `bs58.encode(signature)` → verify ([api.md](api.md#auth)). On app start, `GET /api/me` tells whether the cookie is still valid.
 - **Interceptor:** `withCredentials: true`. On 401 (except from `/api/me` and `/api/auth/*`), clear the user and open sign-in. On 429/503, toast the problem title.
-- If Phantom warns that the sign-in message's domain (`localhost`) doesn't match the page, the backend's `Auth:Domain` must be set to the page host (e.g. `localhost:4200`).
+- The sign-in message names the domain `localhost:4200` in Development, matching `ng serve`, so Phantom shouldn't warn. If you serve on another port and it does, report it in `ISSUES.md`: the backend's `Auth:Domain` has to match the page host.
 
 ## Transactions
 

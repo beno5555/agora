@@ -45,7 +45,7 @@ Rate limits per minute: sign-in 20, reads 300, writes 60, overall 600.
 
 ```ts
 interface ConfigDto {
-  cluster: string; rpcUrl: string; programId: string; mint: string; mintDecimals: number; feeBps: number | null;
+  cluster: string; programId: string; mint: string; mintDecimals: number; feeBps: number | null;
   deliveryWindows: { key: string; seconds: number }[];   // the deadline options a seller can pick, shortest first
   defaultDeliveryWindow: string;                         // "24h"
 }
@@ -98,6 +98,7 @@ Seeded: 1 `fortnite`, 2 `valorant`, 3 `league-of-legends`, 4 `cs2`, 5 `apex-lege
 |---|---|---|---|
 | GET | `/api/listings` | `?game=<slug>&type=Service\|Item&q=<text>&pageNumber&pageSize` | `MinimalListingDto[]`, active listings only. An unknown `game` returns `[]` |
 | GET | `/api/listings/{id}` | | `StandardListingDto`. **This is the "deal link" sellers share.** It works signed out |
+| GET | `/api/me/listings` 🔒 | `?pageNumber&pageSize` | `FullListingDto[]`: the caller's own listings, **paused ones included**, newest first (seller dashboard, edit form) |
 | POST | `/api/listings` 🔒 | `ListingTermsDto` | `201`, `StandardListingDto`; the caller is the seller |
 | PATCH | `/api/listings/{id}` 🔒 | `ListingTermsDto` (full object, not a partial) | `StandardListingDto`. Seller only (anyone else gets "Listing Not Found"). Applies to future deals only |
 | POST | `/api/listings/{id}/pause` 🔒 | | envelope, no data. Hides it from search and blocks new deals |
@@ -129,6 +130,10 @@ interface StandardListingDto extends MinimalListingDto {
   createdAt: string;
   sellerReputation: ReputationDto;   // from the chain
   depositPreview: { buyerDeposit: string; sellerDeposit: string } | null;
+}
+
+interface FullListingDto extends MinimalListingDto {   // the seller's own view
+  gameId: number; description: string; deliveryWindow: string; isActive: boolean; createdAt: string;
 }
 ```
 

@@ -3,7 +3,6 @@ namespace colosseumbackend.Dtos;
 public class ConfigDto
 {
     public string Cluster      { get; set; } = string.Empty;
-    public string RpcUrl       { get; set; } = string.Empty;
     public string ProgramId    { get; set; } = string.Empty;
     public string Mint         { get; set; } = string.Empty;
     public int    MintDecimals { get; set; }

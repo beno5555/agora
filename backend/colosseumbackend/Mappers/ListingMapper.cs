@@ -45,6 +45,20 @@ public static class ListingMapper
         return dto;
     }
 
+    public static FullListingDto ToFull(Listing listing)
+    {
+        var dto = new FullListingDto
+        {
+            GameId         = listing.GameId,
+            Description    = listing.Description,
+            DeliveryWindow = DeliveryWindows.KeyFor(listing.DeliveryWindowSeconds),
+            IsActive       = listing.IsActive,
+            CreatedAt      = listing.CreatedAt,
+        };
+        FillMinimal(dto, listing);
+        return dto;
+    }
+
     private static void FillMinimal(MinimalListingDto dto, Listing listing)
     {
         dto.Id         = listing.Id;

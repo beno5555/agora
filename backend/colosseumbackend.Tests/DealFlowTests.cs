@@ -167,6 +167,24 @@ public class DealFlowTests
     }
 
     [Fact]
+    public async Task GetMyListings_WithPausedListing_ReturnsBothAndOnlyMine()
+    {
+        var (_, sellerClient) = await NewSignedInUserAsync();
+        var (_, otherClient)  = await NewSignedInUserAsync();
+        var paused  = await CreateCarryListingAsync(sellerClient);
+        var active  = await CreateCarryListingAsync(sellerClient);
+        var others  = await CreateCarryListingAsync(otherClient);
+        (await sellerClient.PostAsync($"api/listings/{paused.Id}/pause", null)).EnsureSuccessStatusCode();
+
+        var mine = await sellerClient.GetFromJsonAsync<ListResponse<FullListingDto>>("api/me/listings", TestJson.Options);
+
+        Assert.Equal(2, mine!.Data.Count);
+        Assert.False(mine.Data.Single(listing => listing.Id == paused.Id).IsActive);
+        Assert.True(mine.Data.Single(listing => listing.Id == active.Id).IsActive);
+        Assert.DoesNotContain(mine.Data, listing => listing.Id == others.Id);
+    }
+
+    [Fact]
     public async Task CreateListing_UnknownDeliveryWindow_ReturnsBadRequest()
     {
         var (_, sellerClient) = await NewSignedInUserAsync();

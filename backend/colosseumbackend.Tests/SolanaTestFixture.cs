@@ -24,7 +24,6 @@ public class SolanaTestFixture : IAsyncLifetime
 {
     public const ulong Token = AdminChain.TokenUnit;
 
-    private const string DefaultRpcUrl   = "https://api.devnet.solana.com";
     private const ulong  LamportsPerTest = AdminChain.LamportsPerSol / 50; // 0.02 SOL: fees + rent for reputation accounts
     private const ulong  TokensPerWallet = 1_000 * Token;
     private const int    SignatureOffset = 1;  // after the one-byte signature count
@@ -38,14 +37,14 @@ public class SolanaTestFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        string rpcUrl    = Environment.GetEnvironmentVariable("AGORA_TEST_RPC") ?? DefaultRpcUrl;
+        string rpcUrl    = SolanaOptions.RpcUrlFromEnvironment(); // Solana__RpcUrl, else public devnet
         string programId = new SolanaOptions().ProgramId;
         var    admin     = AdminChain.LoadKeypair(Environment.GetEnvironmentVariable("AGORA_ADMIN_KEYPAIR") ?? AdminChain.DefaultKeypairPath());
 
         Chain = new AdminChain(rpcUrl, admin);
         var gateway = new SolanaGateway(Chain.Rpc, new AgoraProgram(new PublicKey(programId), new PublicKey(new byte[32])), Options.Create(new SolanaOptions()));
         var config  = await gateway.GetConfigAsync()
-                      ?? throw new InvalidOperationException($"Program config not initialized on {rpcUrl}; deploy and run the Admin tool's init first");
+                      ?? throw new InvalidOperationException($"Program config not initialized on the configured RPC; deploy and run the Admin tool's init first");
         Program = new AgoraProgram(new PublicKey(programId), config.Mint);
 
         _databasePath = Path.Combine(Path.GetTempPath(), $"agora-test-{Guid.NewGuid():N}.db");

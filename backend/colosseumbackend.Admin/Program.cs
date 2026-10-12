@@ -11,7 +11,7 @@ using Solnet.Wallet;
 //   fund <wallet> [tokens] [sol] [mint] [rpcUrl]   send devnet SOL for fees + test tokens to a demo user
 //   status [rpcUrl]                     show the program config and the admin's balances
 
-const string DefaultRpcUrl      = "https://api.devnet.solana.com";
+string defaultRpcUrl = SolanaOptions.RpcUrlFromEnvironment(); // Solana__RpcUrl, else public devnet
 const ushort FeeBps             = 200;
 const double DefaultFundTokens  = 100;
 const double DefaultFundSol     = 0.05;
@@ -27,7 +27,7 @@ switch (command)
 {
     case "init":
     {
-        var chain = new AdminChain(Arg(1) ?? DefaultRpcUrl, admin);
+        var chain = new AdminChain(Arg(1) ?? defaultRpcUrl, admin);
         var mint  = await chain.CreateMintAsync();
         var program = new AgoraProgram(new PublicKey(programId), mint);
         await chain.InitializeProgramAsync(program, FeeBps, deposit);
@@ -43,7 +43,7 @@ switch (command)
         string wallet = Arg(1) ?? throw new ArgumentException("Usage: fund <wallet> [tokens] [sol] [mint] [rpcUrl]");
         double tokens = double.Parse(Arg(2) ?? DefaultFundTokens.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
         double sol    = double.Parse(Arg(3) ?? DefaultFundSol.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
-        var    chain  = new AdminChain(Arg(5) ?? DefaultRpcUrl, admin);
+        var    chain  = new AdminChain(Arg(5) ?? defaultRpcUrl, admin);
         var    mint   = Arg(4) is { } mintArg ? new PublicKey(mintArg) : await ReadConfigMintAsync(chain);
         var    program = new AgoraProgram(new PublicKey(programId), mint);
 
@@ -54,7 +54,7 @@ switch (command)
 
     default:
     {
-        var chain   = new AdminChain(Arg(1) ?? DefaultRpcUrl, admin);
+        var chain   = new AdminChain(Arg(1) ?? defaultRpcUrl, admin);
         var gateway = Gateway(chain, new PublicKey(new byte[32]));
         var config  = await gateway.GetConfigAsync();
 

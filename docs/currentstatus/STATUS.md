@@ -23,8 +23,8 @@ Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro
 4. **Everyone, by Oct 12:** repo README, demo video, Colosseum form, in the team's own words.
 
 ## Things to know
-- **Devnet RPC:** one test run had 2 failures that passed on rerun, probably the public devnet RPC throttling us. If it keeps happening, switch `Solana:RpcUrl` to a dedicated devnet RPC (e.g. Helius free tier).
-- **Phantom sign-in:** if Phantom warns that the message's domain doesn't match the page, set `Auth:Domain` to the page host (e.g. `localhost:4200`).
+- **Devnet RPC:** the public devnet RPC throttles us (one test run had 2 failures that passed on rerun). Set the `Solana__RpcUrl` environment variable to a private devnet RPC (Helius free tier); the API, the Admin tool and the tests all use it. It contains an API key: never commit it.
+- **Phantom sign-in:** the message's domain is `localhost:4200` in Development (matches `ng serve`). If Phantom still warns, `Auth:Domain` must match the page host.
 - **Windows Defender** sometimes locks freshly built files, so a build can fail once and pass on retry.
 - **Program tests** need OpenSSL environment variables; see `program/README.md`.
 - **Production JWT key:** `dotnet user-secrets set Jwt:SigningKey <base64>`. In Development, a random key is generated when it's missing.

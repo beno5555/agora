@@ -17,7 +17,7 @@ Angular                          .NET API                         Wallet
 
 ## The message
 
-Built by the backend (`Solana/WalletSignIn.cs`), so the frontend can't change it. `<domain>` is `Auth:Domain` in appsettings (`localhost` in dev).
+Built by the backend (`Solana/WalletSignIn.cs`), so the frontend can't change it. `<domain>` is `Auth:Domain` in appsettings; it must match the page host or Phantom may warn (`localhost:4200` in Development, matching `ng serve`).
 
 ```
 <domain> wants you to sign in with your Solana account:
