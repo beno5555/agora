@@ -17,10 +17,11 @@ A snapshot of where things stand, kept short; history is in `git log`. Plan: [`.
 Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro's PC only): ~1.65 SOL. A full test run uses ~0.3 SOL (the faucet at https://faucet.solana.com tops it up), and each funded demo wallet 0.05.
 
 ## Next steps
-1. **Saba:** the Angular app, starting with the listing page, the deal page and wallet sign-in (the demo path).
-2. **Sandro/Claude:** `Admin fund` demo wallets on request. Support the frontend: fix whatever the real UI uncovers.
-3. **Mate and Dato:** the demo script (a listing with the `2m` deadline shows the missed-deadline refund live), the pitch, the video, test carriers and coaches.
-4. **Everyone, by Oct 12:** repo README, demo video, Colosseum form, in the team's own words.
+1. **Blocked on Sandro, in progress:** set `Solana__RpcUrl` to his Helius devnet URL (`setx Solana__RpcUrl "..."`, then restart the terminal/IDE so the new session sees it) to stop the public devnet RPC throttling tests. Once he confirms it's set, **Claude: run the full `dotnet test` suite** (from `backend/`) to confirm everything still passes through the new RPC, including the new `GetMyListings` test.
+2. **Saba:** the Angular app, starting with the listing page, the deal page and wallet sign-in (the demo path).
+3. **Sandro/Claude:** `Admin fund` demo wallets on request. Support the frontend: fix whatever the real UI uncovers.
+4. **Mate and Dato:** the demo script (a listing with the `2m` deadline shows the missed-deadline refund live), the pitch, the video, test carriers and coaches.
+5. **Everyone, by Oct 12:** repo README, demo video, Colosseum form, in the team's own words.
 
 ## Things to know
 - **Devnet RPC:** the public devnet RPC throttles us (one test run had 2 failures that passed on rerun). Set the `Solana__RpcUrl` environment variable to a private devnet RPC (Helius free tier); the API, the Admin tool and the tests all use it. It contains an API key: never commit it.
