@@ -8,7 +8,7 @@ It is also meant to be shared with regular Claude chats (for example as claude.a
 
 **Agora** is a global P2P marketplace on Solana for gaming items, in-game currencies and game services (such as paid carries). With each deal, both buyer and seller lock a deposit. If they disagree, the funds stay locked until they agree or one accepts the other's offer to split. Nobody outside decides.
 
-**The full product plan is in [`docs/PLAN.md`](docs/PLAN.md):** settlement rules, fees, the alpha build plan, positioning and research evidence. Read it before working on product or architecture. Keep plan details there, not here. **The technical design is in [`docs/architecture/`](docs/architecture/README.md):** read the relevant file before writing code. **Latest progress, blockers and next steps:** [`docs/currentstatus/STATUS.md`](docs/currentstatus/STATUS.md). Read it at the start of a session. **Cross-side issues** (a problem found in the other person's area; see Team workflow below): [`docs/currentstatus/ISSUES.md`](docs/currentstatus/ISSUES.md) — check it at the start of a session too.
+**The full product plan is in [`docs/PLAN.md`](docs/PLAN.md):** settlement rules, fees, the alpha build plan, positioning and research evidence. Read it before working on product or architecture. Keep plan details there, not here. **The technical design is in [`docs/architecture/`](docs/architecture/README.md):** read the relevant file before writing code. **Latest progress, blockers and next steps:** [`docs/currentstatus/STATUS.md`](docs/currentstatus/STATUS.md). Read it at the start of a session. **Known issues left for later:** [`docs/currentstatus/ISSUES.md`](docs/currentstatus/ISSUES.md) — check it at the start of a session too.
 
 - **Event:** Colosseum's Crypto World's Fair (Build Station Tbilisi; partners Colosseum, Superteam Georgia, Solana). https://colosseum.com/worldsfair/resources
 - **Submission deadline:** 2026-10-13 06:59 UTC. The team aims to submit on Oct 12. **Presentation:** Oct 14.
@@ -16,7 +16,7 @@ It is also meant to be shared with regular Claude chats (for example as claude.a
 ### Team
 | Member | Role |
 |---|---|
-| Sandro | Backend (C#/.NET) |
+| Sandro | Backend (C#/.NET) and frontend (Angular) |
 | Saba | Frontend (Angular) |
 | Mate | Product ideas |
 | Dato | Not set yet |
@@ -24,11 +24,11 @@ It is also meant to be shared with regular Claude chats (for example as claude.a
 Nobody on the team writes Rust, so Claude writes the Solana program, using Anchor.
 
 ### Team workflow
-- **Ownership:** Sandro owns `backend/` and `program/`; Saba owns `frontend/`. Work only in your owner's area, even if a fix for the other side seems obvious and small.
-- **`docs/architecture/api.md` is the contract between frontend and backend.** The frontend codes only against it. If something there looks wrong or missing while working on the frontend, don't change the backend to fix it — add a row to [`docs/currentstatus/ISSUES.md`](docs/currentstatus/ISSUES.md) and keep working on your own side; the owner fixes it and updates `api.md` in the same commit.
-- **Shared docs:** `CLAUDE.md`, `docs/PLAN.md`, `docs/architecture/*` (except `frontend.md`) and `STATUS.md` are Sandro's to change; `frontend.md` is Saba's. Either side can ask the other for a change instead of making it directly. `ISSUES.md` is written by whoever hits the problem, cleared by whoever owns the area.
-- **Git:** both work on `main` directly for this hackathon (no feature branches yet, since the two areas don't overlap). `git pull --rebase` before starting each change (not just once per session) and again before pushing, so no change is built on stale code; commit and push small and often so neither side drifts far behind. Never push a change inside the other person's owned folder.
-- **Push promptly:** commit and push finished doc or code changes right away, without waiting to be asked each time, so the other side always has the latest `api.md`/`frontend.md` on GitHub.
+- **Ownership:** Sandro owns the whole codebase (`backend/`, `program/`, `frontend/`) and the docs (`CLAUDE.md`, `docs/PLAN.md`, `docs/architecture/*`, `STATUS.md`). Saba contributes to the frontend.
+- **`docs/architecture/api.md` is the contract between frontend and backend.** The frontend codes against it. A change to an endpoint updates the backend, `api.md` and the frontend together, in one commit.
+- **Fix problems where you find them,** backend or frontend, in the commit that needs the fix. [`docs/currentstatus/ISSUES.md`](docs/currentstatus/ISSUES.md) only lists known problems that were deliberately left for later; whoever fixes one removes its row in the same commit.
+- **Git:** everyone works on `main` directly for this hackathon. `git pull --rebase` before starting each change (not just once per session) and again before pushing, so no change is built on stale code; commit and push small and often.
+- **Push promptly:** commit and push finished doc or code changes right away, without waiting to be asked each time, so every contributor has the latest code and docs on GitHub.
 
 ### Rules
 - The app never holds user funds. Money moves only through the on-chain program and users' own wallets.
@@ -39,11 +39,11 @@ Nobody on the team writes Rust, so Claude writes the Solana program, using Ancho
 ```
 agora/
 ├── backend/                  .NET solution (net10.0): API, Admin tool, end-to-end tests
-├── frontend/                 Angular 21 app (Saba): core/ services, shared/ helpers, pages/
+├── frontend/                 Angular 21 app: core/ services, shared/ helpers, pages/
 ├── program/                  Solana program (Anchor workspace)
 ├── docs/PLAN.md              detailed product plan
 ├── docs/architecture/        technical design: program, auth, API, data model, frontend
-├── docs/currentstatus/       STATUS.md (current state, next steps), ISSUES.md (cross-side problems)
+├── docs/currentstatus/       STATUS.md (current state, next steps), ISSUES.md (known issues left for later)
 ├── README.md                 public project overview (draft, for the submission)
 ├── LICENSE                   MIT
 ├── .claude/skills/colosseum-copilot/   project-scoped Claude skill
