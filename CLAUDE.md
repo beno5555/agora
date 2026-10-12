@@ -39,7 +39,7 @@ Nobody on the team writes Rust, so Claude writes the Solana program, using Ancho
 ```
 agora/
 ├── backend/                  .NET solution (net10.0): API, Admin tool, end-to-end tests
-├── frontend/                 Angular app (not created yet)
+├── frontend/                 Angular 21 app (Saba): core/ services, shared/ helpers, pages/
 ├── program/                  Solana program (Anchor workspace)
 ├── docs/PLAN.md              detailed product plan
 ├── docs/architecture/        technical design: program, auth, API, data model, frontend
@@ -73,6 +73,8 @@ dotnet test                                                  # end-to-end on dev
 **RPC:** the API, the Admin tool and the tests use the `Solana__RpcUrl` environment variable when it's set (a private devnet RPC such as Helius), else the public devnet RPC. It contains an API key: keep it in the environment, never in a committed file, and never return or log it.
 
 The end-to-end tests run against devnet, not a local validator: `solana-test-validator` (Agave 4.3) can't start on Windows. They fund throwaway wallets from the deploy wallet (~0.02 SOL each).
+
+Frontend (run from `frontend/`, with the backend running): `npm ci`, then `npm start` (`ng serve` on http://localhost:4200, proxying `/api` to `localhost:5107` via `proxy.conf.json`); `npx ng build` writes the production build to `dist/frontend/browser/`.
 
 Solana program (run from `program/`, native Windows, no WSL): `cargo build-sbf --manifest-path programs/agora/Cargo.toml`, then `cargo test --manifest-path programs/agora/Cargo.toml` (needs the OpenSSL env vars from [program/README.md](program/README.md)).
 

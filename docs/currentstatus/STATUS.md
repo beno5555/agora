@@ -11,13 +11,13 @@ A snapshot of where things stand, kept short; history is in `git log`. Plan: [`.
 | Solana program | **Deployed to devnet** (`J4fL4Q8nnndro2xmVdCayRt5apXhexkkVQoqqwf4AKi4`) and initialized. Test stablecoin `7FutDfvw3Whjv6PcwCYdYb3FV25EHc3TRiUA4zw8pj21`. 8 program tests pass. No security review yet: devnet only. |
 | Backend API | Complete for the alpha. **12 end-to-end tests pass on devnet** (through Helius): a full deal paid match by match, a dispute settled by a split, a missed 2-minute deadline refunded with the seller's deposit, my listings, access checks, validation, sign-in replay and impostor signatures. |
 | Admin tool | `init` done. `fund <wallet>` gives a demo wallet 100 test tokens + 0.05 devnet SOL. |
-| Frontend | **Not started; the critical path.** Everything it needs is in [`api.md`](../architecture/api.md) and [`frontend.md`](../architecture/frontend.md). |
+| Frontend | **First version pushed Oct 12** (`c4a2126`, Angular 21): home, game, listing, deal, sell and `/me` pages; sign-in with the Phantom browser extension (not Phantom Connect yet); every deal action through the backend-built transaction, with polling and the deadline refetch. `ng build` passes (~0.7 MB). **Not yet tried end to end on devnet.** Gaps (the `/u/:wallet` profile, pause/resume and profile editing on `/me`, the deal page's outcome table) are in [`ISSUES.md`](ISSUES.md). |
 | Demo, pitch, submission | Not started. |
 
 Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro's PC only): ~5.5 SOL (topped up Oct 12). A full test run uses ~0.3 SOL (the faucet at https://faucet.solana.com tops it up), and each funded demo wallet 0.05.
 
 ## Next steps
-1. **Saba:** the Angular app, starting with the listing page, the deal page and wallet sign-in (the demo path).
+1. **Saba:** run the demo path end to end on devnet with two funded wallets (list → buy → accept → deliver → confirm; and the `2m` missed-deadline refund), then the open frontend rows in [`ISSUES.md`](ISSUES.md).
 2. **Sandro/Claude:** `Admin fund` demo wallets on request. Support the frontend: fix whatever the real UI uncovers.
 3. **Mate and Dato:** the demo script (a listing with the `2m` deadline shows the missed-deadline refund live), the pitch, the video, test carriers and coaches.
 4. **Everyone, by Oct 12:** repo README (Claude's draft is in `README.md`; rewrite it), demo video, Colosseum form, in the team's own words.
@@ -37,7 +37,7 @@ Checked locally on Oct 12: with the settings on, a second client IP gets its own
 **How to run it hosted** (PowerShell, from `backend/`):
 ```powershell
 dotnet publish colosseumbackend -c Release -o <publish dir>    # outside the repo
-# copy the Angular production build (Saba's output, by default frontend/dist/frontend/browser/*) into <publish dir>/wwwroot/
+# build the frontend (from frontend/: npm ci; npx ng build) and copy frontend/dist/frontend/browser/* into <publish dir>/wwwroot/
 cd <publish dir>                                               # the content root: wwwroot and a relative DB path resolve from here
 $env:ASPNETCORE_ENVIRONMENT    = "Production"                  # Swagger and /openapi are off outside Development
 $env:ASPNETCORE_URLS           = "http://localhost:8080"       # the port the proxy or tunnel forwards to

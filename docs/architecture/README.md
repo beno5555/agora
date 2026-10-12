@@ -14,7 +14,7 @@ Technical design for the hackathon alpha. Product rules and the reasons behind t
 
 ```
  Angular app ───REST (JSON)───▶ .NET API ───▶ SQLite (EF Core)
-   │ Phantom Connect                │ builds unsigned txs, reads deal accounts
+   │ Phantom (extension for now)    │ builds unsigned txs, reads deal accounts
    │ signs + sends txs              │ (C#, Solnet + Solana JSON-RPC)
    ▼                                ▼
          Agora program (Anchor) on Solana devnet
