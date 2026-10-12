@@ -1,6 +1,6 @@
 # Backend REST API
 
-The contract the Angular app codes against. Source of truth: `backend/colosseumbackend` (`Controllers/Controllers.cs`, `Dtos/Dtos.cs`, `Common/Enums.cs`). In Development the OpenAPI document is at `GET /openapi/v1.json`.
+The contract the Angular app codes against. Source of truth: `backend/colosseumbackend` (`Controllers/`, `Dtos/`, and the enums in `Common/`, one type per file). In Development the OpenAPI document is at `GET /openapi/v1.json`.
 
 ## Conventions
 
@@ -248,5 +248,5 @@ A hosted service re-syncs every open deal once a minute (one `getMultipleAccount
 ## Solana from .NET (backend internals)
 - **Library:** [Solnet](https://github.com/bmresearch/Solnet) for RPC, PDA derivation and building transactions.
 - **Instructions** (`Solana/AgoraProgram.cs`): `sha256("global:<name>")[0..8]` + Borsh-encoded arguments, accounts in the order of the program's `#[derive(Accounts)]` struct.
-- **Reading accounts** (`Solana/OnchainAccounts.cs`): Anchor discriminator, then the `state.rs` fields in order, little-endian. Final outcomes come from the `DealClosed` event in the closing transaction's logs.
+- **Reading accounts** (`Solana/DealAccount.cs`, `ReputationAccount.cs`, `ConfigAccount.cs`): Anchor discriminator, then the `state.rs` fields in order, little-endian. Final outcomes come from the `DealClosed` event in the closing transaction's logs.
 - The backend builds every transaction unsigned and holds no keys.
