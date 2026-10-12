@@ -8,7 +8,7 @@ It is also meant to be shared with regular Claude chats (for example as claude.a
 
 **Agora** is a global P2P marketplace on Solana for gaming items, in-game currencies and game services (such as paid carries). With each deal, both buyer and seller lock a deposit. If they disagree, the funds stay locked until they agree or one accepts the other's offer to split. Nobody outside decides.
 
-**The full product plan is in [`docs/PLAN.md`](docs/PLAN.md):** settlement rules, fees, the alpha build plan, positioning and research evidence. Read it before working on product or architecture. Keep plan details there, not here. **The technical design is in [`docs/architecture/`](docs/architecture/README.md):** read the relevant file before writing code. **Latest progress, blockers and next steps:** [`docs/currentstatus/STATUS.md`](docs/currentstatus/STATUS.md). Read it at the start of a session. **Known issues left for later:** [`docs/currentstatus/ISSUES.md`](docs/currentstatus/ISSUES.md) — check it at the start of a session too.
+**The full product plan is in [`docs/PLAN.md`](docs/PLAN.md):** settlement rules, fees, the alpha build plan, positioning and research evidence. Read it before working on product or architecture. Keep plan details there, not here. **The technical design is in [`docs/architecture/`](docs/architecture/README.md):** read the relevant file before writing code. **Latest progress, blockers and next steps:** [`docs/currentstatus/STATUS.md`](docs/currentstatus/STATUS.md). Read it at the start of a session. **Known issues left for later:** [`docs/currentstatus/ISSUES.md`](docs/currentstatus/ISSUES.md) — check it at the start of a session too. **Planned work that isn't urgent:** [`docs/currentstatus/BACKLOG.md`](docs/currentstatus/BACKLOG.md); add an item there when a task is agreed on but deferred.
 
 - **Event:** Colosseum's Crypto World's Fair (Build Station Tbilisi; partners Colosseum, Superteam Georgia, Solana). https://colosseum.com/worldsfair/resources
 - **Submission deadline:** 2026-10-13 06:59 UTC. The team aims to submit on Oct 12. **Presentation:** Oct 14.
@@ -43,7 +43,7 @@ agora/
 ├── program/                  Solana program (Anchor workspace)
 ├── docs/PLAN.md              detailed product plan
 ├── docs/architecture/        technical design: program, auth, API, data model, frontend
-├── docs/currentstatus/       STATUS.md (current state, next steps), ISSUES.md (known issues left for later)
+├── docs/currentstatus/       STATUS.md (current state, next steps), ISSUES.md (known issues left for later), BACKLOG.md (planned work, not urgent)
 ├── README.md                 public project overview (draft, for the submission)
 ├── LICENSE                   MIT
 ├── .claude/skills/colosseum-copilot/   project-scoped Claude skill
