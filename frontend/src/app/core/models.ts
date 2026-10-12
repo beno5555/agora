@@ -50,7 +50,7 @@ export interface GameDto {
 
 export type ListingType = 'Service' | 'Item';
 
-/** What one part of the price pays for; null when none fits (the description explains it). */
+/** What one milestone of the price pays for; null when none fits (the description explains it). */
 export type ListingUnit =
   | 'Match'
   | 'Game'

@@ -107,8 +107,8 @@ Seeded: 1 `fortnite`, 2 `valorant`, 3 `league-of-legends`, 4 `cs2`, 5 `apex-lege
 ```ts
 type ListingType = 'Service' | 'Item';
 
-// What one part of the price pays for ("3 matches"). Optional: null when none fits,
-// and the description says what a part is; show it as "parts".
+// What one milestone of the price pays for ("3 matches"). Optional: null when none fits,
+// and the description says what a milestone is; show it as "milestones".
 type ListingUnit =
   | 'Match' | 'Game' | 'Round' | 'Win' | 'Run' | 'Level' | 'Rank'
   | 'Hour' | 'Day' | 'Session' | 'Item';

@@ -70,8 +70,8 @@ import { LISTING_UNITS } from '../../shared/unit';
           </select>
         </span>
         <span class="hint"
-          >The price is paid out one part at a time as the buyer confirms each. If no unit fits,
-          choose "None of these" and say what one part is in the description.</span
+          >The price is paid out one milestone at a time as the buyer confirms each. If no unit
+          fits, choose "None of these" and say what one milestone is in the description.</span
         >
       </label>
 
@@ -126,9 +126,9 @@ export class Sell {
       return `Price must be a number with up to ${this.config.decimals()} decimals.`;
     if (price === 0n) return 'Price must be more than zero.';
     if (!Number.isInteger(milestones) || milestones < 1 || milestones > 100)
-      return 'Parts must be between 1 and 100.';
+      return 'Milestones must be between 1 and 100.';
     if (price % BigInt(milestones) !== 0n)
-      return 'The price must divide evenly into the number of parts.';
+      return 'The price must divide evenly into the number of milestones.';
     return null;
   });
 
