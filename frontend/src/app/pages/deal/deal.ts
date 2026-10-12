@@ -168,8 +168,10 @@ const FINAL: DealStatus[] = ['Completed', 'Split', 'Undelivered', 'SellerRefunde
           @if (d.lastSignature) {
             <dt>Last transaction</dt><dd><app-explorer-link kind="tx" [value]="d.lastSignature" /></dd>
           }
-          <dt>Buyer</dt><dd><app-wallet-address [wallet]="d.buyerWallet" /></dd>
-          <dt>Seller</dt><dd><app-wallet-address [wallet]="d.sellerWallet" /></dd>
+          <dt>Buyer</dt>
+          <dd><a [routerLink]="['/u', d.buyerWallet]">profile</a> <app-wallet-address [wallet]="d.buyerWallet" /></dd>
+          <dt>Seller</dt>
+          <dd><a [routerLink]="['/u', d.sellerWallet]">profile</a> <app-wallet-address [wallet]="d.sellerWallet" /></dd>
           @if (d.buyerNote) {
             <dt>Buyer note</dt><dd>{{ d.buyerNote }}</dd>
           }

@@ -9,5 +9,6 @@ export const routes: Routes = [
   { path: 'sell', canActivate: [authGuard], loadComponent: () => import('./pages/sell/sell').then(m => m.Sell) },
   { path: 'sell/:id', canActivate: [authGuard], loadComponent: () => import('./pages/sell/sell').then(m => m.Sell) },
   { path: 'me', canActivate: [authGuard], loadComponent: () => import('./pages/me/me').then(m => m.Me) },
+  { path: 'u/:wallet', loadComponent: () => import('./pages/profile/profile').then(m => m.Profile) },
   { path: '**', redirectTo: '' },
 ];

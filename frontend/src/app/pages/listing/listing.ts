@@ -8,11 +8,12 @@ import { StandardListingDto } from '../../core/models';
 import { AmountPipe } from '../../shared/amount.pipe';
 import { windowLabel } from '../../shared/delivery-window';
 import { plural } from '../../shared/plural';
+import { Reputation } from '../../shared/reputation';
 import { WalletAddress } from '../../shared/wallet-address';
 
 @Component({
   selector: 'app-listing',
-  imports: [FormsModule, RouterLink, AmountPipe, WalletAddress],
+  imports: [FormsModule, RouterLink, AmountPipe, Reputation, WalletAddress],
   template: `
     @if (listing(); as l) {
       <p class="muted small"><a [routerLink]="['/g', l.gameSlug]">{{ l.gameName }}</a> · {{ l.type }}</p>
@@ -34,16 +35,10 @@ import { WalletAddress } from '../../shared/wallet-address';
       <section class="panel">
         <h2>Seller</h2>
         <p>
-          {{ l.seller.displayName || '' }}
+          <a [routerLink]="['/u', l.seller.wallet]">{{ l.seller.displayName || 'Seller profile' }}</a>
           <app-wallet-address [wallet]="l.seller.wallet" />
         </p>
-        <dl class="facts">
-          <dt>Deals completed</dt><dd>{{ l.sellerReputation.dealsCompleted }}</dd>
-          <dt>Disputed</dt><dd>{{ l.sellerReputation.dealsDisputed }}</dd>
-          <dt>Missed deadlines</dt><dd>{{ l.sellerReputation.dealsUndelivered }}</dd>
-          <dt>Volume</dt><dd>\${{ l.sellerReputation.volume | amount }}</dd>
-        </dl>
-        <p class="muted small" style="margin: 0.75rem 0 0">Recorded on Solana, not by us.</p>
+        <app-reputation [reputation]="l.sellerReputation" />
       </section>
 
       @if (isOwner()) {
