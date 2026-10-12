@@ -19,7 +19,7 @@ The detailed product plan. Team decisions and Claude proposals are marked; propo
 | Steam items | CS2 skins | After the 7-day trade-reversal window, if item still in buyer's inventory |
 | Codes (later) | Gift cards, keys | After a short complaint window |
 
-- If the seller doesn't mark the deal delivered by its deadline, the buyer is refunded automatically.
+- If the seller doesn't mark the deal delivered by its deadline, the buyer can take a refund (one click; nothing on Solana runs by itself).
 - Either side can open a disagreement once the deal is under way.
 - Deposits are set automatically from each party's on-chain record and the price: smaller as the record grows relative to the deal size, larger after missed deliveries. Nobody enters them. Formula: [architecture/program.md](architecture/program.md#deposits).
 
@@ -37,7 +37,7 @@ Open decisions: how disagreements get resolved; the deposit formula's exact numb
 - About 2% per deal. Compare Eldorado.gg, where a $5 carry costs the buyer $5.70 and the seller gets $4.50 (see Evidence).
 
 ## Alpha (hackathon) build plan
-- **Solana program (Anchor, written by Claude):** create and fund a deal (payment plus both deposits), mark delivered, confirm (fully or per milestone), refund if not delivered by the deadline, raise a disagreement, offer and accept a split, reputation per wallet. Devnet, test USDC or CASH.
+- **Solana program (Anchor, written by Claude):** create and fund a deal (payment plus both deposits), mark delivered, confirm (fully or per milestone), refund if not delivered by the deadline, raise a disagreement, offer and accept a split, reputation per wallet. Devnet, with our own test stablecoin (CASH or USDC on mainnet later).
 - **Backend (.NET):** listings, game storefronts, deal pages, notifications, time-limit countdowns.
 - **Frontend (Angular):** storefronts, deal-link page, email sign-in via Phantom Connect (the event's recommended embedded wallet), split offers on the deal page.
 - **Mate and Dato (proposed):** recruit 10–20 real carriers and coaches, run devnet test deals, collect quotes.

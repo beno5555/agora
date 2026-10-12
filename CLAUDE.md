@@ -36,6 +36,7 @@ agora/
 ├── program/                  Solana program (Anchor workspace)
 ├── docs/PLAN.md              detailed product plan
 ├── docs/architecture/        technical design: program, auth, API, data model, frontend
+├── docs/currentstatus/       STATUS.md: current state and next steps
 ├── .claude/skills/colosseum-copilot/   project-scoped Claude skill
 └── skills-lock.json          source and hash of installed skills
 ```

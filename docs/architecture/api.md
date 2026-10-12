@@ -63,9 +63,8 @@ Current devnet values: cluster `devnet`, program `J4fL4Q8nnndro2xmVdCayRt5apXhex
 | POST | `/api/auth/logout` | n/a | `204`, clears the cookie |
 
 - `message` must be sent back **byte for byte** as received. It is valid for 5 minutes and can be used once.
-- `signature` is the wallet's 64-byte ed25519 signature over the UTF-8 bytes of `message`, **base58-encoded** (the wallet returns a `Uint8Array`; encode it with `bs58`).
-- Sessions last 7 days. There's no refresh: on 401, sign in again.
-- The first sign-in creates the user.
+- `signature` is the wallet's 64-byte signature over the UTF-8 bytes of `message`, **base58-encoded** (the wallet returns a `Uint8Array`; encode it with `bs58`).
+- Sessions last 7 days, with no refresh: on 401, sign in again. The first sign-in creates the user. Design: [auth.md](auth.md).
 
 ## Users
 
@@ -197,7 +196,7 @@ The backend works this out for the caller from status, role and the clock; **ren
 | Status | Buyer | Seller |
 |---|---|---|
 | AwaitingSeller | `Cancel` (full refund) | `Accept`, `SellerRefund` (decline) |
-| Active | `Confirm`, `RaiseDispute`, + `RefundUndelivered` from 15 s after the deadline (Solana's clock can trail real time, so the backend waits a little before offering the refund, to make sure the program will accept it) | `MarkDelivered` (before the deadline only), `RaiseDispute`, `SellerRefund` |
+| Active | `Confirm`, `RaiseDispute`, + `RefundUndelivered` from 15 s after the deadline (margin for Solana's clock) | `MarkDelivered` (before the deadline only), `RaiseDispute`, `SellerRefund` |
 | Delivered | `Confirm`, `RaiseDispute` | `RaiseDispute`, `SellerRefund` |
 | Disputed | `ProposeSplit`, `AcceptSplit` (only if the *seller* made the current offer), `Confirm` | `ProposeSplit`, `AcceptSplit` (only if the *buyer* made the current offer), `SellerRefund` |
 | Draft and final states | n/a | n/a |
@@ -215,9 +214,7 @@ Action inputs:
 2. Base64-decode it and have the wallet **sign and send** it. It's a **legacy** (not versioned) transaction with the caller as the only signer and fee payer; its signature slot is zero-filled. Its blockhash expires after about a minute, so request it right before opening the wallet. If the user takes longer, request a new one.
 3. `POST /api/deals/{id}/sync` with the transaction signature (base58). The backend waits up to 30 s for confirmation, then copies the on-chain state and creates notifications. If it answers `400 "Transaction Not Confirmed"`, the transaction failed or is slow: retry sync once, then refetch the deal.
 
-If the buyer rejects the `create_deal` signature, the draft simply expires; the next Buy creates a new one. Settlement actions (`Confirm`, `Cancel`, `RefundUndelivered`, `AcceptSplit`, `SellerRefund`) may also create a missing token account first; that costs the caller a little devnet SOL.
-
-**Wallets need test tokens and a little devnet SOL** to buy or accept. Only the deploy wallet can create test tokens: ask Sandro to run `Admin fund <wallet>` (100 tokens + 0.05 SOL).
+If the buyer rejects the `create_deal` signature, the draft simply expires; the next Buy creates a new one. Settlement actions (`Confirm`, `Cancel`, `RefundUndelivered`, `AcceptSplit`, `SellerRefund`) may also create a missing token account first, which costs the caller a little devnet SOL. Wallets need test tokens and devnet SOL to act at all (see [frontend.md](frontend.md#dev-setup)).
 
 ## Notifications
 
@@ -240,13 +237,4 @@ type NotificationKind =
 
 interface NotificationDto { id: number; dealId: string | null; kind: NotificationKind; createdAt: string; isRead: boolean }
 ```
-Notifications carry **no text**: the frontend maps `kind` to a sentence and links to `/d/{dealId}`. There's no push or websocket; poll every 30–60 s while signed in. There's no unread-count endpoint; count `isRead === false` on the first page.
-
-## Background job
-A hosted service re-syncs every open deal once a minute (one `getMultipleAccounts` call per 100 deals). This also catches changes the other side made, expires old drafts, and sends the `DeadlineSoon` and `RefundAvailable` notifications.
-
-## Solana from .NET (backend internals)
-- **Library:** [Solnet](https://github.com/bmresearch/Solnet) for RPC, PDA derivation and building transactions.
-- **Instructions** (`Solana/AgoraProgram.cs`): `sha256("global:<name>")[0..8]` + Borsh-encoded arguments, accounts in the order of the program's `#[derive(Accounts)]` struct.
-- **Reading accounts** (`Solana/DealAccount.cs`, `ReputationAccount.cs`, `ConfigAccount.cs`): Anchor discriminator, then the `state.rs` fields in order, little-endian. Final outcomes come from the `DealClosed` event in the closing transaction's logs.
-- The backend builds every transaction unsigned and holds no keys.
+Notifications carry **no text**: the frontend maps `kind` to a sentence and links to `/d/{dealId}`. There's no push or websocket; poll every 30–60 s while signed in. There's no unread-count endpoint; count `isRead === false` on the first page. A background job re-syncs open deals every minute, so changes made outside the app also produce notifications.

@@ -66,14 +66,14 @@ Both parties use the same formula with their own record. `update_config` (admin 
   cancel ◀──── AwaitingSeller
  (buyer)             │ accept_deal (seller pays deposit)
                      ▼
-               Active ───────── deadline passed ──▶ refund_undelivered ──▶ Refunded
+               Active ───────── deadline passed ──▶ refund_undelivered ──▶ Undelivered
                 │    │ mark_delivered (seller, before the deadline)
                 │    ▼
                 │  Delivered ── confirm (all parts) ──▶ Completed
                 │    │
                 │    │ raise_dispute (either party)
                 ▼    ▼
-               Disputed ── accept_split / confirm / seller_refund ──▶ Completed / Refunded
+               Disputed ── accept_split / confirm / seller_refund ──▶ Split / Completed / SellerRefunded
                 (stays locked until the two agree)
 ```
 
@@ -92,11 +92,11 @@ There's no review time limit. After delivery, the money moves only when the buye
 | `accept_deal` | seller | `AwaitingSeller` | moves `seller_deposit` in; sets `accepted_at`; → `Active` |
 | `mark_delivered` | seller | `Active`, before the deadline | sets `delivered_at`; → `Delivered` |
 | `confirm(parts)` | buyer | `Active`, `Delivered` or `Disputed` | pays the seller `parts × price/milestones` minus the fee; after the last part → `Completed` |
-| `refund_undelivered` | buyer | `Active`, `now > accepted_at + delivery_window` | buyer gets the remaining price, their deposit **and the seller's deposit**; → `Refunded` |
+| `refund_undelivered` | buyer | `Active`, `now > accepted_at + delivery_window` | buyer gets the remaining price, their deposit **and the seller's deposit**; → `Undelivered` |
 | `raise_dispute` | buyer or seller | `Active` or `Delivered` | → `Disputed` |
 | `propose_split(buyer_amount)` | buyer or seller | `Disputed` | stores/replaces `split_offer` |
-| `accept_split` | the other party | `Disputed` with an offer | buyer gets `buyer_amount`; seller gets the rest minus the fee; → `Completed` |
-| `seller_refund` | seller | any open state | buyer gets the remaining price; everyone's deposit returned; → `Refunded` |
+| `accept_split` | the other party | `Disputed` with an offer | buyer gets `buyer_amount`; seller gets the rest minus the fee; → `Split` |
+| `seller_refund` | seller | any open state | buyer gets the remaining price; everyone's deposit returned; → `SellerRefunded` |
 
 `create_deal` also takes both parties' `Reputation` addresses (they may not exist yet for new wallets). Allowing `confirm` in `Active` lets service buyers confirm match by match before the seller marks everything delivered.
 
@@ -107,7 +107,7 @@ There's no review time limit. After delivery, the money moves only when the buye
 **Events:** `DealCreated` (with both deposits), `DealAccepted`, `DealDelivered`, `PartsConfirmed`, `DealDisputed`, `SplitProposed`, `DealClosed`, for the backend to index.
 
 ## Delivery deadlines
-The seller picks one per listing from presets: **1 hour, 6 hours, 24 hours (default), 3 days**. The program accepts anything from 60 seconds to 30 days, so the demo listing can use **2 minutes**.
+The program accepts any `delivery_window` from 60 seconds to 30 days. The backend limits sellers to presets (15m to 7d, plus 2m on devnet for demos; see [api.md](api.md#config)).
 
 ## Decided
 - **Disputes that never end:** a `Disputed` deal stays locked forever (team decision for the alpha).

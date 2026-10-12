@@ -1,16 +1,13 @@
 # Frontend (Angular)
 
-The brief for building the web app. The API contract, with TypeScript shapes for every request and response, is in [api.md](api.md). Sign-in details are in [auth.md](auth.md). Product context is in [../PLAN.md](../PLAN.md).
+The brief for building the web app. **The API contract is [api.md](api.md)**: endpoints, TypeScript types, `allowedActions` and the transaction flow. This file covers only what the UI does with it. Product context: [../PLAN.md](../PLAN.md).
 
 The app talks to the .NET API for everything off-chain. For anything involving money, it hands a transaction the **backend built** to the user's wallet to sign and send. **The frontend never builds Solana transactions and never holds keys.**
-
-**Status:** not started. The backend and program are deployed on devnet and tested end to end, so every endpoint below works today.
 
 ## Stack and layout
 
 - Angular (latest), standalone components, signals, `HttpClient` with `withFetch()` and an interceptor. Put it in `frontend/` at the repo root.
-- Solana in the browser: `@solana/web3.js` (only to deserialize transactions and for `PublicKey`), `bs58` (signatures), and the Phantom SDK (see below).
-- Keep it small. Suggested structure:
+- Solana in the browser: `@solana/web3.js` (only to deserialize transactions), `bs58` (signatures), and the Phantom SDK.
 
 ```
 frontend/src/app/
@@ -28,20 +25,20 @@ frontend/src/app/
 | `/g/:slug` | Game storefront, filter Service/Item | `GET /api/listings?game=:slug&type=` | open a listing |
 | `/l/:id` | Listing, **the deal link sellers share** | `GET /api/listings/:id` | terms, seller's on-chain record, deposit preview; **Buy** (with an optional note such as an in-game name) |
 | `/d/:id` | **Deal page** | `GET /api/deals/:id` | status timeline, countdown, vault breakdown, buttons from `allowedActions` |
-| `/sell`, `/sell/:id` | Create or edit a listing | `GET /api/games`, `GET /api/config` (deadline options), `POST`/`PATCH /api/listings` | deadline dropdown built from `deliveryWindows`, preselect `defaultDeliveryWindow` |
-| `/me` | Dashboard: my deals (tabs: buying / selling), my listings (pause/resume), notifications, profile (display name, Discord) | `GET /api/me/deals?role=`, `GET /api/users/{me}`, `GET /api/me/notifications`, `PATCH /api/me` | |
+| `/sell`, `/sell/:id` | Create or edit a listing | `GET /api/games`, `GET /api/config`, `POST`/`PATCH /api/listings` | deadline dropdown from `deliveryWindows` (label `2m` "2 minutes (demo)"), preselect `defaultDeliveryWindow` |
+| `/me` | Dashboard: my deals (buying / selling tabs), my listings (pause/resume), notifications, profile | `GET /api/me/deals?role=`, `GET /api/users/{me}`, `GET /api/me/notifications`, `PATCH /api/me` | |
 | `/u/:wallet` | Public profile: on-chain reputation + active listings | `GET /api/users/:wallet` | |
 
-Every page except `/d/:id`, `/sell` and `/me` works signed out. For those three, the guard asks the user to connect and sign in.
+`/d/:id`, `/sell` and `/me` need a session; their guard asks the user to connect and sign in. Everything else works signed out.
 
-There's no "my listings" endpoint. Use `activeListings` from `GET /api/users/{myWallet}`. It only shows active listings, so keep the IDs of listings paused in this session to show them as paused.
+There's no "my listings" endpoint: use `activeListings` from `GET /api/users/{myWallet}`. It only lists active ones, so remember the IDs paused in this session to show them as paused.
 
 ## The deal page (the heart of the demo)
 
 Make "the money is locked, and nobody outside decides" visible:
 
-1. **Vault breakdown:** price, buyer deposit and seller deposit (from `FullDealDto`), and the total locked.
-2. **What happens under each outcome.** Remaining price = `price - price/milestones × milestonesReleased`; fee = `feeBps` (from `/api/config`) of whatever the seller is paid.
+1. **Vault breakdown:** price, buyer deposit and seller deposit, and the total locked.
+2. **What happens under each outcome.** Remaining = `price - price/milestones × milestonesReleased`; fee = `feeBps` of whatever the seller is paid.
 
 | Outcome | Buyer gets | Seller gets |
 |---|---|---|
@@ -52,71 +49,55 @@ Make "the money is locked, and nobody outside decides" visible:
 | Seller misses the deadline (`RefundUndelivered`) | remaining price + own deposit **+ seller's deposit** | nothing |
 | Split accepted | `buyerAmount` + deposit | remaining − `buyerAmount` − fee, + deposit |
 
-3. **Timeline:** created → accepted (`acceptedAt`) → delivered (`deliveredAt`) → final status, with parts released `milestonesReleased / milestones` shown as "2 of 3 matches" (use `unitLabel`).
-4. **Countdown** to `deliveryDeadline` while `Active`. When it hits zero, the seller's `MarkDelivered` disappears; the buyer's `RefundUndelivered` appears **15 s later** (a safety margin for Solana's clock). Show "Refund available in a few seconds…" and refetch the deal at deadline + 16 s.
-5. **Buttons come only from `allowedActions`.** Label map: Accept → "Accept & lock deposit", Cancel → "Cancel & refund", MarkDelivered → "Mark delivered", Confirm → "Confirm N {unitLabel}(s)" (stepper, 1..remaining parts), RefundUndelivered → "Take refund + seller's deposit", RaiseDispute → "Disagree", ProposeSplit → "Offer a split" (amount input: how much goes back to the buyer, 0..remaining), AcceptSplit → "Accept their offer: you get X", SellerRefund → "Refund buyer".
-6. **Disputed:** show the current `splitOffer` and who made it (`by` = buyer or seller wallet), and explain that the funds stay locked until both agree.
-7. After every action, show the transaction signature as a link: `https://explorer.solana.com/tx/{sig}?cluster=devnet`. Also link the deal account: `https://explorer.solana.com/address/{dealPda}?cluster=devnet`. Judges like seeing it on-chain.
-8. While on the page, poll `GET /api/deals/:id` every 10–15 s for open deals, so a change the other side makes shows up (the backend picks it up within a minute, or immediately if they used the app).
+3. **Timeline:** created → accepted → delivered → final status, with parts shown as "2 of 3 matches" (`unitLabel`).
+4. **Countdown** to `deliveryDeadline` while `Active`. At zero, show "Refund available in a few seconds…" and refetch at deadline + 16 s; that's when the buyer's `RefundUndelivered` appears.
+5. **Buttons come only from `allowedActions`.** Labels: Accept → "Accept & lock deposit", Cancel → "Cancel & refund", MarkDelivered → "Mark delivered", Confirm → "Confirm N {unitLabel}(s)" (stepper), RefundUndelivered → "Take refund + seller's deposit", RaiseDispute → "Disagree", ProposeSplit → "Offer a split" (amount going back to the buyer), AcceptSplit → "Accept their offer: you get X", SellerRefund → "Refund buyer".
+6. **Disputed:** show the current `splitOffer`, who made it, and that the funds stay locked until both agree.
+7. After every action, link the signature (`https://explorer.solana.com/tx/{sig}?cluster=devnet`), and always link the deal account (`…/address/{dealPda}?cluster=devnet`). Judges like seeing it on-chain.
+8. Poll `GET /api/deals/:id` every 10–15 s while the deal is open, so the other side's actions show up.
 
-Status badge colors: Draft/AwaitingSeller neutral, Active/Delivered blue, Disputed amber, Completed green, Split/SellerRefunded/Cancelled grey, Undelivered red, Expired grey.
+Status badges: Draft/AwaitingSeller neutral, Active/Delivered blue, Disputed amber, Completed green, Undelivered red, the rest grey.
 
 ## Wallet and sign-in
 
-- **Phantom.** Phantom Connect also lets email users sign in and creates a wallet for them: https://docs.phantom.com/phantom-connect. If Phantom Connect setup costs time, start with the injected `window.phantom.solana` provider (`connect()`, `signMessage()`, `signAndSendTransaction()`), which covers the extension, then swap it in behind the same `WalletService` interface.
-- **Phantom must be set to devnet** (Settings → Developer settings → Testnet mode → Solana Devnet). Otherwise it simulates against mainnet and shows errors.
-- `WalletService`: `connect()`, `disconnect()`, `publicKey` (signal), `signMessage(bytes)`, `signAndSendTransaction(tx)`. Watch the wallet's account-change event: if the account changes, log out (the session belongs to the old wallet).
-- `AuthService` (flow in [auth.md](auth.md)):
-  1. `GET /api/auth/nonce?wallet=` → `message`
-  2. `wallet.signMessage(new TextEncoder().encode(message))` → `bs58.encode(signature)`
-  3. `POST /api/auth/verify { wallet, message, signature }` (message unchanged) → the cookie is set; store the returned user in a signal.
-  - On app start, call `GET /api/me`: 200 means already signed in (the cookie lasts 7 days); 401 means signed out.
-- **Interceptor:** `withCredentials: true` on every request. On 401 from anything other than `/api/me` and `/api/auth/*`, clear the user and open the connect/sign-in dialog. On 429/503, show the problem title in a toast.
-- The sign-in message starts with `localhost wants you to sign in…` (backend `Auth:Domain`). Phantom recognizes this "Sign in with Solana" format and may warn if the domain doesn't match the page. If it does, tell Sandro to set `Auth:Domain` to the page's host (e.g. `localhost:4200`).
+- **Phantom.** Phantom Connect adds email sign-in with an embedded wallet: https://docs.phantom.com/phantom-connect. If its setup costs time, start with the injected `window.phantom.solana` provider (extension), behind the same `WalletService` interface.
+- **Phantom must be set to devnet** (Settings → Developer settings → Testnet mode), or it simulates against mainnet and shows errors.
+- `WalletService`: `connect()`, `disconnect()`, `publicKey` (signal), `signMessage(bytes)`, `signAndSendTransaction(tx)`. If the wallet's account changes, log out: the session belongs to the old wallet.
+- `AuthService`: nonce → `signMessage(new TextEncoder().encode(message))` → `bs58.encode(signature)` → verify ([api.md](api.md#auth)). On app start, `GET /api/me` tells whether the cookie is still valid.
+- **Interceptor:** `withCredentials: true`. On 401 (except from `/api/me` and `/api/auth/*`), clear the user and open sign-in. On 429/503, toast the problem title.
+- If Phantom warns that the sign-in message's domain (`localhost`) doesn't match the page, the backend's `Auth:Domain` must be set to the page host (e.g. `localhost:4200`).
 
 ## Transactions
 
-A `DealActionService` handles every on-chain action:
+A `DealActionService` runs the flow in [api.md](api.md#the-transaction-flow-every-on-chain-action) for every on-chain action. The UI-specific parts:
 
-1. Ask the backend for the transaction: `POST /api/deals { listingId, buyerNote }` (Buy) or `POST /api/deals/{id}/tx { action, parts?, buyerAmount? }`.
-2. Turn it into bytes and let the wallet sign and send it:
-   ```ts
-   const tx = Transaction.from(Buffer.from(res.data.transaction, 'base64'));   // legacy tx from @solana/web3.js
-   // or: Uint8Array.from(atob(b64), c => c.charCodeAt(0)) if the SDK takes raw bytes
-   const { signature } = await wallet.signAndSendTransaction(tx);
-   ```
-   Check which form the Phantom SDK in use expects; this is the only place that changes. (`Buffer` needs the `buffer` polyfill in Angular, or use the `Uint8Array` route with `VersionedTransaction.deserialize`.)
-3. `POST /api/deals/{id}/sync { signature }` → updated `FullDealDto`. Replace the page state with it.
-   - Show a "Confirming on Solana…" state; sync can take up to 30 s.
-   - `"Transaction Not Confirmed"` → retry sync once, then refetch the deal and show the error.
-   - If the user rejects in the wallet, do nothing (for Buy, the draft expires on its own).
-4. Request the transaction **right before** opening the wallet. The blockhash expires in about a minute.
+```ts
+const tx = Transaction.from(Buffer.from(res.data.transaction, 'base64'));   // legacy tx, @solana/web3.js
+const { signature } = await wallet.signAndSendTransaction(tx);
+```
+Check which form the Phantom SDK expects (transaction object or raw bytes); this is the only place that changes. `Buffer` needs the `buffer` polyfill, or decode with `Uint8Array.from(atob(b64), c => c.charCodeAt(0))`.
 
-Buy flow: on `/l/:id`, Buy → (sign in if needed) → `POST /api/deals` → wallet → sync → navigate to `/d/{deal.id}`.
+- Show "Confirming on Solana…" while sync runs (up to 30 s), then replace the page state with the returned deal.
+- If the user rejects in the wallet, do nothing.
+- Buy: `/l/:id` → Buy → (sign in if needed) → `POST /api/deals` → wallet → sync → navigate to `/d/{deal.id}`.
 
-## Money formatting
+## Money and notifications
 
-- All amounts are strings of base units. Convert with `BigInt` and `mintDecimals` (6): `15000000` → `15.00`. Never use `Number` math on amounts.
-- Inputs (price, split amount): parse the decimal string the user typed into base units (`"15.5"` → `"15500000"`), and reject more than 6 decimals.
-- Show the token as **"USDC (test)"** or just `$`. On devnet it's our own test stablecoin.
-- Before submitting, check `price % milestones === 0n` in base units and say "price must split evenly into N parts".
-
-## Notifications
-
-Poll `GET /api/me/notifications` every 30–60 s while signed in; badge = unread count on the first page. Map `kind` to text ([api.md](api.md#notifications)) and link to `/d/{dealId}`. Mark read on click.
+- Format amounts with `BigInt` and `mintDecimals`. Parse user input (`"15.5"` → `"15500000"`), reject more than 6 decimals, and check `price % milestones === 0n` before submitting.
+- Show the token as "USDC (test)" or `$`; on devnet it's our own test stablecoin.
+- Notifications: badge = unread count on the first page; text per `kind`; click → mark read and open `/d/{dealId}`.
 
 ## Dev setup
 
-1. Backend: from `backend/`, `dotnet run --project colosseumbackend` (http profile, `http://localhost:5107`).
-2. `frontend/proxy.conf.json`:
+1. Backend: from `backend/`, `dotnet run --project colosseumbackend` (`http://localhost:5107`).
+2. `frontend/proxy.conf.json`, used by `ng serve --proxy-config proxy.conf.json` (the API has no CORS; the proxy keeps the cookie same-origin):
    ```json
    { "/api": { "target": "http://localhost:5107", "secure": false, "changeOrigin": false } }
    ```
-   and `ng serve --proxy-config proxy.conf.json` (or set `proxyConfig` in `angular.json`). The API has no CORS, and the proxy keeps the cookie same-origin.
-3. The session cookie is `Secure` + `SameSite=Lax`. Chrome, Edge and Firefox accept it on `http://localhost`; Safari doesn't, so develop in Chrome.
-4. **Two wallets to test a deal:** a buyer and a seller must be different wallets. Create two accounts in Phantom (or two browser profiles). Each needs test tokens and devnet SOL: send the addresses to Sandro, who runs `Admin fund <wallet>`.
-5. **Demo deadline:** on devnet the deadline options include **`2m`**. Create the demo listing with it, buy, accept, wait, and the buyer can take the refund plus the seller's deposit live. This flow is covered by an end-to-end test. Label it "2 minutes (demo)" in the dropdown.
+3. Develop in Chrome, Edge or Firefox: they accept the `Secure` session cookie on `http://localhost`; Safari doesn't.
+4. **Two wallets per deal** (buyer ≠ seller): two Phantom accounts or two browser profiles. Each needs test tokens and devnet SOL: send the addresses to Sandro, who runs `Admin fund <wallet>` (100 tokens + 0.05 SOL).
+5. **Demo:** a listing with the `2m` deadline lets you show buy → accept → missed deadline → refund plus the seller's deposit live (covered by an end-to-end test).
 
 ## Out of scope for the alpha
 
-Chat (the buyer note plus Discord handles cover contact), images on listings, search ranking, and dispute resolution beyond splits.
+Chat (the buyer note plus Discord handles cover contact), listing images, search ranking, and dispute resolution beyond splits.

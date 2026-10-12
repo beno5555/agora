@@ -1,6 +1,6 @@
 # Backend data model
 
-EF Core with **SQLite** for the alpha (zero setup, one file). Switching to Postgres later only changes the provider. Money columns store token base units as `long` (u64 values up to 2^63 are enough for stablecoin amounts).
+EF Core with **SQLite** for the alpha (zero setup, one file). Switching to Postgres later only changes the provider. Money columns store token base units as `long` (u64 values up to 2^63 are enough for stablecoin amounts). Times are UTC; SQLite drops the kind, so `AgoraDbContext` marks every `DateTime` it reads as UTC.
 
 Fund movements are never stored as the truth. The `Deal*` mirror columns are a cache of the on-chain account.
 
@@ -12,7 +12,7 @@ Fund movements are never stored as the truth. The `Deal*` mirror columns are a c
 | `Wallet` | string (PK) | base58 address |
 | `DisplayName` | string? | |
 | `Discord` | string? | |
-| `CreatedAt` | DateTimeOffset | |
+| `CreatedAt` | DateTime | |
 
 **AuthNonce**: `Wallet` (PK), `Message`, `ExpiresAt`. Deleted as soon as it's used.
 
@@ -31,7 +31,7 @@ Fund movements are never stored as the truth. The `Deal*` mirror columns are a c
 | `UnitLabel` | string | "match", "hour", … |
 | `DeliveryWindowSeconds` | long | from the presets (15m to 7d, plus 2m on devnet; listed by `GET /api/config`). Deposits aren't stored on listings; the program works them out per deal |
 | `IsActive` | bool | paused = false |
-| `CreatedAt` | DateTimeOffset | |
+| `CreatedAt` | DateTime | |
 
 **Deal**
 | Column | Type | Notes |
@@ -44,12 +44,12 @@ Fund movements are never stored as the truth. The `Deal*` mirror columns are a c
 | `BuyerNote` | string? | in-game name or instructions; visible to both parties only |
 | `Status` | enum | `Draft` (off-chain only; becomes `Expired` if never funded), the on-chain open states `AwaitingSeller`, `Active`, `Delivered`, `Disputed`, then the final outcomes `Completed`, `Split`, `Undelivered`, `SellerRefunded`, `Cancelled` |
 | `Price`, `Milestones`, `MilestonesReleased`, `BuyerDeposit`, `SellerDeposit` | | copied from the chain |
-| `AcceptedAt`, `DeliveredAt` | DateTimeOffset? | copied from the chain |
-| `DeliveryDeadline` | DateTimeOffset? | computed |
+| `AcceptedAt`, `DeliveredAt` | DateTime? | copied from the chain |
+| `DeliveryDeadline` | DateTime? | computed |
 | `SplitOfferBy`, `SplitOfferBuyerAmount` | string?, long? | copied from the chain |
 | `LastSignature` | string? | last transaction seen |
 | `DeadlineReminderSent`, `RefundNoticeSent` | bool | so each deadline notification goes out once |
-| `CreatedAt`, `SyncedAt` | DateTimeOffset | |
+| `CreatedAt`, `SyncedAt` | DateTime, DateTime? | |
 
 When a deal closes on-chain, its account disappears. The sync then sets the final status from the `DealClosed` event in the closing transaction's logs and keeps the row as history.
 
