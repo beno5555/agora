@@ -85,6 +85,9 @@ label > input, label > select, label > textarea { margin-top: 0.25rem; font-weig
   background: var(--surface); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 0.5rem;
 }
 .row-link:hover { border-color: var(--brand); }
+.with-action { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+.with-action > app-listing-card { flex: 1; min-width: 0; }
+.with-action .row-link { margin-bottom: 0; }
 .price { font: 700 1.1rem var(--display); white-space: nowrap; }
 .games { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.5rem; margin-bottom: 1.5rem; }
 .games a {

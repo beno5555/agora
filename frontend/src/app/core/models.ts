@@ -63,6 +63,15 @@ export interface StandardListingDto extends MinimalListingDto {
   depositPreview: { buyerDeposit: string; sellerDeposit: string } | null;
 }
 
+/** The seller's own view of a listing (GET /api/me/listings). */
+export interface FullListingDto extends MinimalListingDto {
+  gameId: number;
+  description: string;
+  deliveryWindow: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
 export type DealStatus =
   | 'Draft' | 'AwaitingSeller' | 'Active' | 'Delivered' | 'Disputed'
   | 'Completed' | 'Split' | 'Undelivered' | 'SellerRefunded' | 'Cancelled' | 'Expired';
