@@ -7,7 +7,7 @@ import { AuthService } from '../../core/auth.service';
 import { ConfigService } from '../../core/config.service';
 import { DealActionService } from '../../core/deal-action.service';
 import { DealAction, DealActionDto, DealStatus, FullDealDto } from '../../core/models';
-import { AmountPipe, parseAmount } from '../../shared/amount.pipe';
+import { AmountPipe, formatAmount, parseAmount } from '../../shared/amount.pipe';
 import { ClockService } from '../../shared/clock.service';
 import { Countdown } from '../../shared/countdown';
 import { ExplorerLink } from '../../shared/explorer-link';
@@ -16,6 +16,14 @@ import { StatusBadge } from '../../shared/status-badge';
 import { WalletAddress } from '../../shared/wallet-address';
 
 const FINAL: DealStatus[] = ['Completed', 'Split', 'Undelivered', 'SellerRefunded', 'Cancelled', 'Expired'];
+const NOTHING = '—';
+
+/** One row of the "Where the money goes" table. */
+interface Outcome {
+  label: string;
+  buyer: string;
+  seller: string;
+}
 
 @Component({
   selector: 'app-deal',
@@ -60,6 +68,25 @@ const FINAL: DealStatus[] = ['Completed', 'Split', 'Undelivered', 'SellerRefunde
           {{ isLocked() ? 'Held by the Solana program. Nobody outside this deal can move it.' : 'This deal is closed. Nothing is locked.' }}
         </p>
       </section>
+
+      @if (outcomes().length > 0) {
+        <section class="panel">
+          <h2>Where the money goes</h2>
+          <table class="outcomes">
+            <thead>
+              <tr><th>If…</th><th>Buyer gets</th><th>Seller gets</th></tr>
+            </thead>
+            <tbody>
+              @for (o of outcomes(); track o.label) {
+                <tr><td>{{ o.label }}</td><td>{{ o.buyer }}</td><td>{{ o.seller }}</td></tr>
+              }
+            </tbody>
+          </table>
+          <p class="muted small" style="margin: 0.75rem 0 0">
+            What the seller is paid has the {{ feePercent() }}% fee taken out. Refunds to the buyer have no fee.
+          </p>
+        </section>
+      }
 
       <section class="panel">
         <h2>Progress</h2>
@@ -253,6 +280,56 @@ export class Deal {
     if (d.role === 'buyer') return toBuyer + this.buyerDeposit();
     const toSeller = this.remaining() - toBuyer;
     return toSeller - (toSeller * this.config.feeBps()) / 10_000n + this.sellerDeposit();
+  });
+
+  protected readonly feePercent = computed(() => Number(this.config.feeBps()) / 100);
+
+  /** How each way of ending the deal from its current state pays out (frontend.md, deal page §2). */
+  protected readonly outcomes = computed<Outcome[]>(() => {
+    const d = this.deal();
+    const money = (amount: bigint): string => `$${formatAmount(amount, this.config.decimals())}`;
+    const minusFee = (amount: bigint): bigint => amount - (amount * this.config.feeBps()) / 10_000n;
+    const remaining = this.remaining();
+    const buyerDeposit = this.buyerDeposit();
+    const sellerDeposit = this.sellerDeposit();
+    const rows: Outcome[] = [];
+
+    if (d?.status === 'AwaitingSeller') {
+      rows.push(
+        { label: 'The buyer cancels', buyer: money(remaining + buyerDeposit), seller: NOTHING },
+        { label: 'The seller declines', buyer: money(remaining + buyerDeposit), seller: NOTHING },
+      );
+    } else if (d && this.isLocked()) {
+      const partsLeft = d.milestones - d.milestonesReleased;
+      if (partsLeft > 1) {
+        rows.push({ label: `The buyer confirms 1 ${d.unitLabel}`, buyer: NOTHING, seller: money(minusFee(this.perPart())) });
+      }
+      rows.push({
+        label: partsLeft > 1 ? `The buyer confirms all ${partsLeft} left` : 'The buyer confirms',
+        buyer: `${money(buyerDeposit)} (deposit back)`,
+        seller: money(minusFee(remaining) + sellerDeposit),
+      });
+      if (d.status === 'Active') {
+        rows.push({
+          label: 'The seller misses the deadline',
+          buyer: money(remaining + buyerDeposit + sellerDeposit),
+          seller: NOTHING,
+        });
+      }
+      if (d.splitOffer) {
+        const toBuyer = BigInt(d.splitOffer.buyerAmount);
+        rows.push({
+          label: 'The current split offer is accepted',
+          buyer: money(toBuyer + buyerDeposit),
+          seller: money(minusFee(remaining - toBuyer) + sellerDeposit),
+        });
+      } else if (d.status === 'Disputed') {
+        rows.push({ label: 'A split is agreed', buyer: 'their share + deposit', seller: 'the rest + deposit' });
+      }
+      rows.push({ label: 'The seller refunds', buyer: money(remaining + buyerDeposit), seller: money(sellerDeposit) });
+    }
+
+    return rows;
   });
 
   protected readonly finalLabel = computed(() => {
