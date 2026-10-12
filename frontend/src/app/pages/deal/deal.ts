@@ -142,10 +142,12 @@ interface Outcome {
               <span class="when">{{ d.acceptedAt | date: 'medium' }}</span>
             }
           </li>
-          <li [class.done]="d.deliveredAt">
+          <li [class.done]="d.deliveredAt || deliveredByBuyer()">
             Delivered
             @if (d.deliveredAt) {
               <span class="when">{{ d.deliveredAt | date: 'medium' }}</span>
+            } @else if (deliveredByBuyer()) {
+              <span class="when">confirmed by the buyer</span>
             }
           </li>
           @if (isFinal()) {
@@ -382,6 +384,13 @@ export class Deal {
   protected readonly maxParts = computed(() => {
     const d = this.deal();
     return d ? Math.max(1, d.milestones - d.milestonesReleased) : 1;
+  });
+
+  // The buyer can confirm straight from Active, so the seller may never mark delivered.
+  // Released money means the buyer received something: show that step as done anyway.
+  protected readonly deliveredByBuyer = computed(() => {
+    const d = this.deal();
+    return !!d && !d.deliveredAt && d.milestonesReleased > 0;
   });
 
   protected readonly pastDeadline = computed(() => {
