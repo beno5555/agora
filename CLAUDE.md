@@ -41,6 +41,7 @@ agora/
 ├── backend/                  .NET solution (net10.0): API, Admin tool, end-to-end tests
 ├── frontend/                 Angular 21 app: core/ services, shared/ helpers, pages/
 ├── program/                  Solana program (Anchor workspace)
+├── deploy/                   hosting: deploy.ps1 (build + upload to the DigitalOcean droplet), server setup, Caddy, systemd; README.md is the guide
 ├── docs/PLAN.md              detailed product plan
 ├── docs/architecture/        technical design: program, auth, API, data model, frontend
 ├── docs/currentstatus/       STATUS.md (current state, next steps), ISSUES.md (known issues left for later), BACKLOG.md (planned work, not urgent)
@@ -75,6 +76,8 @@ dotnet test                                                  # end-to-end on dev
 The end-to-end tests run against devnet, not a local validator: `solana-test-validator` (Agave 4.3) can't start on Windows. They fund throwaway wallets from the deploy wallet (~0.02 SOL each).
 
 Frontend (run from `frontend/`, with the backend running): `npm ci`, then `npm start` (`ng serve` on http://localhost:4200, proxying `/api` to `localhost:5107` via `proxy.conf.json`); `npx ng build` writes the production build to `dist/frontend/browser/`.
+
+Hosting (run from the repo root, PowerShell 7): `./deploy/deploy.ps1 -Server <droplet IP>` builds both, uploads and restarts; add `-Setup` once on a fresh droplet. See [deploy/README.md](deploy/README.md).
 
 Solana program (run from `program/`, native Windows, no WSL): `cargo build-sbf --manifest-path programs/agora/Cargo.toml`, then `cargo test --manifest-path programs/agora/Cargo.toml` (needs the OpenSSL env vars from [program/README.md](program/README.md)).
 

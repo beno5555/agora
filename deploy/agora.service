@@ -1,0 +1,24 @@
+# systemd service for Agora: the API and the frontend in one process, on localhost:8080 behind Caddy.
+# Installed by setup-server.sh. Logs go to the journal: journalctl -u agora -f
+
+[Unit]
+Description=Agora (API and frontend)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=agora
+WorkingDirectory=/opt/agora/app
+ExecStart=/opt/agora/app/colosseumbackend
+# Host-specific values and secrets (Auth__Domain, AllowedHosts, Jwt__SigningKey, Solana__RpcUrl), root-only.
+EnvironmentFile=/etc/agora/agora.env
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_URLS=http://localhost:8080
+Environment="ConnectionStrings__Agora=Data Source=/var/lib/agora/agora.db"
+Environment=Hosting__ForwardedHeaders=true
+Environment=Hosting__HttpsRedirection=false
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
