@@ -14,7 +14,7 @@ A snapshot of where things stand, kept short; history is in `git log`. Plan: [`.
 | Frontend | **Not started; the critical path.** Everything it needs is in [`api.md`](../architecture/api.md) and [`frontend.md`](../architecture/frontend.md). |
 | Demo, pitch, submission | Not started. |
 
-Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro's PC only): **~0.5 SOL, needs a top-up** before funding demo wallets. A full test run uses ~0.3 SOL (the faucet at https://faucet.solana.com tops it up), and each funded demo wallet 0.05.
+Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro's PC only): ~5.5 SOL (topped up Oct 12). A full test run uses ~0.3 SOL (the faucet at https://faucet.solana.com tops it up), and each funded demo wallet 0.05.
 
 ## Next steps
 1. **Saba:** the Angular app, starting with the listing page, the deal page and wallet sign-in (the demo path).
@@ -47,7 +47,7 @@ Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro
 
 **Frontend side (Saba, for later):** register the public origin in the Phantom Connect developer portal alongside `localhost:4200`, and build the app with `/api` as a relative path so it works on any host.
 
-**How to check it works** (from a phone on mobile data, not the dev PC): `GET https://<host>/api/config` returns 200; sign in with Phantom with no domain warning; the session cookie sticks across a reload; two devices signing in at once don't hit `429` (that proves the per-IP limit sees real client IPs); the app opens a deal page end to end. Then run `dotnet test` (about 0.3 SOL: top up the deploy wallet first) to confirm nothing regressed; tests run without proxy settings, so they exercise the unchanged local path.
+**How to check it works** (from a phone on mobile data, not the dev PC): `GET https://<host>/api/config` returns 200; sign in with Phantom with no domain warning; the session cookie sticks across a reload; two devices signing in at once don't hit `429` (that proves the per-IP limit sees real client IPs); the app opens a deal page end to end. Then run `dotnet test` (about 0.3 SOL) to confirm nothing regressed; tests run without proxy settings, so they exercise the unchanged local path.
 
 ## Things to know
 - **Devnet RPC:** `Solana__RpcUrl` is set to Sandro's Helius devnet URL on his PC; the API, the Admin tool and the tests all use it (else the public devnet RPC, which throttles). It contains an API key: never commit it.
