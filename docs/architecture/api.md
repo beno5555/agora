@@ -107,6 +107,12 @@ Seeded: 1 `fortnite`, 2 `valorant`, 3 `league-of-legends`, 4 `cs2`, 5 `apex-lege
 ```ts
 type ListingType = 'Service' | 'Item';
 
+// What one part of the price pays for ("3 matches"). Optional: null when none fits,
+// and the description says what a part is; show it as "parts".
+type ListingUnit =
+  | 'Match' | 'Game' | 'Round' | 'Win' | 'Run' | 'Level' | 'Rank'
+  | 'Hour' | 'Day' | 'Session' | 'Item';
+
 interface ListingTermsDto {
   gameId: number;
   type: ListingType;
@@ -114,13 +120,13 @@ interface ListingTermsDto {
   description: string;      // max 2000
   price: string;            // total, base units, > 0
   milestones: number;       // 1..100 parts the price is released in (e.g. 3 matches)
-  unitLabel: string;        // required, max 20: "match", "hour", "item"…
+  unit: ListingUnit | null; // optional; anything not in ListingUnit → 400
   deliveryWindow: string;   // a key from /api/config deliveryWindows, default '24h'
 }
 
 interface MinimalListingDto {
   id: string; title: string; gameSlug: string; gameName: string; type: ListingType;
-  price: string; milestones: number; unitLabel: string; seller: MinimalUserDto;
+  price: string; milestones: number; unit: ListingUnit | null; seller: MinimalUserDto;
 }
 
 interface StandardListingDto extends MinimalListingDto {
@@ -139,6 +145,7 @@ interface FullListingDto extends MinimalListingDto {   // the seller's own view
 
 - **Nobody enters deposits.** The program sets both when the deal is created, from each side's on-chain record and the price (see [program.md](program.md#deposits)). A new wallet pays 20% of the price; the range is 5%–50%.
 - `depositPreview` shows what each side would lock if the caller bought now. It is `null` when signed out, when the caller is the seller, or if the chain couldn't be read. When signed out, show "sign in to see your deposit".
+- An unknown `unit` (a name not in `ListingUnit`, or a number) fails model validation: `400` with problem details. Only add members to `ListingUnit`, never rename one: listings store the name.
 - Validation errors come back as envelope messages: `"Game Not Found"`, `"Delivery Window Is Not One Of The Available Options"`, `"Price Must Divide Evenly Into Milestones"`. Check `price % milestones == 0` in the form, too.
 
 ## Deals
@@ -173,7 +180,7 @@ interface FullDealDto extends MinimalDealDto {
   onchainDealId: string;
   listingId: string;
   gameName: string;
-  unitLabel: string;
+  unit: ListingUnit | null;       // from the listing
   buyerWallet: string;
   sellerWallet: string;
   buyerNote: string | null;

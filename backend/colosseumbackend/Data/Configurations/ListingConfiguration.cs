@@ -12,8 +12,8 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
         builder.Property(listing => listing.SellerWallet).HasMaxLength(Constants.WalletMaxLength);
         builder.Property(listing => listing.Title).HasMaxLength(Constants.TitleMaxLength);
         builder.Property(listing => listing.Description).HasMaxLength(Constants.DescriptionMaxLength);
-        builder.Property(listing => listing.UnitLabel).HasMaxLength(Constants.UnitLabelMaxLength);
         builder.Property(listing => listing.Type).HasMaxLength(Constants.EnumColumnMaxLength).HasConversion<string>();
+        builder.Property(listing => listing.Unit).HasMaxLength(Constants.EnumColumnMaxLength).HasConversion<string>();
 
         builder.HasOne(listing => listing.Seller).WithMany().HasForeignKey(listing => listing.SellerWallet);
         builder.HasOne(listing => listing.Game).WithMany().HasForeignKey(listing => listing.GameId);

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using colosseumbackend.Common;
 using colosseumbackend.Dtos;
 using Solnet.Wallet;
@@ -195,6 +196,34 @@ public class DealFlowTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Theory]
+    [InlineData("dse")]
+    [InlineData(99)]
+    public async Task CreateListing_UnitNotInList_ReturnsBadRequest(object unit)
+    {
+        var (_, sellerClient) = await NewSignedInUserAsync();
+        var body = JsonSerializer.SerializeToNode(CarryListing(), TestJson.Options)!;
+        body["unit"] = JsonSerializer.SerializeToNode(unit);
+
+        var response = await sellerClient.PostAsJsonAsync("api/listings", body, TestJson.Options);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateListing_WithoutUnit_SavesListingWithNoUnit()
+    {
+        var (_, sellerClient) = await NewSignedInUserAsync();
+        var terms = CarryListing();
+        terms.Unit = null;
+
+        var response = await sellerClient.PostAsJsonAsync("api/listings", terms, TestJson.Options);
+        var listing  = (await response.Content.ReadFromJsonAsync<ApplicationResponse<StandardListingDto>>(TestJson.Options))!.Data!;
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Null(listing.Unit);
+    }
+
     [Fact]
     public async Task CreateListing_WithoutSession_ReturnsUnauthorized()
     {
@@ -258,7 +287,7 @@ public class DealFlowTests
             Title          = "Fortnite carry, 3 matches",
             Price          = price.ToString(),
             Milestones     = 3,
-            UnitLabel      = "match",
+            Unit           = ListingUnit.Match,
             DeliveryWindow = deliveryWindow,
         };
     }

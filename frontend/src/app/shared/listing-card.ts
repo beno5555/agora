@@ -2,7 +2,7 @@ import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MinimalListingDto } from '../core/models';
 import { AmountPipe } from './amount.pipe';
-import { plural } from './plural';
+import { unitCount } from './unit';
 
 @Component({
   selector: 'app-listing-card',
@@ -13,7 +13,7 @@ import { plural } from './plural';
         <strong>{{ listing().title }}</strong>
         <div class="muted small">
           {{ listing().gameName }} · {{ listing().type }} ·
-          {{ plural(listing().unitLabel, listing().milestones) }} ·
+          {{ unitCount(listing().unit, listing().milestones) }} ·
           {{
             listing().seller.displayName ||
               listing().seller.wallet.slice(0, 4) + '…' + listing().seller.wallet.slice(-4)
@@ -26,5 +26,5 @@ import { plural } from './plural';
 })
 export class ListingCard {
   readonly listing = input.required<MinimalListingDto>();
-  protected readonly plural = plural;
+  protected readonly unitCount = unitCount;
 }

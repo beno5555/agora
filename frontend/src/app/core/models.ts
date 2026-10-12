@@ -50,6 +50,20 @@ export interface GameDto {
 
 export type ListingType = 'Service' | 'Item';
 
+/** What one part of the price pays for; null when none fits (the description explains it). */
+export type ListingUnit =
+  | 'Match'
+  | 'Game'
+  | 'Round'
+  | 'Win'
+  | 'Run'
+  | 'Level'
+  | 'Rank'
+  | 'Hour'
+  | 'Day'
+  | 'Session'
+  | 'Item';
+
 export interface ListingTermsDto {
   gameId: number;
   type: ListingType;
@@ -57,7 +71,7 @@ export interface ListingTermsDto {
   description: string;
   price: string;
   milestones: number;
-  unitLabel: string;
+  unit: ListingUnit | null;
   deliveryWindow: string;
 }
 
@@ -69,7 +83,7 @@ export interface MinimalListingDto {
   type: ListingType;
   price: string;
   milestones: number;
-  unitLabel: string;
+  unit: ListingUnit | null;
   seller: MinimalUserDto;
 }
 
@@ -129,7 +143,7 @@ export interface FullDealDto extends MinimalDealDto {
   onchainDealId: string;
   listingId: string;
   gameName: string;
-  unitLabel: string;
+  unit: ListingUnit | null;
   buyerWallet: string;
   sellerWallet: string;
   buyerNote: string | null;

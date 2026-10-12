@@ -16,7 +16,7 @@ frontend/src/app/
               notification.service.ts, toast.service.ts, models.ts (types from api.md)
   shared/     amount.pipe.ts (base units ↔ "15.00"), countdown + clock.service (one shared tick),
               wallet-address (short + copy), explorer-link, listing-card, reputation, status-badge,
-              delivery-window ("24h" → "24 hours"), plural ("3 matches")
+              delivery-window ("24h" → "24 hours"), unit (ListingUnit → "3 matches", no unit → "3 parts")
   pages/      home, game, listing, deal, sell, me, profile
 ```
 
@@ -50,9 +50,9 @@ Make "the money is locked, and nobody outside decides" visible:
 | Seller misses the deadline (`RefundUndelivered`) | remaining price + own deposit **+ seller's deposit** | nothing |
 | Split accepted | `buyerAmount` + deposit | remaining − `buyerAmount` − fee, + deposit |
 
-3. **Timeline:** created → accepted → delivered → final status, with parts shown as "2 of 3 matches" (`unitLabel`).
+3. **Timeline:** created → accepted → delivered → final status, with parts shown as "2 of 3 matches" (`unit`; "parts" when it's null).
 4. **Countdown** to `deliveryDeadline` while `Active`. At zero, show "Refund available in a few seconds…" and refetch at deadline + 16 s; that's when the buyer's `RefundUndelivered` appears.
-5. **Buttons come only from `allowedActions`.** Labels: Accept → "Accept & lock deposit", Cancel → "Cancel & refund", MarkDelivered → "Mark delivered", Confirm → "Confirm N {unitLabel}(s)" (stepper), RefundUndelivered → "Take refund + seller's deposit", RaiseDispute → "Disagree", ProposeSplit → "Offer a split" (amount going back to the buyer), AcceptSplit → "Accept their offer: you get X", SellerRefund → "Refund buyer".
+5. **Buttons come only from `allowedActions`.** Labels: Accept → "Accept & lock deposit", Cancel → "Cancel & refund", MarkDelivered → "Mark delivered", Confirm → "Confirm N {unit}(s)" (stepper), RefundUndelivered → "Take refund + seller's deposit", RaiseDispute → "Disagree", ProposeSplit → "Offer a split" (amount going back to the buyer), AcceptSplit → "Accept their offer: you get X", SellerRefund → "Refund buyer".
 6. **Disputed:** show the current `splitOffer`, who made it, and that the funds stay locked until both agree.
 7. After every action, link the signature (`https://explorer.solana.com/tx/{sig}?cluster=devnet`), and always link the deal account (`…/address/{dealPda}?cluster=devnet`). Judges like seeing it on-chain.
 8. Poll `GET /api/deals/:id` every 10–15 s while the deal is open, so the other side's actions show up.

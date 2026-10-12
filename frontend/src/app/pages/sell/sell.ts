@@ -3,10 +3,17 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
-import { GameDto, ListingTermsDto, ListingType, StandardListingDto } from '../../core/models';
+import {
+  GameDto,
+  ListingTermsDto,
+  ListingType,
+  ListingUnit,
+  StandardListingDto,
+} from '../../core/models';
 import { ToastService } from '../../core/toast.service';
 import { formatAmount, parseAmount } from '../../shared/amount.pipe';
 import { windowLabel } from '../../shared/delivery-window';
+import { LISTING_UNITS } from '../../shared/unit';
 
 @Component({
   selector: 'app-sell',
@@ -55,10 +62,16 @@ import { windowLabel } from '../../shared/delivery-window';
         Released in
         <span class="inline-field">
           <input type="number" min="1" max="100" [(ngModel)]="milestones" style="width: 6rem" />
-          <input maxlength="20" placeholder="match, hour, item…" [(ngModel)]="unitLabel" />
+          <select [(ngModel)]="unit" style="width: auto">
+            <option [ngValue]="null">None of these</option>
+            @for (u of units; track u) {
+              <option [ngValue]="u">{{ u }}</option>
+            }
+          </select>
         </span>
         <span class="hint"
-          >The price is paid out one part at a time as the buyer confirms each.</span
+          >The price is paid out one part at a time as the buyer confirms each. If no unit fits,
+          choose "None of these" and say what one part is in the description.</span
         >
       </label>
 
@@ -98,7 +111,8 @@ export class Sell {
   protected readonly description = signal('');
   protected readonly price = signal('');
   protected readonly milestones = signal(1);
-  protected readonly unitLabel = signal('');
+  protected readonly unit = signal<ListingUnit | null>(null);
+  protected readonly units = LISTING_UNITS;
   protected readonly deliveryWindow = signal(this.config.config()?.defaultDeliveryWindow ?? '24h');
   protected readonly label = windowLabel;
 
@@ -106,8 +120,8 @@ export class Sell {
   protected readonly problem = computed(() => {
     const price = parseAmount(this.price(), this.config.decimals());
     const milestones = this.milestones();
-    if (!this.gameId() || !this.title().trim() || !this.unitLabel().trim() || !this.price().trim())
-      return 'Fill in game, title, price and unit.';
+    if (!this.gameId() || !this.title().trim() || !this.price().trim())
+      return 'Fill in game, title and price.';
     if (price === null)
       return `Price must be a number with up to ${this.config.decimals()} decimals.`;
     if (price === 0n) return 'Price must be more than zero.';
@@ -142,7 +156,7 @@ export class Sell {
       this.description.set(listing.description);
       this.price.set(formatAmount(listing.price, this.config.decimals()));
       this.milestones.set(listing.milestones);
-      this.unitLabel.set(listing.unitLabel);
+      this.unit.set(listing.unit);
       this.deliveryWindow.set(listing.deliveryWindow);
     } catch (error) {
       this.toast.fromError(error);
@@ -160,7 +174,7 @@ export class Sell {
       description: this.description().trim(),
       price: price.toString(),
       milestones: this.milestones(),
-      unitLabel: this.unitLabel().trim(),
+      unit: this.unit(),
       deliveryWindow: this.deliveryWindow(),
     };
 

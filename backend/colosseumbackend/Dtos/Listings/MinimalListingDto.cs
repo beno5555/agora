@@ -11,6 +11,6 @@ public class MinimalListingDto
     public ListingType    Type       { get; set; }
     public string         Price      { get; set; } = "0";
     public int            Milestones { get; set; }
-    public string         UnitLabel  { get; set; } = string.Empty;
+    public ListingUnit?   Unit       { get; set; }
     public MinimalUserDto Seller     { get; set; } = new();
 }

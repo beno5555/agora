@@ -28,7 +28,7 @@ Fund movements are never stored as the truth. The `Deal*` mirror columns are a c
 | `Title`, `Description` | string | |
 | `Price` | long | total, base units |
 | `Milestones` | int | 1 for items |
-| `UnitLabel` | string | "match", "hour", … |
+| `Unit` | `ListingUnit`?, stored as its name | "Match", "Hour", …; null when none fits |
 | `DeliveryWindowSeconds` | long | from the presets (15m to 7d, plus 2m on devnet; listed by `GET /api/config`). Deposits aren't stored on listings; the program works them out per deal |
 | `IsActive` | bool | paused = false |
 | `CreatedAt` | DateTime | |

@@ -11,7 +11,7 @@ import { AmountPipe, formatAmount, parseAmount } from '../../shared/amount.pipe'
 import { ClockService } from '../../shared/clock.service';
 import { Countdown } from '../../shared/countdown';
 import { ExplorerLink } from '../../shared/explorer-link';
-import { plural } from '../../shared/plural';
+import { unitCount, unitName } from '../../shared/unit';
 import { StatusBadge } from '../../shared/status-badge';
 import { WalletAddress } from '../../shared/wallet-address';
 
@@ -131,7 +131,7 @@ interface Outcome {
 
       <section class="panel">
         <h2>Progress</h2>
-        <p>{{ d.milestonesReleased }} of {{ plural(d.unitLabel, d.milestones) }} released</p>
+        <p>{{ d.milestonesReleased }} of {{ unitCount(d.unit, d.milestones) }} released</p>
         <ul class="timeline">
           <li class="done">
             Created <span class="when">{{ d.createdAt | date: 'medium' }}</span>
@@ -227,7 +227,7 @@ interface Outcome {
                   [disabled]="busy()"
                   (click)="run({ action: 'Confirm', parts: parts() })"
                 >
-                  Confirm {{ plural(d.unitLabel, parts()) }}
+                  Confirm {{ unitCount(d.unit, parts()) }}
                 </button>
               </span>
             }
@@ -344,7 +344,7 @@ export class Deal {
   protected readonly error = signal<string | null>(null);
   protected readonly parts = signal(1);
   protected readonly splitInput = signal('');
-  protected readonly plural = plural;
+  protected readonly unitCount = unitCount;
 
   protected readonly me = computed(() => this.auth.user()?.wallet);
   protected readonly busy = computed(() => this.actions.phase() !== 'idle');
@@ -432,7 +432,7 @@ export class Deal {
       const partsLeft = d.milestones - d.milestonesReleased;
       if (partsLeft > 1) {
         rows.push({
-          label: `The buyer confirms 1 ${d.unitLabel}`,
+          label: `The buyer confirms 1 ${unitName(d.unit)}`,
           buyer: NOTHING,
           seller: money(minusFee(this.perPart())),
         });

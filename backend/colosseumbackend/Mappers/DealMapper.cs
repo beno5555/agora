@@ -24,7 +24,7 @@ public static class DealMapper
             OnchainDealId         = AmountMapper.ToDto(unchecked((ulong)deal.OnchainDealId)),
             ListingId             = deal.ListingId,
             GameName              = deal.Listing?.Game?.Name ?? string.Empty,
-            UnitLabel             = deal.Listing?.UnitLabel ?? string.Empty,
+            Unit                  = deal.Listing?.Unit,
             BuyerWallet           = deal.BuyerWallet,
             SellerWallet          = deal.SellerWallet,
             BuyerNote             = deal.BuyerNote,

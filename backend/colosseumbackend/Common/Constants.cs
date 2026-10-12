@@ -11,7 +11,6 @@ public static class Constants
     #region Listings
     public const int TitleMaxLength       = 100;
     public const int DescriptionMaxLength = 2000;
-    public const int UnitLabelMaxLength   = 20;
     public const int MaxMilestones        = 100;
     public const int GameSlugMaxLength    = 40;
     public const int GameNameMaxLength    = 60;

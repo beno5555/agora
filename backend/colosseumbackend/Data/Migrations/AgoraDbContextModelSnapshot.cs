@@ -283,9 +283,8 @@ namespace colosseumbackend.Data.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("UnitLabel")
-                        .IsRequired()
-                        .HasMaxLength(20)
+                    b.Property<string>("Unit")
+                        .HasMaxLength(30)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

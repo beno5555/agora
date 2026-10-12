@@ -18,7 +18,7 @@ public static class ListingMapper
             Description           = createListingDto.Description.Trim(),
             Price                 = price,
             Milestones            = createListingDto.Milestones,
-            UnitLabel             = createListingDto.UnitLabel.Trim(),
+            Unit                  = createListingDto.Unit,
             DeliveryWindowSeconds = (long)deliveryWindow.TotalSeconds,
         };
     }
@@ -68,7 +68,7 @@ public static class ListingMapper
         dto.Type       = listing.Type;
         dto.Price      = AmountMapper.ToDto(listing.Price);
         dto.Milestones = listing.Milestones;
-        dto.UnitLabel  = listing.UnitLabel;
+        dto.Unit       = listing.Unit;
         dto.Seller     = listing.Seller is null ? new MinimalUserDto { Wallet = listing.SellerWallet } : UserMapper.ToMinimal(listing.Seller);
     }
 }

@@ -7,7 +7,7 @@ import { DealActionService } from '../../core/deal-action.service';
 import { StandardListingDto } from '../../core/models';
 import { AmountPipe } from '../../shared/amount.pipe';
 import { windowLabel } from '../../shared/delivery-window';
-import { plural } from '../../shared/plural';
+import { unitCount } from '../../shared/unit';
 import { Reputation } from '../../shared/reputation';
 import { WalletAddress } from '../../shared/wallet-address';
 
@@ -30,7 +30,7 @@ import { WalletAddress } from '../../shared/wallet-address';
           <dt>Price</dt>
           <dd>\${{ l.price | amount }}</dd>
           <dt>Released in</dt>
-          <dd>{{ plural(l.unitLabel, l.milestones) }}</dd>
+          <dd>{{ unitCount(l.unit, l.milestones) }}</dd>
           <dt>Delivery deadline</dt>
           <dd>{{ label(l.deliveryWindow) }}</dd>
         </dl>
@@ -101,7 +101,7 @@ export class Listing {
   protected readonly error = signal<string | null>(null);
   protected readonly note = signal('');
   protected readonly label = windowLabel;
-  protected readonly plural = plural;
+  protected readonly unitCount = unitCount;
   protected readonly isOwner = computed(
     () => this.listing()?.seller.wallet === this.auth.user()?.wallet,
   );

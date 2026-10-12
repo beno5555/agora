@@ -122,7 +122,7 @@ public class ListingService : BaseService
                 listing.Description           = editListingDto.Description.Trim();
                 listing.Price                 = validation.Data.Price;
                 listing.Milestones            = editListingDto.Milestones;
-                listing.UnitLabel             = editListingDto.UnitLabel.Trim();
+                listing.Unit                  = editListingDto.Unit;
                 listing.DeliveryWindowSeconds = (long)validation.Data.DeliveryWindow.TotalSeconds;
                 await _listingRepository.SaveChangesAsync();
 

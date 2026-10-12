@@ -8,7 +8,7 @@ public class FullDealDto : MinimalDealDto
     public string             OnchainDealId      { get; set; } = string.Empty;
     public Guid               ListingId          { get; set; }
     public string             GameName           { get; set; } = string.Empty;
-    public string             UnitLabel          { get; set; } = string.Empty;
+    public ListingUnit?       Unit               { get; set; }
     public string             BuyerWallet        { get; set; } = string.Empty;
     public string             SellerWallet       { get; set; } = string.Empty;
     public string?            BuyerNote          { get; set; }
