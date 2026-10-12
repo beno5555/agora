@@ -129,7 +129,7 @@ public class CreateListingDto
     [Required, MaxLength(Constants.UnitLabelMaxLength)]
     public string UnitLabel { get; set; } = string.Empty;
 
-    /// <summary>One of the keys of <see cref="Constants.DeliveryWindowPresets"/>.</summary>
+    /// <summary>One of the keys in <see cref="ConfigDto.DeliveryWindows"/>, e.g. "24h".</summary>
     public string DeliveryWindow { get; set; } = Constants.DefaultDeliveryWindow;
 }
 
@@ -273,5 +273,15 @@ public class ConfigDto
     public int    MintDecimals { get; set; }
     /// <summary>Null until the program's config has been initialized on this cluster.</summary>
     public int?   FeeBps       { get; set; }
+
+    public List<DeliveryWindowDto> DeliveryWindows       { get; set; } = [];
+    public string                  DefaultDeliveryWindow { get; set; } = string.Empty;
+}
+
+public class DeliveryWindowDto
+{
+    /// <summary>The value to send as a listing's deliveryWindow, e.g. "24h".</summary>
+    public string Key     { get; set; } = string.Empty;
+    public long   Seconds { get; set; }
 }
 #endregion

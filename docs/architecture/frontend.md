@@ -28,7 +28,7 @@ frontend/src/app/
 | `/g/:slug` | Game storefront, filter Service/Item | `GET /api/listings?game=:slug&type=` | open a listing |
 | `/l/:id` | Listing, **the deal link sellers share** | `GET /api/listings/:id` | terms, seller's on-chain record, deposit preview; **Buy** (with an optional note such as an in-game name) |
 | `/d/:id` | **Deal page** | `GET /api/deals/:id` | status timeline, countdown, vault breakdown, buttons from `allowedActions` |
-| `/sell`, `/sell/:id` | Create or edit a listing | `GET /api/games`, `POST`/`PATCH /api/listings` | |
+| `/sell`, `/sell/:id` | Create or edit a listing | `GET /api/games`, `GET /api/config` (deadline options), `POST`/`PATCH /api/listings` | deadline dropdown built from `deliveryWindows`, preselect `defaultDeliveryWindow` |
 | `/me` | Dashboard: my deals (tabs: buying / selling), my listings (pause/resume), notifications, profile (display name, Discord) | `GET /api/me/deals?role=`, `GET /api/users/{me}`, `GET /api/me/notifications`, `PATCH /api/me` | |
 | `/u/:wallet` | Public profile: on-chain reputation + active listings | `GET /api/users/:wallet` | |
 
@@ -53,7 +53,7 @@ Make "the money is locked, and nobody outside decides" visible:
 | Split accepted | `buyerAmount` + deposit | remaining − `buyerAmount` − fee, + deposit |
 
 3. **Timeline:** created → accepted (`acceptedAt`) → delivered (`deliveredAt`) → final status, with parts released `milestonesReleased / milestones` shown as "2 of 3 matches" (use `unitLabel`).
-4. **Countdown** to `deliveryDeadline` while `Active`. When it hits zero, refetch the deal: the buyer's `RefundUndelivered` button appears and the seller's `MarkDelivered` disappears.
+4. **Countdown** to `deliveryDeadline` while `Active`. When it hits zero, the seller's `MarkDelivered` disappears; the buyer's `RefundUndelivered` appears **15 s later** (a safety margin for Solana's clock). Show "Refund available in a few seconds…" and refetch the deal at deadline + 16 s.
 5. **Buttons come only from `allowedActions`.** Label map: Accept → "Accept & lock deposit", Cancel → "Cancel & refund", MarkDelivered → "Mark delivered", Confirm → "Confirm N {unitLabel}(s)" (stepper, 1..remaining parts), RefundUndelivered → "Take refund + seller's deposit", RaiseDispute → "Disagree", ProposeSplit → "Offer a split" (amount input: how much goes back to the buyer, 0..remaining), AcceptSplit → "Accept their offer: you get X", SellerRefund → "Refund buyer".
 6. **Disputed:** show the current `splitOffer` and who made it (`by` = buyer or seller wallet), and explain that the funds stay locked until both agree.
 7. After every action, show the transaction signature as a link: `https://explorer.solana.com/tx/{sig}?cluster=devnet`. Also link the deal account: `https://explorer.solana.com/address/{dealPda}?cluster=devnet`. Judges like seeing it on-chain.
@@ -115,7 +115,7 @@ Poll `GET /api/me/notifications` every 30–60 s while signed in; badge = unread
    and `ng serve --proxy-config proxy.conf.json` (or set `proxyConfig` in `angular.json`). The API has no CORS, and the proxy keeps the cookie same-origin.
 3. The session cookie is `Secure` + `SameSite=Lax`. Chrome, Edge and Firefox accept it on `http://localhost`; Safari doesn't, so develop in Chrome.
 4. **Two wallets to test a deal:** a buyer and a seller must be different wallets. Create two accounts in Phantom (or two browser profiles). Each needs test tokens and devnet SOL: send the addresses to Sandro, who runs `Admin fund <wallet>`.
-5. For a fast demo, set a short delivery window. The listing presets are 1h/6h/24h/3d; the program accepts down to 60 s, but the API only takes the presets.
+5. **Demo deadline:** on devnet the deadline options include **`2m`**. Create the demo listing with it, buy, accept, wait, and the buyer can take the refund plus the seller's deposit live. This flow is covered by an end-to-end test. Label it "2 minutes (demo)" in the dropdown.
 
 ## Out of scope for the alpha
 

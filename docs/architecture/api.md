@@ -44,9 +44,15 @@ Rate limits per minute: sign-in 20, reads 300, writes 60, overall 600.
 | GET | `/api/config` | `ConfigDto` |
 
 ```ts
-interface ConfigDto { cluster: string; rpcUrl: string; programId: string; mint: string; mintDecimals: number; feeBps: number | null }
+interface ConfigDto {
+  cluster: string; rpcUrl: string; programId: string; mint: string; mintDecimals: number; feeBps: number | null;
+  deliveryWindows: { key: string; seconds: number }[];   // the deadline options a seller can pick, shortest first
+  defaultDeliveryWindow: string;                         // "24h"
+}
 ```
 Current devnet values: cluster `devnet`, program `J4fL4Q8nnndro2xmVdCayRt5apXhexkkVQoqqwf4AKi4`, mint `7FutDfvw3Whjv6PcwCYdYb3FV25EHc3TRiUA4zw8pj21` (our own test stablecoin), `mintDecimals` 6, `feeBps` 200 (2%, taken from what the seller is paid). `feeBps` is null only if the program isn't initialized.
+
+`deliveryWindows` on devnet: `2m`, `15m`, `30m`, `1h`, `3h`, `6h`, `12h`, `24h`, `3d`, `7d`. **`2m` exists only on devnet**, for demos; it disappears on any other cluster. Build the deadline dropdown from this list; don't hard-code it.
 
 ## Auth
 
@@ -109,7 +115,7 @@ interface ListingTermsDto {
   price: string;            // total, base units, > 0
   milestones: number;       // 1..100 parts the price is released in (e.g. 3 matches)
   unitLabel: string;        // required, max 20: "match", "hour", "item"…
-  deliveryWindow: '1h' | '6h' | '24h' | '3d';   // default '24h'
+  deliveryWindow: string;   // a key from /api/config deliveryWindows, default '24h'
 }
 
 interface MinimalListingDto {
@@ -119,7 +125,7 @@ interface MinimalListingDto {
 
 interface StandardListingDto extends MinimalListingDto {
   description: string;
-  deliveryWindow: string;            // '1h' | '6h' | '24h' | '3d'
+  deliveryWindow: string;            // a deliveryWindows key, e.g. '24h'
   isActive: boolean;
   createdAt: string;
   sellerReputation: ReputationDto;   // from the chain
@@ -129,7 +135,7 @@ interface StandardListingDto extends MinimalListingDto {
 
 - **Nobody enters deposits.** The program sets both when the deal is created, from each side's on-chain record and the price (see [program.md](program.md#deposits)). A new wallet pays 20% of the price; the range is 5%–50%.
 - `depositPreview` shows what each side would lock if the caller bought now. It is `null` when signed out, when the caller is the seller, or if the chain couldn't be read. When signed out, show "sign in to see your deposit".
-- Validation errors come back as envelope messages: `"Game Not Found"`, `"Delivery Window Must Be One Of: 1h, 6h, 24h, 3d"`, `"Price Must Divide Evenly Into Milestones"`. Check `price % milestones == 0` in the form, too.
+- Validation errors come back as envelope messages: `"Game Not Found"`, `"Delivery Window Is Not One Of The Available Options"`, `"Price Must Divide Evenly Into Milestones"`. Check `price % milestones == 0` in the form, too.
 
 ## Deals
 
@@ -191,7 +197,7 @@ The backend works this out for the caller from status, role and the clock; **ren
 | Status | Buyer | Seller |
 |---|---|---|
 | AwaitingSeller | `Cancel` (full refund) | `Accept`, `SellerRefund` (decline) |
-| Active | `Confirm`, `RaiseDispute`, + `RefundUndelivered` once the deadline has passed | `MarkDelivered` (before the deadline only), `RaiseDispute`, `SellerRefund` |
+| Active | `Confirm`, `RaiseDispute`, + `RefundUndelivered` from 15 s after the deadline (Solana's clock can trail real time, so the backend waits a little before offering the refund, to make sure the program will accept it) | `MarkDelivered` (before the deadline only), `RaiseDispute`, `SellerRefund` |
 | Delivered | `Confirm`, `RaiseDispute` | `RaiseDispute`, `SellerRefund` |
 | Disputed | `ProposeSplit`, `AcceptSplit` (only if the *seller* made the current offer), `Confirm` | `ProposeSplit`, `AcceptSplit` (only if the *buyer* made the current offer), `SellerRefund` |
 | Draft and final states | n/a | n/a |

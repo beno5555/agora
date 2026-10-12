@@ -2,6 +2,7 @@ using System.Globalization;
 using colosseumbackend.Common;
 using colosseumbackend.Data.Entities;
 using colosseumbackend.Dtos;
+using colosseumbackend.Services;
 using colosseumbackend.Solana;
 
 namespace colosseumbackend.Mappers;
@@ -106,7 +107,7 @@ public static class ListingMapper
         var dto = new StandardListingDto
         {
             Description      = listing.Description,
-            DeliveryWindow   = DeliveryWindowKey(listing.DeliveryWindowSeconds),
+            DeliveryWindow   = DeliveryWindows.KeyFor(listing.DeliveryWindowSeconds),
             IsActive         = listing.IsActive,
             CreatedAt        = listing.CreatedAt,
             SellerReputation = UserMapper.ToReputation(sellerRecord),
@@ -127,12 +128,6 @@ public static class ListingMapper
         dto.Milestones = listing.Milestones;
         dto.UnitLabel  = listing.UnitLabel;
         dto.Seller     = listing.Seller is null ? new MinimalUserDto { Wallet = listing.SellerWallet } : UserMapper.ToMinimal(listing.Seller);
-    }
-
-    private static string DeliveryWindowKey(long seconds)
-    {
-        var match = Constants.DeliveryWindowPresets.FirstOrDefault(preset => (long)preset.Value.TotalSeconds == seconds);
-        return match.Key ?? $"{seconds}s";
     }
 }
 

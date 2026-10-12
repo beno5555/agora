@@ -30,7 +30,7 @@ public static class ResponseMessages
     public const string ListingUpdated         = $"Listing Updated {Successfully}";
     public const string ListingNotFound        = $"Listing {NotFound}";
     public const string GameNotFound           = $"Game {NotFound}";
-    public const string InvalidDeliveryWindow  = "Delivery Window Must Be One Of: 1h, 6h, 24h, 3d";
+    public const string InvalidDeliveryWindow  = "Delivery Window Is Not One Of The Available Options";
     public const string PriceNotDivisible      = "Price Must Divide Evenly Into Milestones";
     public const string CannotBuyOwnListing    = "You Cannot Buy Your Own Listing";
     #endregion

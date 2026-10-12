@@ -1,10 +1,12 @@
 using colosseumbackend.Common;
+using colosseumbackend.Configuration;
 using colosseumbackend.Data.Entities;
 using colosseumbackend.Dtos;
 using colosseumbackend.Logging;
 using colosseumbackend.Mappers;
 using colosseumbackend.Repositories;
 using colosseumbackend.Solana;
+using Microsoft.Extensions.Options;
 using Solnet.Wallet;
 
 namespace colosseumbackend.Services;
@@ -107,12 +109,20 @@ public class ListingService : BaseService
     private readonly ListingRepository _listingRepository;
     private readonly GameRepository    _gameRepository;
     private readonly SolanaGateway     _solana;
+    private readonly SolanaOptions     _solanaOptions;
 
-    public ListingService(ListingRepository listingRepository, GameRepository gameRepository, SolanaGateway solana, DatabaseLogger dbLogger) : base(dbLogger)
+    public ListingService(
+        ListingRepository       listingRepository,
+        GameRepository          gameRepository,
+        SolanaGateway           solana,
+        IOptions<SolanaOptions> solanaOptions,
+        DatabaseLogger          dbLogger
+        ) : base(dbLogger)
     {
         _listingRepository = listingRepository;
         _gameRepository    = gameRepository;
         _solana            = solana;
+        _solanaOptions     = solanaOptions.Value;
     }
 
     public async Task<ListResponse<MinimalListingDto>> SearchAsync(ListingSearchQuery query)
@@ -261,7 +271,7 @@ public class ListingService : BaseService
         var response = new ApplicationResponse<(long Price, TimeSpan DeliveryWindow)>();
 
         bool gameExists       = await _gameRepository.ExistsAsync(terms.GameId);
-        bool knownWindow      = Constants.DeliveryWindowPresets.TryGetValue(terms.DeliveryWindow, out var deliveryWindow);
+        bool knownWindow      = DeliveryWindows.TryGet(_solanaOptions.Cluster, terms.DeliveryWindow, out var deliveryWindow);
         bool parsedPrice      = long.TryParse(terms.Price, out long price) && price > 0;
         bool divisibleByParts = parsedPrice && price % terms.Milestones == 0;
 

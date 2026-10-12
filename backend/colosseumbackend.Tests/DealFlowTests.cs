@@ -84,6 +84,37 @@ public class DealFlowTests
         Assert.Equal(buyerBefore - 5 * Token, await _fixture.TokenBalanceAsync(buyer.PublicKey));
     }
 
+    // ---------- missed delivery deadline (the demo flow, with the devnet-only 2-minute window) ----------
+
+    [Fact]
+    public async Task MissedDeadline_BuyerTakesRefund_GetsPriceBackPlusSellerDeposit()
+    {
+        var (seller, sellerClient) = await NewSignedInUserAsync();
+        var (buyer,  buyerClient)  = await NewSignedInUserAsync();
+        var config = await buyerClient.GetFromJsonAsync<ApplicationResponse<ConfigDto>>("api/config", TestJson.Options);
+        var listing = await CreateCarryListingAsync(sellerClient, deliveryWindow: "2m");
+        ulong buyerBefore = await _fixture.TokenBalanceAsync(buyer.PublicKey);
+
+        var deal = await CreateAndFundDealAsync(buyerClient, buyer, listing.Id);
+        deal     = await ActAsync(sellerClient, seller, deal.Id, new DealActionDto { Action = DealAction.Accept });
+
+        Assert.Contains(config!.Data!.DeliveryWindows, window => window.Key == "2m");
+        Assert.Equal("2m", listing.DeliveryWindow);
+        Assert.DoesNotContain(DealAction.RefundUndelivered, deal.AllowedActions);
+
+        // The seller never delivers. Wait out the deadline plus the clock grace.
+        var wait = deal.DeliveryDeadline!.Value + Constants.ChainClockGrace + TimeSpan.FromSeconds(5) - DateTime.UtcNow;
+        await Task.Delay(wait > TimeSpan.Zero ? wait : TimeSpan.Zero);
+        var buyerView = await buyerClient.GetFromJsonAsync<ApplicationResponse<FullDealDto>>($"api/deals/{deal.Id}", TestJson.Options);
+        Assert.Contains(DealAction.RefundUndelivered, buyerView!.Data!.AllowedActions);
+
+        deal = await ActAsync(buyerClient, buyer, deal.Id, new DealActionDto { Action = DealAction.RefundUndelivered });
+
+        Assert.Equal(DealStatus.Undelivered, deal.Status);
+        // Price and own deposit back, plus the seller's 3-token deposit.
+        Assert.Equal(buyerBefore + 3 * Token, await _fixture.TokenBalanceAsync(buyer.PublicKey));
+    }
+
     // ---------- access and validation ----------
 
     [Fact]
@@ -131,6 +162,16 @@ public class DealFlowTests
         var (_, sellerClient) = await NewSignedInUserAsync();
 
         var response = await sellerClient.PostAsJsonAsync("api/listings", CarryListing(price: 10 * Token + 1), TestJson.Options);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateListing_UnknownDeliveryWindow_ReturnsBadRequest()
+    {
+        var (_, sellerClient) = await NewSignedInUserAsync();
+
+        var response = await sellerClient.PostAsJsonAsync("api/listings", CarryListing(deliveryWindow: "5m"), TestJson.Options);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -189,7 +230,7 @@ public class DealFlowTests
         return (wallet, client);
     }
 
-    private static CreateListingDto CarryListing(ulong price = 15 * Token)
+    private static CreateListingDto CarryListing(ulong price = 15 * Token, string deliveryWindow = "1h")
     {
         return new CreateListingDto
         {
@@ -199,13 +240,13 @@ public class DealFlowTests
             Price          = price.ToString(),
             Milestones     = 3,
             UnitLabel      = "match",
-            DeliveryWindow = "1h",
+            DeliveryWindow = deliveryWindow,
         };
     }
 
-    private static async Task<StandardListingDto> CreateCarryListingAsync(HttpClient sellerClient)
+    private static async Task<StandardListingDto> CreateCarryListingAsync(HttpClient sellerClient, string deliveryWindow = "1h")
     {
-        var response = await sellerClient.PostAsJsonAsync("api/listings", CarryListing(), TestJson.Options);
+        var response = await sellerClient.PostAsJsonAsync("api/listings", CarryListing(deliveryWindow: deliveryWindow), TestJson.Options);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<ApplicationResponse<StandardListingDto>>(TestJson.Options))!.Data!;
     }

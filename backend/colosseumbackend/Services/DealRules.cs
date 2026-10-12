@@ -15,6 +15,7 @@ public static class DealRules
         bool isBuyer   = deal.BuyerWallet == wallet;
         bool isSeller  = deal.SellerWallet == wallet;
         bool deadlinePassed = deal.DeliveryDeadline is { } deadline && nowUtc > deadline;
+        bool canRefund      = deal.DeliveryDeadline is { } refundFrom && nowUtc > refundFrom + Constants.ChainClockGrace;
         bool hasOfferFromOther = deal.SplitOfferBy is not null && deal.SplitOfferBy != wallet;
 
         switch (deal.Status)
@@ -28,7 +29,7 @@ public static class DealRules
                 if (isBuyer)
                 {
                     actions.AddRange([DealAction.Confirm, DealAction.RaiseDispute]);
-                    if (deadlinePassed)
+                    if (canRefund)
                     {
                         actions.Add(DealAction.RefundUndelivered);
                     }

@@ -11,6 +11,7 @@ Snapshot of work since the team decided on dynamic deposits, no review time, and
 - **End-to-end tests: 9/9 passed** on devnet on the first run, so the C#-built transactions work with the program.
 - **Frontend docs rewritten** against the actual backend: [`architecture/api.md`](../architecture/api.md) (full contract with TypeScript types) and [`architecture/frontend.md`](../architecture/frontend.md) (pages, deal page, wallet, transactions, dev setup). The frontend can start from those two files.
 - **Fixed:** the API sent times without the UTC `Z` (SQLite drops it), so browsers would have read deadlines as local time. All times now end in `Z`; a test checks it. One test run had 2 failures that didn't come back on rerun (9/9). Likely the public devnet RPC throttling us; if it keeps happening, use a dedicated devnet RPC (e.g. Helius free tier).
+- **More delivery deadlines:** 15m, 30m, 1h, 3h, 6h, 12h, 24h (default), 3d, 7d, plus **2m on devnet only** for the demo. The list comes from `GET /api/config`, so the website's dropdown follows the backend. The buyer's refund appears 15 s after the deadline (margin for Solana's clock). A new end-to-end test runs the full missed-deadline refund with `2m`.
 - Funding: the deploy wallet has ~2.3 SOL (each full test run uses ~0.2). Demo wallets get tokens with `Admin fund <wallet>` when someone needs them.
 
 ## Done (all committed and pushed)
@@ -39,7 +40,7 @@ Snapshot of work since the team decided on dynamic deposits, no review time, and
 - More variables can be added later (requires a program update).
 
 ### 2. Deadlines and disputes
-- **Delivery deadline presets:** 1h, 6h, **24h (default)**, 3d. The program accepts 60 seconds to 30 days, so the demo can use **2 minutes**.
+- **Delivery deadline presets:** 15m, 30m, 1h, 3h, 6h, 12h, **24h (default)**, 3d, 7d, plus **2m on devnet only** for the demo. The program accepts 60 seconds to 30 days.
 - **Review time removed.** After delivery, the seller is paid only when the buyer confirms (or a split is accepted, or the seller refunds).
 - **Either side** can open a disagreement once the deal is under way. Dispute resolution will be designed later.
 

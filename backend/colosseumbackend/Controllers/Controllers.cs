@@ -95,12 +95,16 @@ public class ConfigController : BaseController
         var response = new ApplicationResponse<ConfigDto>();
         response.Ok(new ConfigDto
         {
-            Cluster      = _solanaOptions.Cluster,
-            RpcUrl       = _solanaOptions.RpcUrl,
-            ProgramId    = _solanaOptions.ProgramId,
-            Mint         = _solanaOptions.Mint,
-            MintDecimals = _solanaOptions.MintDecimals,
-            FeeBps       = config?.FeeBps,
+            Cluster               = _solanaOptions.Cluster,
+            RpcUrl                = _solanaOptions.RpcUrl,
+            ProgramId             = _solanaOptions.ProgramId,
+            Mint                  = _solanaOptions.Mint,
+            MintDecimals          = _solanaOptions.MintDecimals,
+            FeeBps                = config?.FeeBps,
+            DeliveryWindows       = DeliveryWindows.Available(_solanaOptions.Cluster)
+                .Select(preset => new DeliveryWindowDto { Key = preset.Key, Seconds = (long)preset.Value.TotalSeconds })
+                .ToList(),
+            DefaultDeliveryWindow = Constants.DefaultDeliveryWindow,
         }, ResponseMessages.ConfigRetrieved);
 
         return Ok(response);
