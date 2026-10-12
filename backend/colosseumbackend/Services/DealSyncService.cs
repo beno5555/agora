@@ -71,6 +71,13 @@ public class DealSyncService : BaseService
             if (outcome is not null)
             {
                 deal.Status = ToFinalStatus(outcome.Value);
+
+                // The closed account can't be read any more; a completed deal released every part.
+                bool releasedEverything = deal.Status == DealStatus.Completed;
+                if (releasedEverything)
+                {
+                    deal.MilestonesReleased = deal.Milestones;
+                }
             }
         }
         else if (deal.Status == DealStatus.Draft && deal.CreatedAt + Constants.DraftLifetime < DateTime.UtcNow)

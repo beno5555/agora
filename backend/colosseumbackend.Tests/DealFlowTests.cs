@@ -46,6 +46,7 @@ public class DealFlowTests
         deal = await ActAsync(buyerClient, buyer, deal.Id, new DealActionDto { Action = DealAction.Confirm, Parts = 2 });
 
         Assert.Equal(DealStatus.Completed, deal.Status);
+        Assert.Equal(3, deal.MilestonesReleased);
         Assert.Empty(deal.AllowedActions);
         // 15 tokens minus the 2% fee; the seller's deposit came back.
         Assert.Equal(sellerBefore + 147 * Token / 10, await _fixture.TokenBalanceAsync(seller.PublicKey));
