@@ -8,7 +8,6 @@ export interface ApiResponse<T> {
 
 export interface ConfigDto {
   cluster: string;
-  rpcUrl: string;
   programId: string;
   mint: string;
   mintDecimals: number;
