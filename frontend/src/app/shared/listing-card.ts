@@ -12,8 +12,12 @@ import { plural } from './plural';
       <div class="grow">
         <strong>{{ listing().title }}</strong>
         <div class="muted small">
-          {{ listing().gameName }} · {{ listing().type }} · {{ plural(listing().unitLabel, listing().milestones) }}
-          · {{ listing().seller.displayName || listing().seller.wallet.slice(0, 4) + '…' + listing().seller.wallet.slice(-4) }}
+          {{ listing().gameName }} · {{ listing().type }} ·
+          {{ plural(listing().unitLabel, listing().milestones) }} ·
+          {{
+            listing().seller.displayName ||
+              listing().seller.wallet.slice(0, 4) + '…' + listing().seller.wallet.slice(-4)
+          }}
         </div>
       </div>
       <div class="price">\${{ listing().price | amount }}</div>

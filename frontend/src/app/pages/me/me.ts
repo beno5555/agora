@@ -18,12 +18,18 @@ import { StatusBadge } from '../../shared/status-badge';
     <h1>My deals</h1>
 
     <div class="tabs">
-      <button type="button" [class.on]="role() === 'buyer'" (click)="role.set('buyer')">Buying</button>
-      <button type="button" [class.on]="role() === 'seller'" (click)="role.set('seller')">Selling</button>
+      <button type="button" [class.on]="role() === 'buyer'" (click)="role.set('buyer')">
+        Buying
+      </button>
+      <button type="button" [class.on]="role() === 'seller'" (click)="role.set('seller')">
+        Selling
+      </button>
     </div>
     @for (deal of deals(); track deal.id) {
       <a class="row-link" [routerLink]="['/d', deal.id]">
-        <div class="grow"><strong>{{ deal.title }}</strong></div>
+        <div class="grow">
+          <strong>{{ deal.title }}</strong>
+        </div>
         <app-status-badge [status]="deal.status" />
         <div class="price">\${{ deal.price | amount }}</div>
       </a>
@@ -64,7 +70,8 @@ import { StatusBadge } from '../../shared/status-badge';
       </div>
     } @empty {
       <p class="muted">
-        {{ loadedListings() ? 'No listings yet.' : 'Loading…' }} <a routerLink="/sell">Sell something</a>
+        {{ loadedListings() ? 'No listings yet.' : 'Loading…' }}
+        <a routerLink="/sell">Sell something</a>
       </p>
     }
 

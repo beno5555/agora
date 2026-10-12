@@ -39,7 +39,7 @@ export class AuthService {
   requestSignIn(): Promise<boolean> {
     if (this.user()) return Promise.resolve(true);
     this.dialogOpen.set(true);
-    return new Promise(resolve => this.pending.push(resolve));
+    return new Promise((resolve) => this.pending.push(resolve));
   }
 
   closeDialog(): void {
@@ -54,7 +54,11 @@ export class AuthService {
       const wallet = await this.wallet.connect();
       const { message } = await this.api.get<{ message: string }>('/api/auth/nonce', { wallet });
       const signature = await this.wallet.signMessage(new TextEncoder().encode(message));
-      const user = await this.api.post<FullUserDto>('/api/auth/verify', { wallet, message, signature });
+      const user = await this.api.post<FullUserDto>('/api/auth/verify', {
+        wallet,
+        message,
+        signature,
+      });
       this.user.set(user);
       this.dialogOpen.set(false);
       this.settle(true);
@@ -78,6 +82,6 @@ export class AuthService {
   private settle(signedIn: boolean): void {
     const waiting = this.pending;
     this.pending = [];
-    waiting.forEach(resolve => resolve(signedIn));
+    waiting.forEach((resolve) => resolve(signedIn));
   }
 }

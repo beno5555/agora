@@ -1,4 +1,9 @@
-import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  inject,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 
@@ -14,7 +19,12 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideAppInitializer(async () => {
       // Config is needed everywhere; the session check just fills the header.
-      await Promise.all([inject(ConfigService).load().catch(() => {}), inject(AuthService).init()]);
+      await Promise.all([
+        inject(ConfigService)
+          .load()
+          .catch(() => {}),
+        inject(AuthService).init(),
+      ]);
     }),
   ],
 };

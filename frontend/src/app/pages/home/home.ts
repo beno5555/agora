@@ -17,14 +17,22 @@ import { ListingCard } from '../../shared/listing-card';
       @for (game of games(); track game.id) {
         <a [routerLink]="['/g', game.slug]">
           <strong>{{ game.name }}</strong>
-          <span class="muted small">{{ game.activeListings }} listing{{ game.activeListings === 1 ? '' : 's' }}</span>
+          <span class="muted small"
+            >{{ game.activeListings }} listing{{ game.activeListings === 1 ? '' : 's' }}</span
+          >
         </a>
       }
     </div>
 
     <h2>Newest listings</h2>
     <div class="inline-field" style="margin-bottom: 1rem">
-      <input type="search" placeholder="Search listings" [(ngModel)]="query" (keyup.enter)="load()" style="width: 100%" />
+      <input
+        type="search"
+        placeholder="Search listings"
+        [(ngModel)]="query"
+        (keyup.enter)="load()"
+        style="width: 100%"
+      />
       <button type="button" (click)="load()">Search</button>
     </div>
     @for (listing of listings(); track listing.id) {
@@ -44,13 +52,18 @@ export class Home {
   protected readonly query = signal('');
 
   constructor() {
-    this.api.get<GameDto[]>('/api/games').then(g => this.games.set(g), e => this.toast.fromError(e));
+    this.api.get<GameDto[]>('/api/games').then(
+      (g) => this.games.set(g),
+      (e) => this.toast.fromError(e),
+    );
     void this.load();
   }
 
   protected async load(): Promise<void> {
     try {
-      this.listings.set(await this.api.get<MinimalListingDto[]>('/api/listings', { q: this.query() }));
+      this.listings.set(
+        await this.api.get<MinimalListingDto[]>('/api/listings', { q: this.query() }),
+      );
     } catch (error) {
       this.toast.fromError(error);
     } finally {

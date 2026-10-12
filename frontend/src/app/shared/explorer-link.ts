@@ -11,5 +11,7 @@ export class ExplorerLink {
   protected readonly href = computed(
     () => `https://explorer.solana.com/${this.kind()}/${this.value()}?cluster=devnet`,
   );
-  protected readonly short = computed(() => `${this.value().slice(0, 6)}…${this.value().slice(-6)}`);
+  protected readonly short = computed(
+    () => `${this.value().slice(0, 6)}…${this.value().slice(-6)}`,
+  );
 }

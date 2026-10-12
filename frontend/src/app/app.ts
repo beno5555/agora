@@ -34,7 +34,9 @@ import { WalletAddress } from './shared/wallet-address';
       <div class="backdrop">
         <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="signin-title">
           <h2 id="signin-title">Sign in with Phantom</h2>
-          <p class="muted">Connect your wallet and sign a one-time message. This does not move any money.</p>
+          <p class="muted">
+            Connect your wallet and sign a one-time message. This does not move any money.
+          </p>
           <div class="actions">
             <button type="button" [disabled]="auth.busy()" (click)="auth.signIn()">
               {{ auth.busy() ? 'Waiting for wallet…' : 'Connect and sign in' }}
@@ -49,7 +51,14 @@ import { WalletAddress } from './shared/wallet-address';
       @for (toast of toaster.toasts(); track toast.id) {
         <div class="toast" [class.error]="toast.kind === 'error'">
           {{ toast.text }}
-          <button type="button" class="ghost" aria-label="Dismiss" (click)="toaster.dismiss(toast.id)">×</button>
+          <button
+            type="button"
+            class="ghost"
+            aria-label="Dismiss"
+            (click)="toaster.dismiss(toast.id)"
+          >
+            ×
+          </button>
         </div>
       }
     </div>

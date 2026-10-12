@@ -11,7 +11,9 @@ import { Component, computed, input, signal } from '@angular/core';
 export class WalletAddress {
   readonly wallet = input.required<string>();
   protected readonly copied = signal(false);
-  protected readonly short = computed(() => `${this.wallet().slice(0, 4)}…${this.wallet().slice(-4)}`);
+  protected readonly short = computed(
+    () => `${this.wallet().slice(0, 4)}…${this.wallet().slice(-4)}`,
+  );
 
   protected async copy(): Promise<void> {
     await navigator.clipboard.writeText(this.wallet());

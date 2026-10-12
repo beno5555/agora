@@ -23,11 +23,11 @@ export class NotificationService {
   private readonly auth = inject(AuthService);
 
   readonly items = signal<NotificationDto[]>([]);
-  readonly unread = computed(() => this.items().filter(n => !n.isRead).length);
+  readonly unread = computed(() => this.items().filter((n) => !n.isRead).length);
 
   constructor() {
     // Poll while signed in.
-    effect(onCleanup => {
+    effect((onCleanup) => {
       if (!this.auth.user()) {
         this.items.set([]);
         return;
@@ -47,7 +47,7 @@ export class NotificationService {
   }
 
   async markRead(id: number): Promise<void> {
-    this.items.update(list => list.map(n => (n.id === id ? { ...n, isRead: true } : n)));
+    this.items.update((list) => list.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
     try {
       await this.api.post(`/api/me/notifications/${id}/read`);
     } catch {

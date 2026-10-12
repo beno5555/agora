@@ -4,7 +4,10 @@ import { Observable, firstValueFrom } from 'rxjs';
 import { ApiResponse } from './models';
 
 export class ApiError extends Error {
-  constructor(message: string, readonly status: number) {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
     super(message);
   }
   /** The interceptor already told the user about these. */
@@ -41,7 +44,8 @@ export class ApiService {
       return res?.data as T;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      if (error instanceof HttpErrorResponse) throw new ApiError(this.messageOf(error), error.status);
+      if (error instanceof HttpErrorResponse)
+        throw new ApiError(this.messageOf(error), error.status);
       throw error;
     }
   }

@@ -15,7 +15,14 @@ import { plural } from '../../shared/plural';
 import { StatusBadge } from '../../shared/status-badge';
 import { WalletAddress } from '../../shared/wallet-address';
 
-const FINAL: DealStatus[] = ['Completed', 'Split', 'Undelivered', 'SellerRefunded', 'Cancelled', 'Expired'];
+const FINAL: DealStatus[] = [
+  'Completed',
+  'Split',
+  'Undelivered',
+  'SellerRefunded',
+  'Cancelled',
+  'Expired',
+];
 const NOTHING = '—';
 
 /** One row of the "Where the money goes" table. */
@@ -27,7 +34,16 @@ interface Outcome {
 
 @Component({
   selector: 'app-deal',
-  imports: [DatePipe, FormsModule, RouterLink, AmountPipe, Countdown, ExplorerLink, StatusBadge, WalletAddress],
+  imports: [
+    DatePipe,
+    FormsModule,
+    RouterLink,
+    AmountPipe,
+    Countdown,
+    ExplorerLink,
+    StatusBadge,
+    WalletAddress,
+  ],
   template: `
     @if (deal(); as d) {
       <p class="muted small">
@@ -50,22 +66,38 @@ interface Outcome {
               <span class="buyer-seg" [style.width.%]="width(buyerDeposit())">Buyer deposit</span>
             }
             @if (width(sellerDeposit()) > 0) {
-              <span class="seller-seg" [style.width.%]="width(sellerDeposit())">Seller deposit</span>
+              <span class="seller-seg" [style.width.%]="width(sellerDeposit())"
+                >Seller deposit</span
+              >
             }
           </div>
         }
         <dl class="facts">
-          <dt>Price</dt><dd>\${{ d.price | amount }}</dd>
+          <dt>Price</dt>
+          <dd>\${{ d.price | amount }}</dd>
           @if (d.milestonesReleased > 0) {
-            <dt>Already released</dt><dd>\${{ released() | amount }}</dd>
+            <dt>Already released</dt>
+            <dd>\${{ released() | amount }}</dd>
           }
-          <dt>Buyer deposit</dt><dd>\${{ d.buyerDeposit | amount }}</dd>
+          <dt>Buyer deposit</dt>
+          <dd>\${{ d.buyerDeposit | amount }}</dd>
           <dt>Seller deposit</dt>
-          <dd>{{ d.status === 'AwaitingSeller' ? 'locks when the seller accepts' : '$' + (d.sellerDeposit | amount) }}</dd>
-          <dt class="total">Total locked</dt><dd class="total">\${{ locked() | amount }}</dd>
+          <dd>
+            {{
+              d.status === 'AwaitingSeller'
+                ? 'locks when the seller accepts'
+                : '$' + (d.sellerDeposit | amount)
+            }}
+          </dd>
+          <dt class="total">Total locked</dt>
+          <dd class="total">\${{ locked() | amount }}</dd>
         </dl>
         <p class="muted small" style="margin: 0.75rem 0 0">
-          {{ isLocked() ? 'Held by the Solana program. Nobody outside this deal can move it.' : 'This deal is closed. Nothing is locked.' }}
+          {{
+            isLocked()
+              ? 'Held by the Solana program. Nobody outside this deal can move it.'
+              : 'This deal is closed. Nothing is locked.'
+          }}
         </p>
       </section>
 
@@ -74,16 +106,25 @@ interface Outcome {
           <h2>Where the money goes</h2>
           <table class="outcomes">
             <thead>
-              <tr><th>If…</th><th>Buyer gets</th><th>Seller gets</th></tr>
+              <tr>
+                <th>If…</th>
+                <th>Buyer gets</th>
+                <th>Seller gets</th>
+              </tr>
             </thead>
             <tbody>
               @for (o of outcomes(); track o.label) {
-                <tr><td>{{ o.label }}</td><td>{{ o.buyer }}</td><td>{{ o.seller }}</td></tr>
+                <tr>
+                  <td>{{ o.label }}</td>
+                  <td>{{ o.buyer }}</td>
+                  <td>{{ o.seller }}</td>
+                </tr>
               }
             </tbody>
           </table>
           <p class="muted small" style="margin: 0.75rem 0 0">
-            What the seller is paid has the {{ feePercent() }}% fee taken out. Refunds to the buyer have no fee.
+            What the seller is paid has the {{ feePercent() }}% fee taken out. Refunds to the buyer
+            have no fee.
           </p>
         </section>
       }
@@ -92,14 +133,20 @@ interface Outcome {
         <h2>Progress</h2>
         <p>{{ d.milestonesReleased }} of {{ plural(d.unitLabel, d.milestones) }} released</p>
         <ul class="timeline">
-          <li class="done">Created <span class="when">{{ d.createdAt | date: 'medium' }}</span></li>
+          <li class="done">
+            Created <span class="when">{{ d.createdAt | date: 'medium' }}</span>
+          </li>
           <li [class.done]="d.acceptedAt">
             Accepted by seller
-            @if (d.acceptedAt) { <span class="when">{{ d.acceptedAt | date: 'medium' }}</span> }
+            @if (d.acceptedAt) {
+              <span class="when">{{ d.acceptedAt | date: 'medium' }}</span>
+            }
           </li>
           <li [class.done]="d.deliveredAt">
             Delivered
-            @if (d.deliveredAt) { <span class="when">{{ d.deliveredAt | date: 'medium' }}</span> }
+            @if (d.deliveredAt) {
+              <span class="when">{{ d.deliveredAt | date: 'medium' }}</span>
+            }
           </li>
           @if (isFinal()) {
             <li class="done">{{ finalLabel() }}</li>
@@ -112,7 +159,11 @@ interface Outcome {
             @if (pastDeadline()) {
               <br />
               <span class="muted">
-                {{ d.role === 'buyer' && !can('RefundUndelivered') ? 'Refund available in a few seconds…' : 'The deadline has passed.' }}
+                {{
+                  d.role === 'buyer' && !can('RefundUndelivered')
+                    ? 'Refund available in a few seconds…'
+                    : 'The deadline has passed.'
+                }}
               </span>
             }
           </p>
@@ -125,8 +176,10 @@ interface Outcome {
           @if (d.splitOffer; as offer) {
             <p>
               {{ offer.by === me() ? 'You offered' : 'The other side offered' }}
-              to send <strong>\${{ offer.buyerAmount | amount }}</strong> of the remaining
-              \${{ remaining() | amount }} back to the buyer.
+              to send <strong>\${{ offer.buyerAmount | amount }}</strong> of the remaining \${{
+                remaining() | amount
+              }}
+              back to the buyer.
             </p>
           } @else {
             <p>No offer yet. Either side can propose how to split what is left.</p>
@@ -140,22 +193,52 @@ interface Outcome {
           <h2>Your options</h2>
           <div class="actions" style="gap: 1rem">
             @if (can('Accept')) {
-              <button type="button" [disabled]="busy()" (click)="run({ action: 'Accept' })">Accept &amp; lock deposit</button>
+              <button type="button" [disabled]="busy()" (click)="run({ action: 'Accept' })">
+                Accept &amp; lock deposit
+              </button>
             }
             @if (can('MarkDelivered')) {
-              <button type="button" [disabled]="busy()" (click)="run({ action: 'MarkDelivered' })">Mark delivered</button>
+              <button type="button" [disabled]="busy()" (click)="run({ action: 'MarkDelivered' })">
+                Mark delivered
+              </button>
             }
             @if (can('Confirm')) {
               <span class="stepper">
-                <button type="button" class="secondary" aria-label="Fewer" [disabled]="busy() || parts() <= 1" (click)="parts.set(parts() - 1)">−</button>
-                <button type="button" class="secondary" aria-label="More" [disabled]="busy() || parts() >= maxParts()" (click)="parts.set(parts() + 1)">+</button>
-                <button type="button" [disabled]="busy()" (click)="run({ action: 'Confirm', parts: parts() })">
+                <button
+                  type="button"
+                  class="secondary"
+                  aria-label="Fewer"
+                  [disabled]="busy() || parts() <= 1"
+                  (click)="parts.set(parts() - 1)"
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  class="secondary"
+                  aria-label="More"
+                  [disabled]="busy() || parts() >= maxParts()"
+                  (click)="parts.set(parts() + 1)"
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  [disabled]="busy()"
+                  (click)="run({ action: 'Confirm', parts: parts() })"
+                >
                   Confirm {{ plural(d.unitLabel, parts()) }}
                 </button>
               </span>
             }
             @if (can('RefundUndelivered')) {
-              <button type="button" [disabled]="busy()" (click)="run({ action: 'RefundUndelivered' })">Take refund + seller's deposit</button>
+              <button
+                type="button"
+                [disabled]="busy()"
+                (click)="run({ action: 'RefundUndelivered' })"
+              >
+                Take refund + seller's deposit
+              </button>
             }
             @if (can('AcceptSplit')) {
               <button type="button" [disabled]="busy()" (click)="run({ action: 'AcceptSplit' })">
@@ -163,22 +246,52 @@ interface Outcome {
               </button>
             }
             @if (can('SellerRefund')) {
-              <button type="button" class="secondary" [disabled]="busy()" (click)="run({ action: 'SellerRefund' })">Refund buyer</button>
+              <button
+                type="button"
+                class="secondary"
+                [disabled]="busy()"
+                (click)="run({ action: 'SellerRefund' })"
+              >
+                Refund buyer
+              </button>
             }
             @if (can('Cancel')) {
-              <button type="button" class="danger" [disabled]="busy()" (click)="run({ action: 'Cancel' })">Cancel &amp; refund</button>
+              <button
+                type="button"
+                class="danger"
+                [disabled]="busy()"
+                (click)="run({ action: 'Cancel' })"
+              >
+                Cancel &amp; refund
+              </button>
             }
             @if (can('RaiseDispute')) {
-              <button type="button" class="danger" [disabled]="busy()" (click)="run({ action: 'RaiseDispute' })">Disagree</button>
+              <button
+                type="button"
+                class="danger"
+                [disabled]="busy()"
+                (click)="run({ action: 'RaiseDispute' })"
+              >
+                Disagree
+              </button>
             }
           </div>
 
           @if (can('ProposeSplit')) {
             <label style="margin-top: 1.25rem">
-              Offer a split <span class="hint">(amount going back to the buyer, up to \${{ remaining() | amount }})</span>
+              Offer a split
+              <span class="hint"
+                >(amount going back to the buyer, up to \${{ remaining() | amount }})</span
+              >
               <span class="inline-field">
                 <input inputmode="decimal" placeholder="0.00" [(ngModel)]="splitInput" />
-                <button type="button" [disabled]="busy() || splitAmount() === null" (click)="proposeSplit()">Offer a split</button>
+                <button
+                  type="button"
+                  [disabled]="busy() || splitAmount() === null"
+                  (click)="proposeSplit()"
+                >
+                  Offer a split
+                </button>
               </span>
             </label>
             @if (splitError(); as message) {
@@ -191,16 +304,25 @@ interface Outcome {
       <section class="panel">
         <h2>On Solana</h2>
         <dl class="facts">
-          <dt>Deal account</dt><dd><app-explorer-link kind="address" [value]="d.dealPda" /></dd>
+          <dt>Deal account</dt>
+          <dd><app-explorer-link kind="address" [value]="d.dealPda" /></dd>
           @if (d.lastSignature) {
-            <dt>Last transaction</dt><dd><app-explorer-link kind="tx" [value]="d.lastSignature" /></dd>
+            <dt>Last transaction</dt>
+            <dd><app-explorer-link kind="tx" [value]="d.lastSignature" /></dd>
           }
           <dt>Buyer</dt>
-          <dd><a [routerLink]="['/u', d.buyerWallet]">profile</a> <app-wallet-address [wallet]="d.buyerWallet" /></dd>
+          <dd>
+            <a [routerLink]="['/u', d.buyerWallet]">profile</a>
+            <app-wallet-address [wallet]="d.buyerWallet" />
+          </dd>
           <dt>Seller</dt>
-          <dd><a [routerLink]="['/u', d.sellerWallet]">profile</a> <app-wallet-address [wallet]="d.sellerWallet" /></dd>
+          <dd>
+            <a [routerLink]="['/u', d.sellerWallet]">profile</a>
+            <app-wallet-address [wallet]="d.sellerWallet" />
+          </dd>
           @if (d.buyerNote) {
-            <dt>Buyer note</dt><dd>{{ d.buyerNote }}</dd>
+            <dt>Buyer note</dt>
+            <dd>{{ d.buyerNote }}</dd>
           }
         </dl>
       </section>
@@ -230,14 +352,21 @@ export class Deal {
   private readonly isOpen = computed(() => !!this.deal() && !this.isFinal());
   protected readonly isLocked = computed(() => {
     const status = this.deal()?.status;
-    return status === 'AwaitingSeller' || status === 'Active' || status === 'Delivered' || status === 'Disputed';
+    return (
+      status === 'AwaitingSeller' ||
+      status === 'Active' ||
+      status === 'Delivered' ||
+      status === 'Disputed'
+    );
   });
 
   private readonly perPart = computed(() => {
     const d = this.deal();
     return d ? BigInt(d.price) / BigInt(d.milestones) : 0n;
   });
-  protected readonly released = computed(() => this.perPart() * BigInt(this.deal()?.milestonesReleased ?? 0));
+  protected readonly released = computed(
+    () => this.perPart() * BigInt(this.deal()?.milestonesReleased ?? 0),
+  );
   protected readonly remaining = computed(() => BigInt(this.deal()?.price ?? 0) - this.released());
   protected readonly buyerDeposit = computed(() => BigInt(this.deal()?.buyerDeposit ?? 0));
   /** Set when the deal is created, but only in the vault once the seller accepts. */
@@ -302,7 +431,11 @@ export class Deal {
     } else if (d && this.isLocked()) {
       const partsLeft = d.milestones - d.milestonesReleased;
       if (partsLeft > 1) {
-        rows.push({ label: `The buyer confirms 1 ${d.unitLabel}`, buyer: NOTHING, seller: money(minusFee(this.perPart())) });
+        rows.push({
+          label: `The buyer confirms 1 ${d.unitLabel}`,
+          buyer: NOTHING,
+          seller: money(minusFee(this.perPart())),
+        });
       }
       rows.push({
         label: partsLeft > 1 ? `The buyer confirms all ${partsLeft} left` : 'The buyer confirms',
@@ -324,9 +457,17 @@ export class Deal {
           seller: money(minusFee(remaining - toBuyer) + sellerDeposit),
         });
       } else if (d.status === 'Disputed') {
-        rows.push({ label: 'A split is agreed', buyer: 'their share + deposit', seller: 'the rest + deposit' });
+        rows.push({
+          label: 'A split is agreed',
+          buyer: 'their share + deposit',
+          seller: 'the rest + deposit',
+        });
       }
-      rows.push({ label: 'The seller refunds', buyer: money(remaining + buyerDeposit), seller: money(sellerDeposit) });
+      rows.push({
+        label: 'The seller refunds',
+        buyer: money(remaining + buyerDeposit),
+        seller: money(sellerDeposit),
+      });
     }
 
     return rows;
@@ -334,12 +475,18 @@ export class Deal {
 
   protected readonly finalLabel = computed(() => {
     switch (this.deal()?.status) {
-      case 'Completed': return 'Completed. Deposits returned.';
-      case 'Split': return 'Closed with an agreed split';
-      case 'Undelivered': return 'Closed: the seller missed the deadline';
-      case 'SellerRefunded': return 'Refunded by the seller';
-      case 'Cancelled': return 'Cancelled by the buyer';
-      default: return 'Expired before it was funded';
+      case 'Completed':
+        return 'Completed. Deposits returned.';
+      case 'Split':
+        return 'Closed with an agreed split';
+      case 'Undelivered':
+        return 'Closed: the seller missed the deadline';
+      case 'SellerRefunded':
+        return 'Refunded by the seller';
+      case 'Cancelled':
+        return 'Cancelled by the buyer';
+      default:
+        return 'Expired before it was funded';
     }
   });
 
@@ -347,7 +494,7 @@ export class Deal {
     effect(() => void this.load(this.id()));
 
     // Poll while the deal is open so the other side's actions show up.
-    effect(onCleanup => {
+    effect((onCleanup) => {
       if (!this.isOpen()) return;
       const timer = setInterval(() => {
         if (this.actions.phase() === 'idle') void this.refresh();
@@ -356,7 +503,7 @@ export class Deal {
     });
 
     // RefundUndelivered only appears 15 s after the deadline: refetch right after.
-    effect(onCleanup => {
+    effect((onCleanup) => {
       const d = this.deal();
       if (d?.status !== 'Active' || !d.deliveryDeadline) return;
       const wait = new Date(d.deliveryDeadline).getTime() + 16_000 - Date.now();

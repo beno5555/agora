@@ -19,6 +19,8 @@ export class StatusBadge {
   readonly status = input.required<DealStatus>();
   protected readonly tone = computed(() => TONE[this.status()] ?? 'grey');
   protected readonly label = computed(() =>
-    this.status().replace(/([a-z])([A-Z])/g, '$1 $2').replace('Seller Refunded', 'Refunded by seller'),
+    this.status()
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace('Seller Refunded', 'Refunded by seller'),
   );
 }

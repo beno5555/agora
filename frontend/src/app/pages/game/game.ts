@@ -11,7 +11,9 @@ import { ListingCard } from '../../shared/listing-card';
     <h1>{{ listings()[0]?.gameName ?? slug() }}</h1>
     <div class="tabs">
       <button type="button" [class.on]="type() === ''" (click)="type.set('')">All</button>
-      <button type="button" [class.on]="type() === 'Service'" (click)="type.set('Service')">Services</button>
+      <button type="button" [class.on]="type() === 'Service'" (click)="type.set('Service')">
+        Services
+      </button>
       <button type="button" [class.on]="type() === 'Item'" (click)="type.set('Item')">Items</button>
     </div>
     @for (listing of listings(); track listing.id) {

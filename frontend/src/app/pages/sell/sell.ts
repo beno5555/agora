@@ -57,7 +57,9 @@ import { windowLabel } from '../../shared/delivery-window';
           <input type="number" min="1" max="100" [(ngModel)]="milestones" style="width: 6rem" />
           <input maxlength="20" placeholder="match, hour, item…" [(ngModel)]="unitLabel" />
         </span>
-        <span class="hint">The price is paid out one part at a time as the buyer confirms each.</span>
+        <span class="hint"
+          >The price is paid out one part at a time as the buyer confirms each.</span
+        >
       </label>
 
       <label>
@@ -104,16 +106,23 @@ export class Sell {
   protected readonly problem = computed(() => {
     const price = parseAmount(this.price(), this.config.decimals());
     const milestones = this.milestones();
-    if (!this.gameId() || !this.title().trim() || !this.unitLabel().trim() || !this.price().trim()) return 'Fill in game, title, price and unit.';
-    if (price === null) return `Price must be a number with up to ${this.config.decimals()} decimals.`;
+    if (!this.gameId() || !this.title().trim() || !this.unitLabel().trim() || !this.price().trim())
+      return 'Fill in game, title, price and unit.';
+    if (price === null)
+      return `Price must be a number with up to ${this.config.decimals()} decimals.`;
     if (price === 0n) return 'Price must be more than zero.';
-    if (!Number.isInteger(milestones) || milestones < 1 || milestones > 100) return 'Parts must be between 1 and 100.';
-    if (price % BigInt(milestones) !== 0n) return 'The price must divide evenly into the number of parts.';
+    if (!Number.isInteger(milestones) || milestones < 1 || milestones > 100)
+      return 'Parts must be between 1 and 100.';
+    if (price % BigInt(milestones) !== 0n)
+      return 'The price must divide evenly into the number of parts.';
     return null;
   });
 
   constructor() {
-    this.api.get<GameDto[]>('/api/games').then(g => this.games.set(g), e => this.toast.fromError(e));
+    this.api.get<GameDto[]>('/api/games').then(
+      (g) => this.games.set(g),
+      (e) => this.toast.fromError(e),
+    );
 
     effect(() => {
       const id = this.id();
@@ -127,7 +136,7 @@ export class Sell {
         this.api.get<StandardListingDto>(`/api/listings/${id}`),
         this.api.get<GameDto[]>('/api/games'),
       ]);
-      this.gameId.set(games.find(g => g.slug === listing.gameSlug)?.id ?? 0);
+      this.gameId.set(games.find((g) => g.slug === listing.gameSlug)?.id ?? 0);
       this.type.set(listing.type);
       this.title.set(listing.title);
       this.description.set(listing.description);

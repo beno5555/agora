@@ -16,9 +16,22 @@ export interface ConfigDto {
   defaultDeliveryWindow: string;
 }
 
-export interface MinimalUserDto { wallet: string; displayName: string | null }
-export interface FullUserDto { wallet: string; displayName: string | null; discord: string | null; createdAt: string }
-export interface ReputationDto { dealsCompleted: number; dealsDisputed: number; dealsUndelivered: number; volume: string }
+export interface MinimalUserDto {
+  wallet: string;
+  displayName: string | null;
+}
+export interface FullUserDto {
+  wallet: string;
+  displayName: string | null;
+  discord: string | null;
+  createdAt: string;
+}
+export interface ReputationDto {
+  dealsCompleted: number;
+  dealsDisputed: number;
+  dealsUndelivered: number;
+  volume: string;
+}
 export interface StandardUserDto {
   wallet: string;
   displayName: string | null;
@@ -27,7 +40,13 @@ export interface StandardUserDto {
   activeListings: MinimalListingDto[];
 }
 
-export interface GameDto { id: number; slug: string; name: string; iconUrl: string | null; activeListings: number }
+export interface GameDto {
+  id: number;
+  slug: string;
+  name: string;
+  iconUrl: string | null;
+  activeListings: number;
+}
 
 export type ListingType = 'Service' | 'Item';
 
@@ -73,12 +92,28 @@ export interface FullListingDto extends MinimalListingDto {
 }
 
 export type DealStatus =
-  | 'Draft' | 'AwaitingSeller' | 'Active' | 'Delivered' | 'Disputed'
-  | 'Completed' | 'Split' | 'Undelivered' | 'SellerRefunded' | 'Cancelled' | 'Expired';
+  | 'Draft'
+  | 'AwaitingSeller'
+  | 'Active'
+  | 'Delivered'
+  | 'Disputed'
+  | 'Completed'
+  | 'Split'
+  | 'Undelivered'
+  | 'SellerRefunded'
+  | 'Cancelled'
+  | 'Expired';
 
 export type DealAction =
-  | 'Accept' | 'Cancel' | 'MarkDelivered' | 'Confirm' | 'RefundUndelivered'
-  | 'RaiseDispute' | 'ProposeSplit' | 'AcceptSplit' | 'SellerRefund';
+  | 'Accept'
+  | 'Cancel'
+  | 'MarkDelivered'
+  | 'Confirm'
+  | 'RefundUndelivered'
+  | 'RaiseDispute'
+  | 'ProposeSplit'
+  | 'AcceptSplit'
+  | 'SellerRefund';
 
 export interface MinimalDealDto {
   id: string;
@@ -111,11 +146,31 @@ export interface FullDealDto extends MinimalDealDto {
   allowedActions: DealAction[];
 }
 
-export interface DealActionDto { action: DealAction; parts?: number; buyerAmount?: string }
-export interface DealTransactionDto { deal: FullDealDto; transaction: string }
+export interface DealActionDto {
+  action: DealAction;
+  parts?: number;
+  buyerAmount?: string;
+}
+export interface DealTransactionDto {
+  deal: FullDealDto;
+  transaction: string;
+}
 
 export type NotificationKind =
-  | 'DealCreated' | 'DealAccepted' | 'DealDelivered' | 'PartsConfirmed' | 'DealDisputed'
-  | 'SplitProposed' | 'DealClosed' | 'DeadlineSoon' | 'RefundAvailable';
+  | 'DealCreated'
+  | 'DealAccepted'
+  | 'DealDelivered'
+  | 'PartsConfirmed'
+  | 'DealDisputed'
+  | 'SplitProposed'
+  | 'DealClosed'
+  | 'DeadlineSoon'
+  | 'RefundAvailable';
 
-export interface NotificationDto { id: number; dealId: string | null; kind: NotificationKind; createdAt: string; isRead: boolean }
+export interface NotificationDto {
+  id: number;
+  dealId: string | null;
+  kind: NotificationKind;
+  createdAt: string;
+  isRead: boolean;
+}

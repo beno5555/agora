@@ -24,8 +24,11 @@ export class DealActionService {
 
   /** Creates the deal for a listing and funds it. Returns the synced deal, or null if cancelled or failed. */
   buy(listingId: string, buyerNote?: string): Promise<FullDealDto | null> {
-    return this.run(
-      () => this.api.post<DealTransactionDto>('/api/deals', { listingId, buyerNote: buyerNote || undefined }),
+    return this.run(() =>
+      this.api.post<DealTransactionDto>('/api/deals', {
+        listingId,
+        buyerNote: buyerNote || undefined,
+      }),
     );
   }
 
@@ -34,14 +37,16 @@ export class DealActionService {
     return this.run(() => this.api.post<DealTransactionDto>(`/api/deals/${dealId}/tx`, dto));
   }
 
-  private async run(getTransaction: () => Promise<DealTransactionDto>): Promise<FullDealDto | null> {
+  private async run(
+    getTransaction: () => Promise<DealTransactionDto>,
+  ): Promise<FullDealDto | null> {
     if (this.phase() !== 'idle') return null;
     this.phase.set('wallet');
     try {
       await this.ensureWallet();
       // Requested right before the wallet opens: the blockhash expires in about a minute.
       const { deal, transaction } = await getTransaction();
-      const tx = Transaction.from(Uint8Array.from(atob(transaction), c => c.charCodeAt(0)));
+      const tx = Transaction.from(Uint8Array.from(atob(transaction), (c) => c.charCodeAt(0)));
       const signature = await this.wallet.signAndSendTransaction(tx);
 
       this.phase.set('confirming');
@@ -68,7 +73,8 @@ export class DealActionService {
     try {
       return await this.api.post<FullDealDto>(path, { signature });
     } catch (error) {
-      if (!(error instanceof ApiError) || error.message !== 'Transaction Not Confirmed') throw error;
+      if (!(error instanceof ApiError) || error.message !== 'Transaction Not Confirmed')
+        throw error;
     }
     // Slow or failed: retry sync once, then fall back to reading the deal.
     try {

@@ -1,7 +1,11 @@
 import { Injectable, signal } from '@angular/core';
 import { ApiError } from './api.service';
 
-export interface Toast { id: number; text: string; kind: 'error' | 'info' }
+export interface Toast {
+  id: number;
+  text: string;
+  kind: 'error' | 'info';
+}
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {
@@ -10,7 +14,7 @@ export class ToastService {
 
   show(text: string, kind: Toast['kind'] = 'info'): void {
     const id = this.nextId++;
-    this.toasts.update(list => [...list, { id, text, kind }]);
+    this.toasts.update((list) => [...list, { id, text, kind }]);
     setTimeout(() => this.dismiss(id), 6000);
   }
 
@@ -21,6 +25,6 @@ export class ToastService {
   }
 
   dismiss(id: number): void {
-    this.toasts.update(list => list.filter(t => t.id !== id));
+    this.toasts.update((list) => list.filter((t) => t.id !== id));
   }
 }

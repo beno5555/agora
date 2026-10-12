@@ -10,7 +10,10 @@ interface PhantomProvider {
   disconnect(): Promise<void>;
   signMessage(message: Uint8Array, display?: 'utf8' | 'hex'): Promise<{ signature: Uint8Array }>;
   signAndSendTransaction(tx: Transaction): Promise<{ signature: string }>;
-  on(event: 'accountChanged' | 'disconnect', handler: (key: { toString(): string } | null) => void): void;
+  on(
+    event: 'accountChanged' | 'disconnect',
+    handler: (key: { toString(): string } | null) => void,
+  ): void;
 }
 
 export class WalletRejectedError extends Error {
@@ -28,8 +31,9 @@ export class WalletService {
   private provider: PhantomProvider | null = null;
 
   constructor() {
-    this.provider = (window as unknown as { phantom?: { solana?: PhantomProvider } }).phantom?.solana ?? null;
-    this.provider?.on('accountChanged', key => this.publicKey.set(key ? key.toString() : null));
+    this.provider =
+      (window as unknown as { phantom?: { solana?: PhantomProvider } }).phantom?.solana ?? null;
+    this.provider?.on('accountChanged', (key) => this.publicKey.set(key ? key.toString() : null));
     this.provider?.on('disconnect', () => this.publicKey.set(null));
   }
 
