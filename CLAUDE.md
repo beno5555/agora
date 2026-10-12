@@ -27,7 +27,7 @@ Nobody on the team writes Rust, so Claude writes the Solana program, using Ancho
 - **Ownership:** Sandro owns `backend/` and `program/`; Saba owns `frontend/`. Work only in your owner's area, even if a fix for the other side seems obvious and small.
 - **`docs/architecture/api.md` is the contract between frontend and backend.** The frontend codes only against it. If something there looks wrong or missing while working on the frontend, don't change the backend to fix it — add a row to [`docs/currentstatus/ISSUES.md`](docs/currentstatus/ISSUES.md) and keep working on your own side; the owner fixes it and updates `api.md` in the same commit.
 - **Shared docs:** `CLAUDE.md`, `docs/PLAN.md`, `docs/architecture/*` (except `frontend.md`) and `STATUS.md` are Sandro's to change; `frontend.md` is Saba's. Either side can ask the other for a change instead of making it directly. `ISSUES.md` is written by whoever hits the problem, cleared by whoever owns the area.
-- **Git:** both work on `main` directly for this hackathon (no feature branches yet, since the two areas don't overlap). `git pull --rebase` before starting and before pushing; commit and push small and often so neither side drifts far behind. Never push a change inside the other person's owned folder.
+- **Git:** both work on `main` directly for this hackathon (no feature branches yet, since the two areas don't overlap). `git pull --rebase` before starting each change (not just once per session) and again before pushing, so no change is built on stale code; commit and push small and often so neither side drifts far behind. Never push a change inside the other person's owned folder.
 - **Push promptly:** commit and push finished doc or code changes right away, without waiting to be asked each time, so the other side always has the latest `api.md`/`frontend.md` on GitHub.
 
 ### Rules
@@ -45,6 +45,7 @@ agora/
 ├── docs/architecture/        technical design: program, auth, API, data model, frontend
 ├── docs/currentstatus/       STATUS.md (current state, next steps), ISSUES.md (cross-side problems)
 ├── README.md                 public project overview (draft, for the submission)
+├── LICENSE                   MIT
 ├── .claude/skills/colosseum-copilot/   project-scoped Claude skill
 └── skills-lock.json          source and hash of installed skills
 ```
