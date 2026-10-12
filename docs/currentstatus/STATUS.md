@@ -10,8 +10,8 @@ Snapshot of work since the team decided on dynamic deposits, no review time, and
 - **Test stablecoin (mint):** `7FutDfvw3Whjv6PcwCYdYb3FV25EHc3TRiUA4zw8pj21` (6 decimals); treasury `32gaRtk7owPbBndHgpNiskFPQEFMmMWsbrtJnnbXkXqZ`. Set in `appsettings.json`.
 - **End-to-end tests: 9/9 passed** on devnet on the first run, so the C#-built transactions work with the program.
 - **Frontend docs rewritten** against the actual backend: [`architecture/api.md`](../architecture/api.md) (full contract with TypeScript types) and [`architecture/frontend.md`](../architecture/frontend.md) (pages, deal page, wallet, transactions, dev setup). The frontend can start from those two files.
-- **In progress (Claude):** the API sent times without the UTC `Z` (SQLite drops it), so browsers would read deadlines as local time. Fix written; checking a test failure before committing.
-- Funding: the deploy wallet has ~3 SOL. Demo wallets get tokens with `Admin fund <wallet>` when someone needs them.
+- **Fixed:** the API sent times without the UTC `Z` (SQLite drops it), so browsers would have read deadlines as local time. All times now end in `Z`; a test checks it. One test run had 2 failures that didn't come back on rerun (9/9). Likely the public devnet RPC throttling us; if it keeps happening, use a dedicated devnet RPC (e.g. Helius free tier).
+- Funding: the deploy wallet has ~2.3 SOL (each full test run uses ~0.2). Demo wallets get tokens with `Admin fund <wallet>` when someone needs them.
 
 ## Done (all committed and pushed)
 
@@ -81,7 +81,7 @@ We'll use **our own test stablecoin** on devnet instead of Circle's devnet USDC,
 ## Next steps (in order)
 1. ~~Fund the deploy wallet.~~ Done.
 2. ~~Deploy, `Admin init`, set the mint.~~ Done.
-3. ~~Run `dotnet test` on devnet.~~ Done (9/9). UTC time fix pending.
+3. ~~Run `dotnet test` on devnet.~~ Done (9/9), UTC time fix included.
 4. **On demand:** `Admin fund <wallet>` for each demo wallet (a deal needs two: buyer and seller).
 5. **Saba:** Angular app per `architecture/api.md` and `architecture/frontend.md`. Can start now.
 6. **Mate and Dato:** demo listing with a 2-minute deadline, the pitch, the demo video, test carriers and coaches.
