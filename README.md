@@ -1,4 +1,4 @@
-<!-- DRAFT written by Claude for the team to rewrite in its own words before submission. -->
+<!-- DRAFT. Requires rewrite before submission. -->
 
 # Agora
 
@@ -49,7 +49,7 @@ The rules only work if neither the parties nor the platform can change them afte
 |---|---|---|
 | On-chain program | Rust, Anchor 0.32 | [`program/`](program/) |
 | API | C#, ASP.NET Core (.NET 10), EF Core + SQLite, Solnet | [`backend/`](backend/) |
-| Web app | Angular 21, Phantom (browser extension), `@solana/web3.js` | [`frontend/`](frontend/) (in progress) |
+| Web app | Angular, Phantom Connect | [`frontend/`](frontend/) (in progress) |
 
 - **The chain is the source of truth** for money and deal status. The API stores what doesn't belong on-chain (listings, descriptions, notifications) and a cached copy of each deal for fast pages.
 - **Sign-in with Solana:** a user's wallet address is their account; they sign in by signing a one-time message. No passwords or emails are stored.
@@ -66,7 +66,7 @@ Full design: [`docs/architecture/`](docs/architecture/README.md).
 
 ## Run it locally
 
-Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download) and Node.js with npm. Set your Phantom wallet to devnet (Settings → Developer settings → Testnet mode).
+Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download). Set your Phantom wallet to devnet (Settings → Developer settings → Testnet mode).
 
 ```bash
 cd backend
@@ -75,14 +75,7 @@ dotnet run --project colosseumbackend          # API on http://localhost:5107, S
 
 The API uses the public devnet RPC unless the `Solana__RpcUrl` environment variable points to a private one.
 
-In a second terminal:
-```bash
-cd frontend
-npm ci
-npm start                                      # http://localhost:4200, proxies /api to the backend
-```
-
-More in [`docs/architecture/frontend.md`](docs/architecture/frontend.md#dev-setup).
+Frontend: see [`docs/architecture/frontend.md`](docs/architecture/frontend.md#dev-setup) (Angular dev server with a proxy to the API).
 
 ### Tests
 
