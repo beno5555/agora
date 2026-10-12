@@ -60,7 +60,7 @@ dotnet build
 dotnet run --project colosseumbackend                          # http://localhost:5107
 dotnet run --project colosseumbackend --launch-profile https   # https://localhost:7005
 ```
-In Development, the OpenAPI document is at `/openapi/v1.json`, and a missing `Jwt:SigningKey` is replaced by a random one (sessions end on restart). Elsewhere set it with `dotnet user-secrets set Jwt:SigningKey <base64, 32+ bytes>`.
+In Development, Swagger UI is at `/swagger` (the OpenAPI document at `/openapi/v1.json`), and a missing `Jwt:SigningKey` is replaced by a random one (sessions end on restart). Elsewhere set it with `dotnet user-secrets set Jwt:SigningKey <base64, 32+ bytes>`.
 
 ```bash
 dotnet ef migrations add <Name> --project colosseumbackend --output-dir Data/Migrations   # after `dotnet tool restore`

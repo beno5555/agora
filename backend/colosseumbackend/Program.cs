@@ -29,6 +29,11 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/openapi/v1.json", "Agora API v1");
+                options.RoutePrefix = "swagger";
+            });
         }
 
         app.UseHttpsRedirection();

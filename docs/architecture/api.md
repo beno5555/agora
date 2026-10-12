@@ -1,6 +1,6 @@
 # Backend REST API
 
-The contract the Angular app codes against. Source of truth: `backend/colosseumbackend` (`Controllers/`, `Dtos/`, and the enums in `Common/`, one type per file). In Development the OpenAPI document is at `GET /openapi/v1.json`.
+The contract the Angular app codes against. Source of truth: `backend/colosseumbackend` (`Controllers/`, `Dtos/`, and the enums in `Common/`, one type per file). In Development, Swagger UI is at `/swagger` and the OpenAPI document at `GET /openapi/v1.json`.
 
 ## Conventions
 
