@@ -4,13 +4,14 @@ Snapshot of work since the team decided on dynamic deposits, no review time, and
 
 **Deadline:** submission closes 2026-10-13 06:59 UTC (10:59 Tbilisi). The team targets Oct 12.
 
-## Blocked on you
+## Update: 2026-10-12
 
-| # | What | Why |
-|---|---|---|
-| 1 | Open https://faucet.solana.com, sign in with GitHub, and send devnet SOL to **`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`** until it has **~3 SOL** (several requests) | That's the deploy wallet (keypair at `~/.config/solana/id.json` on Sandro's PC, never committed). Deploying the program costs ~2.7 SOL. The CLI faucet rate-limits us. |
-
-Everything else that's left depends on that: deploy, initialize, end-to-end tests, funding team wallets.
+- **Program deployed to devnet:** `J4fL4Q8nnndro2xmVdCayRt5apXhexkkVQoqqwf4AKi4`, initialized with `Admin init`.
+- **Test stablecoin (mint):** `7FutDfvw3Whjv6PcwCYdYb3FV25EHc3TRiUA4zw8pj21` (6 decimals); treasury `32gaRtk7owPbBndHgpNiskFPQEFMmMWsbrtJnnbXkXqZ`. Set in `appsettings.json`.
+- **End-to-end tests: 9/9 passed** on devnet on the first run, so the C#-built transactions work with the program.
+- **Frontend docs rewritten** against the actual backend: [`architecture/api.md`](../architecture/api.md) (full contract with TypeScript types) and [`architecture/frontend.md`](../architecture/frontend.md) (pages, deal page, wallet, transactions, dev setup). The frontend can start from those two files.
+- **In progress (Claude):** the API sent times without the UTC `Z` (SQLite drops it), so browsers would read deadlines as local time. Fix written; checking a test failure before committing.
+- Funding: the deploy wallet has ~3 SOL. Demo wallets get tokens with `Admin fund <wallet>` when someone needs them.
 
 ## Done (all committed and pushed)
 
@@ -78,10 +79,10 @@ We'll use **our own test stablecoin** on devnet instead of Circle's devnet USDC,
 **Not run yet**, because they need the program on devnet. They run on devnet because Solana's local test validator doesn't start on Windows.
 
 ## Next steps (in order)
-1. **You:** fund the deploy wallet (see the top of this file).
-2. **Claude:** deploy the program to devnet, then `Admin init`, then put the printed mint in `backend/colosseumbackend/appsettings.json` → `Solana:Mint`, then commit.
-3. **Claude:** run `dotnet test` on devnet and fix anything it finds. This is the first real check that C#-built transactions work with the program.
-4. **Claude/you:** `Admin fund` each team member's wallet.
+1. ~~Fund the deploy wallet.~~ Done.
+2. ~~Deploy, `Admin init`, set the mint.~~ Done.
+3. ~~Run `dotnet test` on devnet.~~ Done (9/9). UTC time fix pending.
+4. **On demand:** `Admin fund <wallet>` for each demo wallet (a deal needs two: buyer and seller).
 5. **Saba:** Angular app per `architecture/api.md` and `architecture/frontend.md`. Can start now.
 6. **Mate and Dato:** demo listing with a 2-minute deadline, the pitch, the demo video, test carriers and coaches.
 7. **Submit by Oct 12:** README, video, Colosseum form, in the team's own words.
