@@ -47,7 +47,7 @@ export class AuthService {
     this.settle(false);
   }
 
-   /** Connect, sign the server's message, verify. Called from the dialog's button. */
+  /** Connect, sign the server's message, verify. Called from the dialog's button. */
   async signIn(): Promise<void> {
     this.busy.set(true);
     try {
@@ -58,9 +58,9 @@ export class AuthService {
       this.user.set(user);
       this.dialogOpen.set(false);
       this.settle(true);
-    }  catch (error) {
-  console.error('Sign-in failed:', error);
-  if (!(error instanceof WalletRejectedError)) this.toast.fromError(error);
+    } catch (error) {
+      console.error('Sign-in failed:', error);
+      if (!(error instanceof WalletRejectedError)) this.toast.fromError(error);
     } finally {
       this.busy.set(false);
     }

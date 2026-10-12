@@ -14,7 +14,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideAppInitializer(async () => {
       // Config is needed everywhere; the session check just fills the header.
-     await Promise.all([inject(ConfigService).load().catch(() => {}), inject(AuthService).init()]);   
+      await Promise.all([inject(ConfigService).load().catch(() => {}), inject(AuthService).init()]);
     }),
   ],
 };

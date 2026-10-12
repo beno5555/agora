@@ -46,14 +46,14 @@ export class ApiService {
     }
   }
 
-private messageOf(error: HttpErrorResponse): string {
-  if (error.status === 0) return 'Cannot reach the server. Is the backend running on port 5107?';
-  const body = error.error;
-  if (body?.message) return body.message;
-  if (body?.errors) return (Object.values(body.errors).flat() as string[])[0] ?? body.title;
-  if (body?.title) return body.title;
-  if (error.status === 401) return 'Sign in to continue';
-  if (error.status === 429) return 'Too many requests. Wait a moment and try again.';
-  return 'Something went wrong';
-}
+  private messageOf(error: HttpErrorResponse): string {
+    if (error.status === 0) return 'Cannot reach the server. Is the backend running on port 5107?';
+    const body = error.error;
+    if (body?.message) return body.message;
+    if (body?.errors) return (Object.values(body.errors).flat() as string[])[0] ?? body.title;
+    if (body?.title) return body.title;
+    if (error.status === 401) return 'Sign in to continue';
+    if (error.status === 429) return 'Too many requests. Wait a moment and try again.';
+    return 'Something went wrong';
+  }
 }
