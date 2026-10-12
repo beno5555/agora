@@ -8,7 +8,7 @@ It is also meant to be shared with regular Claude chats (for example as claude.a
 
 **Agora** is a global P2P marketplace on Solana for gaming items, in-game currencies and game services (such as paid carries). With each deal, both buyer and seller lock a deposit. If they disagree, the funds stay locked until they agree or one accepts the other's offer to split. Nobody outside decides.
 
-**The full product plan is in [`docs/PLAN.md`](docs/PLAN.md):** settlement rules, fees, the alpha build plan, positioning and research evidence. Read it before working on product or architecture. Keep plan details there, not here. **The technical design is in [`docs/architecture/`](docs/architecture/README.md):** read the relevant file before writing code. **Latest progress, blockers and next steps:** [`docs/currentstatus/STATUS.md`](docs/currentstatus/STATUS.md). Read it at the start of a session.
+**The full product plan is in [`docs/PLAN.md`](docs/PLAN.md):** settlement rules, fees, the alpha build plan, positioning and research evidence. Read it before working on product or architecture. Keep plan details there, not here. **The technical design is in [`docs/architecture/`](docs/architecture/README.md):** read the relevant file before writing code. **Latest progress, blockers and next steps:** [`docs/currentstatus/STATUS.md`](docs/currentstatus/STATUS.md). Read it at the start of a session. **Cross-side issues** (a problem found in the other person's area; see Team workflow below): [`docs/currentstatus/ISSUES.md`](docs/currentstatus/ISSUES.md) — check it at the start of a session too.
 
 - **Event:** Colosseum's Crypto World's Fair (Build Station Tbilisi; partners Colosseum, Superteam Georgia, Solana). https://colosseum.com/worldsfair/resources
 - **Submission deadline:** 2026-10-13 06:59 UTC. The team aims to submit on Oct 12. **Presentation:** Oct 14.
@@ -25,8 +25,8 @@ Nobody on the team writes Rust, so Claude writes the Solana program, using Ancho
 
 ### Team workflow
 - **Ownership:** Sandro owns `backend/` and `program/`; Saba owns `frontend/`. Work only in your owner's area, even if a fix for the other side seems obvious and small.
-- **`docs/architecture/api.md` is the contract between frontend and backend.** The frontend codes only against it. If something there looks wrong or missing while working on the frontend, don't change the backend to fix it — report it (file, endpoint, what's wrong) so Sandro can decide and make the change himself, in the same commit as the matching `api.md` update.
-- **Shared docs:** `CLAUDE.md`, `docs/PLAN.md`, `docs/architecture/*` (except `frontend.md`) and `STATUS.md` are Sandro's to change; `frontend.md` is Saba's. Either side can ask the other for a change instead of making it directly.
+- **`docs/architecture/api.md` is the contract between frontend and backend.** The frontend codes only against it. If something there looks wrong or missing while working on the frontend, don't change the backend to fix it — add a row to [`docs/currentstatus/ISSUES.md`](docs/currentstatus/ISSUES.md) and keep working on your own side; the owner fixes it and updates `api.md` in the same commit.
+- **Shared docs:** `CLAUDE.md`, `docs/PLAN.md`, `docs/architecture/*` (except `frontend.md`) and `STATUS.md` are Sandro's to change; `frontend.md` is Saba's. Either side can ask the other for a change instead of making it directly. `ISSUES.md` is written by whoever hits the problem, cleared by whoever owns the area.
 - **Git:** both work on `main` directly for this hackathon (no feature branches yet, since the two areas don't overlap). `git pull --rebase` before starting and before pushing; commit and push small and often so neither side drifts far behind. Never push a change inside the other person's owned folder.
 - **Push promptly:** commit and push finished doc or code changes right away, without waiting to be asked each time, so the other side always has the latest `api.md`/`frontend.md` on GitHub.
 
@@ -43,7 +43,7 @@ agora/
 ├── program/                  Solana program (Anchor workspace)
 ├── docs/PLAN.md              detailed product plan
 ├── docs/architecture/        technical design: program, auth, API, data model, frontend
-├── docs/currentstatus/       STATUS.md: current state and next steps
+├── docs/currentstatus/       STATUS.md (current state, next steps), ISSUES.md (cross-side problems)
 ├── .claude/skills/colosseum-copilot/   project-scoped Claude skill
 └── skills-lock.json          source and hash of installed skills
 ```
