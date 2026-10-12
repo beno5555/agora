@@ -74,6 +74,10 @@ public class DealFlowTests
         var sellerView = await sellerClient.GetFromJsonAsync<ApplicationResponse<FullDealDto>>($"api/deals/{deal.Id}", TestJson.Options);
         Assert.DoesNotContain(DealAction.AcceptSplit, sellerView!.Data!.AllowedActions); // can't accept own offer
 
+        // Times read back from the database must carry the UTC marker, or browsers parse them as local time.
+        string sellerJson = await sellerClient.GetStringAsync($"api/deals/{deal.Id}");
+        Assert.Matches("\"acceptedAt\":\"[^\"]+Z\"", sellerJson);
+
         deal = await ActAsync(buyerClient, buyer, deal.Id, new DealActionDto { Action = DealAction.AcceptSplit });
 
         Assert.Equal(DealStatus.Split, deal.Status);

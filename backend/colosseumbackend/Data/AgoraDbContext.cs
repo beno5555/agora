@@ -1,5 +1,6 @@
 using colosseumbackend.Data.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace colosseumbackend.Data;
 
@@ -20,5 +21,22 @@ public class AgoraDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AgoraDbContext).Assembly);
+    }
+
+    /// <summary>
+    /// Every stored time is UTC, but SQLite reads it back as DateTimeKind.Unspecified, which JSON
+    /// writes without a "Z" and browsers then parse as local time. Mark it UTC on the way out.
+    /// </summary>
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+        configurationBuilder.Properties<DateTime?>().HaveConversion<UtcDateTimeConverter>();
+    }
+
+    private class UtcDateTimeConverter : ValueConverter<DateTime, DateTime>
+    {
+        public UtcDateTimeConverter() : base(value => value, value => DateTime.SpecifyKind(value, DateTimeKind.Utc))
+        {
+        }
     }
 }
