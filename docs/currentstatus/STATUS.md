@@ -12,15 +12,16 @@ A snapshot of where things stand, kept short; history is in `git log`. Plan: [`.
 | Backend API | Complete for the alpha. **15 end-to-end tests pass on devnet** (through Helius): a full deal paid match by match, a dispute settled by a split, a missed 2-minute deadline refunded with the seller's deposit, my listings, access checks, validation, sign-in replay and impostor signatures. |
 | Admin tool | `init` done. `fund <wallet>` gives a demo wallet 100 test tokens + 0.05 devnet SOL. |
 | Frontend | **First version pushed Oct 12** (`c4a2126`, Angular 21): every page in [`frontend.md`](../architecture/frontend.md) (home, game, listing, deal, sell, `/me` with pause/resume and profile editing, the `/u/:wallet` profile); sign-in with the Phantom browser extension (not Phantom Connect yet); every deal action through the backend-built transaction, with polling, the deadline refetch and a "where the money goes" table. `ng build` passes (~0.7 MB). **Clicked through end to end on devnet (Oct 12)** by an automated browser run (Chrome driven by Playwright, with a stand-in for Phantom that signs with throwaway keys): a deal paid match by match, the `2m` missed-deadline refund, pause/resume, profile editing, the public profile. All passed. **Sandro then tried most of it by hand with the real Phantom extension (Oct 12–13): fine.** |
-| Demo, pitch, submission | Not started. |
+| Demo, pitch, submission | **Colosseum form filled in except three fields** (Oct 13): important context about the repo, the demo video, and the access instructions. The live link is in. Those three come after the redesign. |
 
 Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro's PC only): ~5.5 SOL (topped up Oct 12). A full test run uses ~0.3 SOL (the faucet at https://faucet.solana.com tops it up), and each funded demo wallet 0.05.
 
 ## Next steps
-1. **Sandro:** the app is live at **https://46-101-154-81.sslip.io** (see [Hosting](#hosting-backend-required)). Sign-in and a few deal actions already work there on PC and phone. Still to do once: the full demo path on the hosted site (list → buy → accept → deliver → confirm, and the `2m` missed-deadline refund). Claude redeploys after each feature or fix commit (`deploy/deploy.ps1`, from Sandro's PC).
+0. **Now (Sandro's call, Oct 13): the frontend UI/UX redesign, before the remaining submission fields.** Visual only, nothing technical: the site must match the team's logo and background template. **While it's in progress, commits are not deployed one by one**, so judges never see a half-finished design; deploy when Sandro says it's ready.
+1. **Sandro:** the app is live at **https://46-101-154-81.sslip.io** (see [Hosting](#hosting-backend-required)). Sign-in and a few deal actions already work there on PC and phone. Still to do once: the full demo path on the hosted site (list → buy → accept → deliver → confirm, and the `2m` missed-deadline refund). Claude redeploys after each feature or fix commit (`deploy/deploy.ps1`, from Sandro's PC), except during the redesign (step 0).
 2. **Sandro:** `Admin fund` demo and judges' wallets on request. **Decided (Oct 13): a judge sends their wallet address to Sandro, who funds it** (the backend holds no keys, so judges can't fund themselves). The form's access instructions need Sandro's contact (Discord or Telegram).
 3. **Mate and Dato:** the demo script (a listing with the `2m` deadline shows the missed-deadline refund live), the pitch, the video, test carriers and coaches.
-4. **Everyone, by Oct 12:** repo README (Claude's draft is in `README.md`; rewrite it), demo video, Colosseum form, in the team's own words.
+4. **Everyone, after the redesign:** the form's three missing fields (repo context, demo video, access instructions) and the repo README (Claude's draft is in `README.md`; rewrite it), in the team's own words.
 
 ## Hosting (backend, required)
 
