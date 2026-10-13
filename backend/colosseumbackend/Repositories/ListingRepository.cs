@@ -7,6 +7,8 @@ namespace colosseumbackend.Repositories;
 
 public class ListingRepository : BaseRepository<Listing>
 {
+    private const string LikeEscape = "\\";
+
     public ListingRepository(AgoraDbContext dbContext) : base(dbContext)
     {
     }
@@ -30,7 +32,10 @@ public class ListingRepository : BaseRepository<Listing>
 
         if (!string.IsNullOrWhiteSpace(textQuery))
         {
-            query = query.Where(listing => listing.Title.Contains(textQuery) || listing.Description.Contains(textQuery));
+            // SQLite's LIKE ignores case (ASCII); Contains would translate to the case-sensitive instr().
+            string pattern = "%" + EscapeLikePattern(textQuery) + "%";
+            query = query.Where(listing => EF.Functions.Like(listing.Title, pattern, LikeEscape)
+                                        || EF.Functions.Like(listing.Description, pattern, LikeEscape));
         }
 
         int size = ClampPageSize(pageSize);
@@ -77,5 +82,13 @@ public class ListingRepository : BaseRepository<Listing>
             .Where(listing => listing.SellerWallet == sellerWallet && listing.IsActive)
             .OrderByDescending(listing => listing.CreatedAt)
             .ToListAsync();
+    }
+
+    /// <summary>Makes the user's text match literally, so % and _ aren't treated as wildcards.</summary>
+    private static string EscapeLikePattern(string text)
+    {
+        return text.Replace(LikeEscape, LikeEscape + LikeEscape)
+                   .Replace("%", LikeEscape + "%")
+                   .Replace("_", LikeEscape + "_");
     }
 }
