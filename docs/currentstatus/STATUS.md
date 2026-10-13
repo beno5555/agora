@@ -17,12 +17,12 @@ A snapshot of where things stand, kept short; history is in `git log`. Plan: [`.
 Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro's PC only): ~5.5 SOL (topped up Oct 12). A full test run uses ~0.3 SOL (the faucet at https://faucet.solana.com tops it up), and each funded demo wallet 0.05.
 
 ## Next steps
-**The code is done (Oct 13, 05:15 UTC): no more features before the deadline**, only fixes for something broken. Everything up to `30aee15` is deployed. **Drafts of the three missing form fields, demo inputs and the README's stale points: [`SUBMISSION.md`](SUBMISSION.md).**
+**The code is done (Oct 13, 05:15 UTC): no more features before the deadline**, only fixes for something broken. Everything up to `30aee15` is deployed. **Final texts of the two missing form fields, the demo plan and the README's stale points: [`SUBMISSION.md`](SUBMISSION.md).**
 
 1. Done: **the technical demo is planned** in [SUBMISSION.md](SUBMISSION.md#technical-demo-plan-oct-13-0545-utc) (setup, a 3-minute script, what to do if something breaks). It is recorded on the **hosted site**, not localhost.
 2. **Sandro, now:** follow that plan: pause Dealer1's test listings (they are public again), start the `2m` deal, record (the first take doubles as the end-to-end run on the host), upload by 06:40 UTC.
 3. Done: Sandro's contact for judges is Telegram **@sandrobenashvili** (in the access instructions and the `Demo: 2-minute deadline` listing's text).
-4. **Team:** rewrite the drafts in [SUBMISSION.md](SUBMISSION.md) in your own words, paste them into the form, and rewrite `README.md` (it has stale points, listed there). Decide whether the repo context says the team built it with Claude Code.
+4. **Team:** read the final texts in [SUBMISSION.md](SUBMISSION.md) once, paste them into the form, and rewrite `README.md` (it has stale points, listed there). The repo context says Claude Code wrote the Solana program; delete those lines if the team decides otherwise.
 5. **Sandro, after the submission:** `Admin fund <wallet>` for judges who send their address. Accept the deals judges start on demo listings (import a demo seller into Phantom, see below).
 
 **Demo data on the live site (Oct 13):** three demo sellers (NovaCarry, LootSmith, RiftCoach) with 11 listings across all six games, including `Demo: 2-minute deadline (try the refund)`; each funded with 100 test tokens + 0.05 SOL. **Their keys are in `C:\Users\admin\.agora-demo\sellers.json` on Sandro's PC only** (`phantomPrivateKey` imports into Phantom: Add account → Import private key). Sandro's own test listings are paused. **Steam items are in scope** (Sandro, Oct 13; recorded in PLAN.md): a CS2 skin listing was swapped for "Faceit duo, 4 matches" on a wrong assumption, and it stays as is.
