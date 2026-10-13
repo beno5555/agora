@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # One-time setup of a fresh Ubuntu 24.04 droplet for Agora. deploy.ps1 -Setup uploads this folder
-# (with the generated agora.env) and runs it as root with the public host as the argument.
+# (with the generated agora.env) and runs it as root with the public host as the first argument and,
+# optionally, a second host that redirects to it (the sslip.io address when the public host is another name).
 # Safe to run again; it replaces agora.env, so a rerun gets a new JWT key and signs everyone out.
 set -euo pipefail
 
 host="$1"
+redirect_from="${2:-}"
 here="$(cd "$(dirname "$0")" && pwd)"
 export DEBIAN_FRONTEND=noninteractive
 
@@ -39,6 +41,11 @@ chmod 700 /var/lib/agora
 install -m 600 -o root -g root "$here/agora.env" /etc/agora/agora.env
 install -m 644 "$here/agora.service" /etc/systemd/system/agora.service
 sed "s/AGORA_HOST/$host/" "$here/Caddyfile" > /etc/caddy/Caddyfile
+if [ -n "$redirect_from" ] && [ "$redirect_from" != "$host" ]; then
+    # A temporary redirect (302), so browsers don't remember it and it can be removed later.
+    printf '\n# The old address still works: it sends visitors to the public host.\n%s {\n\tredir https://%s{uri}\n}\n' \
+        "$redirect_from" "$host" >> /etc/caddy/Caddyfile
+fi
 systemctl daemon-reload
 systemctl enable agora
 systemctl restart caddy

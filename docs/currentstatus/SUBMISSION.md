@@ -4,7 +4,7 @@ The Colosseum form's missing fields, written by Claude on Oct 13 from the repo a
 
 | Field | State |
 |---|---|
-| Access instructions (`liveProductAccessInstructions`) | Final text below (297 of the field's 300 characters), with Sandro's Telegram (@sandrobenashvili) |
+| Access instructions (`liveProductAccessInstructions`) | Final text below (297 of the field's 300 characters), with Sandro's Telegram (@sandrobenashvili). Its sslip.io link now redirects to https://agora-market.duckdns.org |
 | Important context about the repo | Final text below (468 of the field's 500 characters). It says Claude Code wrote the Solana program; delete those lines if the team decides otherwise |
 | Demo video | Recorded on the hosted site (2:52). [Setup below](#technical-demo-setup) |
 | Repo `README.md` | Claude's older draft; rewrite it. Stale points listed at the bottom |
@@ -31,7 +31,7 @@ The whole product, built during the hackathon (from Oct 11). program/: Anchor pr
 
 **Setup:**
 1. **Hide test listings.** Signed in as Dealer1 (`CwjS…9HYJ`), pause "aa" and "service test 1" on `/me` if they are still public.
-2. **Two browser windows side by side**, both on exactly `https://46-101-154-81.sslip.io` (a localhost tab makes Phantom refuse sign-in): left = buyer (Dealer1: 99.3 test USDC, 0.046 SOL on Oct 13), right = seller **NovaCarry** (100 test USDC, 0.05 SOL; key in `sellers.json`). Easiest: a second Chrome profile with Phantom and only NovaCarry imported.
+2. **Two browser windows side by side**, both on exactly `https://agora-market.duckdns.org` (a localhost tab makes Phantom refuse sign-in): left = buyer (Dealer1: 99.3 test USDC, 0.046 SOL on Oct 13), right = seller **NovaCarry** (100 test USDC, 0.05 SOL; key in `sellers.json`). Easiest: a second Chrome profile with Phantom and only NovaCarry imported.
 3. Both Phantoms on **Devnet**, both signed in. Browser zoom 110–125%. Close other tabs and notifications.
 4. **Start the 2-minute deal a few minutes before recording:** buyer buys "Demo: 2-minute deadline (try the refund)" ($2), seller accepts.
 5. Buyer window on the home page; the listing "Ranked boost, Gold IV to Platinum IV" (Apex, NovaCarry, $24, 4 ranks of $6) one click away. A tab with the GitHub repo open at `program/programs/agora/src/lib.rs`.
@@ -51,5 +51,5 @@ What the setup above was built from:
 
 - The web app table row says "(in progress)" and "Phantom Connect": the app is finished and uses the Phantom browser extension (on phones, the Phantom app's browser).
 - The Team table says Dato is the "Designer"; `CLAUDE.md` says Dato's role isn't set yet.
-- There is no live link yet: add https://46-101-154-81.sslip.io and the access steps above.
+- There is no live link yet: add https://agora-market.duckdns.org and the access steps above.
 - "Run it locally" sends readers to `frontend.md` for the frontend; one line is enough: `cd frontend && npm ci && npm start` (with the API running).

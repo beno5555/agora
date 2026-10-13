@@ -7,11 +7,17 @@ Builds Agora (frontend + self-contained Linux backend) and deploys it to the dro
 
 .EXAMPLE
 ./deploy/deploy.ps1 -Server 203.0.113.5           # every later deploy
+
+.EXAMPLE
+./deploy/deploy.ps1 -Server 203.0.113.5 -HostName agora-example.duckdns.org   # served at a name pointed at the droplet
 #>
 #Requires -Version 7.4
 param(
-    # The droplet's public IPv4 address. The site is served at https://<ip-with-dashes>.sslip.io
+    # The droplet's public IPv4 address.
     [Parameter(Mandatory)] [string] $Server,
+    # The public host name, already pointed at $Server (e.g. a DuckDNS name). Without it the site is
+    # served at https://<ip-with-dashes>.sslip.io; with it, that sslip.io address redirects here.
+    [string] $HostName,
     # One-time server setup (Caddy, firewall, swap, the systemd service, secrets) before deploying.
     [switch] $Setup
 )
@@ -24,16 +30,17 @@ if (-not [System.Net.IPAddress]::TryParse($Server, [ref] $address) -or $address.
     throw "-Server must be the droplet's IPv4 address, e.g. 203.0.113.5 (got '$Server')"
 }
 
-$repo     = Split-Path $PSScriptRoot -Parent
-$hostName = ($Server -replace '\.', '-') + '.sslip.io'
-$remote   = "root@$Server"
-$work     = Join-Path ([System.IO.Path]::GetTempPath()) 'agora-deploy'
-$publish  = Join-Path $work 'app'
-$archive  = Join-Path $work 'agora.tar.gz'
+$repo      = Split-Path $PSScriptRoot -Parent
+$sslipHost = ($Server -replace '\.', '-') + '.sslip.io'
+if (-not $HostName) { $HostName = $sslipHost }
+$remote    = "root@$Server"
+$work      = Join-Path ([System.IO.Path]::GetTempPath()) 'agora-deploy'
+$publish   = Join-Path $work 'app'
+$archive   = Join-Path $work 'agora.tar.gz'
 # Windows' own tar (bsdtar): Git's GNU tar would read "C:\..." as a remote host.
-$tar      = Join-Path $env:SystemRoot 'System32\tar.exe'
+$tar       = Join-Path $env:SystemRoot 'System32\tar.exe'
 # Files are uploaded from Windows, so strip any CRLF line endings before running them.
-$stripCr  = 'sed -i ''s/\r$//'''
+$stripCr   = 'sed -i ''s/\r$//'''
 
 if (Test-Path $work) { Remove-Item $work -Recurse -Force }
 New-Item -ItemType Directory $work | Out-Null
@@ -44,7 +51,7 @@ try {
             throw 'Set $env:Solana__RpcUrl to the Helius devnet URL first; it goes into the server''s secrets file.'
         }
 
-        Write-Host "== Setting up $remote for https://$hostName"
+        Write-Host "== Setting up $remote for https://$HostName"
         $setupDir = Join-Path $work 'setup'
         New-Item -ItemType Directory $setupDir | Out-Null
         Copy-Item (Join-Path $PSScriptRoot 'setup-server.sh'), (Join-Path $PSScriptRoot 'agora.service'), (Join-Path $PSScriptRoot 'Caddyfile') $setupDir
@@ -52,15 +59,15 @@ try {
         # The secrets file: generated here, never written into the repo, deleted locally in `finally`.
         $jwtKey = [Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
         $envLines = @(
-            "Auth__Domain=$hostName"
-            "AllowedHosts=$hostName;localhost"
+            "Auth__Domain=$HostName"
+            "AllowedHosts=$HostName;localhost"
             "Jwt__SigningKey=$jwtKey"
             "Solana__RpcUrl=$env:Solana__RpcUrl"
         )
         [System.IO.File]::WriteAllText((Join-Path $setupDir 'agora.env'), ($envLines -join "`n") + "`n")
 
         scp -r $setupDir "${remote}:/root/agora-setup"
-        ssh $remote "$stripCr /root/agora-setup/* && bash /root/agora-setup/setup-server.sh $hostName; status=`$?; rm -rf /root/agora-setup; exit `$status"
+        ssh $remote "$stripCr /root/agora-setup/* && bash /root/agora-setup/setup-server.sh $HostName $sslipHost; status=`$?; rm -rf /root/agora-setup; exit `$status"
     }
 
     Write-Host '== Building the frontend'
@@ -92,19 +99,19 @@ try {
     scp (Join-Path $PSScriptRoot 'install-release.sh') "${remote}:/tmp/agora-install-release.sh"
     ssh $remote "$stripCr /tmp/agora-install-release.sh && bash /tmp/agora-install-release.sh"
 
-    Write-Host "== Checking https://$hostName/health"
+    Write-Host "== Checking https://$HostName/health"
     # Right after setup, Caddy may still be getting the certificate.
     for ($attempt = 1; $attempt -le 12; $attempt++) {
         try {
-            Invoke-WebRequest "https://$hostName/health" -TimeoutSec 10 | Out-Null
-            Write-Host "Deployed: https://$hostName"
+            Invoke-WebRequest "https://$HostName/health" -TimeoutSec 10 | Out-Null
+            Write-Host "Deployed: https://$HostName"
             return
         }
         catch {
             Start-Sleep -Seconds 5
         }
     }
-    throw "https://$hostName/health didn't answer. On the server: journalctl -u caddy -n 50; journalctl -u agora -n 50"
+    throw "https://$HostName/health didn't answer. On the server: journalctl -u caddy -n 50; journalctl -u agora -n 50"
 }
 finally {
     Remove-Item $work -Recurse -Force -ErrorAction SilentlyContinue

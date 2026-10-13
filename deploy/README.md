@@ -10,7 +10,7 @@ browser ──https──▶ Caddy (:443, Let's Encrypt cert) ──http──�
 | Decision | Choice | Why |
 |---|---|---|
 | Provider | DigitalOcean droplet, Basic $6/mo (1 GB RAM), Ubuntu 24.04, Frankfurt | Simple, instant signup. Billing is hourly ($0.00893 an hour), so the $5 credit covers about 23 days. When it runs out, DigitalOcean keeps the droplet running and bills the card on file; a powered-off droplet is still billed, only **Destroy** stops the charges. |
-| Address | `https://<ip-with-dashes>.sslip.io` (e.g. `203-0-113-5.sslip.io`) | No domain to buy. sslip.io resolves the name to the IP. HTTPS is required: the session cookie is `Secure`. |
+| Address | `https://agora-market.duckdns.org` (since Oct 13), a free DuckDNS name pointed at the droplet. The first address, `https://<ip-with-dashes>.sslip.io`, redirects to it. | No domain to buy. DuckDNS (signed in with Sandro's account) and sslip.io both resolve the name to the IP. HTTPS is required: the session cookie is `Secure`. |
 | Reverse proxy | Caddy | Gets and renews the HTTPS certificate on its own; the config is 3 lines. |
 | .NET | Self-contained publish (`-r linux-x64 --self-contained`) | The runtime ships inside the app folder, so the server needs no .NET install. Everything is built on the dev PC; the server only runs the result. |
 | Process | systemd service `agora`, `Restart=always` | Survives crashes and reboots. |
@@ -52,14 +52,32 @@ From the repo root, in PowerShell 7, with `$env:Solana__RpcUrl` set to the Heliu
 ```powershell
 ./deploy/deploy.ps1 -Server <ip> -Setup
 ```
-It takes a few minutes. It ends with `Deployed: https://<ip-with-dashes>.sslip.io`.
+It takes a few minutes. It ends with `Deployed: https://<ip-with-dashes>.sslip.io`. To serve the site at a name you pointed at the droplet (a DuckDNS name: set its IP on duckdns.org first), add `-HostName <name>`: the sslip.io address then redirects to it.
 
 ## Every later deploy
 ```powershell
 git pull --rebase
-./deploy/deploy.ps1 -Server <ip>
+./deploy/deploy.ps1 -Server <ip> -HostName agora-market.duckdns.org
 ```
+`-HostName` only matters for the final `/health` check; the server keeps whatever host it was set up with.
+
 `ng serve` can keep running, except when `package-lock.json` changed since the last install: then the script runs `npm ci`, which replaces `frontend/node_modules` and fails with `EPERM` while `ng serve` holds files there. The app is down for a few seconds while it restarts. The database is kept.
+
+## Change the host of a running server
+Without `-Setup`, which would also replace the JWT key and sign everyone out. Point the new name at the droplet first, then from the repo root:
+```powershell
+scp deploy/Caddyfile root@<ip>:/tmp/Caddyfile.template
+ssh root@<ip>
+```
+On the server (the same Caddyfile `setup-server.sh` writes: the new name, plus a temporary redirect from the old one):
+```bash
+host=<new-name>; old=<ip-with-dashes>.sslip.io
+sed "s/AGORA_HOST/$host/; s/\r$//" /tmp/Caddyfile.template > /etc/caddy/Caddyfile
+printf '\n# The old address still works: it sends visitors to the public host.\n%s {\n\tredir https://%s{uri}\n}\n' "$old" "$host" >> /etc/caddy/Caddyfile
+sed -i "s/^Auth__Domain=.*/Auth__Domain=$host/; s/^AllowedHosts=.*/AllowedHosts=$host;localhost/" /etc/agora/agora.env
+systemctl restart agora && systemctl reload caddy
+```
+Then check the new name as below; the old address should answer with a `302` to it.
 
 ## Check that it works
 From a phone on mobile data, not the dev PC:
