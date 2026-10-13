@@ -1,0 +1,132 @@
+/* ============ Agora tokens ============ */
+:root {
+  color-scheme: dark;
+
+  /* Brand, theme-independent */
+  --gold-100: #FFF2AE;
+  --gold-300: #FFD866;
+  --gold-500: #F8C23A;
+  --gold-700: #B8860B;
+  --gold-900: #8A5300;
+  --ink-950:  #07090E;
+  --ink-900:  #1A160E;
+  --header-bg: var(--ink-950);   /* the header stays ink in both themes */
+  --header-text: #F3EFE6;
+
+  /* Dark theme (default) */
+  --bg:            #07090E;
+  --surface-1:     #0E121A;   /* panels, inputs */
+  --surface-2:     #151B26;   /* raised rows, hover */
+  --surface-3:     #1C2431;   /* disabled fill, pressed */
+  --text:          #F3EFE6;   /* 16.3:1 on surface-1 */
+  --text-muted:    #A7B0BE;   /* 8.6:1 */
+  --text-faint:    #8790A0;   /* 5.8:1, still AA for body text */
+  --border:        #232B38;   /* decorative dividers only */
+  --border-strong: #5A667A;   /* input and control edges, 3.2:1 on surface-1 */
+
+  --primary:       var(--gold-500);
+  --primary-hover: var(--gold-300);
+  --on-primary:    #1A1203;   /* 11.3:1 on gold-500 */
+  --link:          var(--text);        /* links are always underlined; gold is kept for brand, locked money and the primary action */
+  --link-underline: var(--text-faint);
+  --danger:        #FF8077;   /* 7.7:1 */
+  --danger-bg:     #33171A;
+  --focus:         #FFE7A1;   /* 15:1 ring */
+
+  /* Locked money (the vault bar) */
+  --lock-price:    var(--gold-500);
+  --lock-deposit:  var(--gold-700);   /* 5.8:1 against surface-1 */
+  --lock-released: var(--text-faint);
+
+  /* Status: fg = text and icon, bg = pill fill. Every pair passes AA (4.5:1+). */
+  --st-neutral-fg: #E6E0D4; --st-neutral-bg: #0E121A; --st-neutral-bd: #5A667A;  /* Draft, AwaitingSeller */
+  --st-blue-fg:    #8DB8FF; --st-blue-bg:    #13233D;  /* Active, Delivered  7.8:1 */
+  --st-amber-fg:   #FF9A52; --st-amber-bg:   #2E1A0C;  /* Disputed           7.9:1 (orange, so it never reads as brand gold) */
+  --st-green-fg:   #5FD68A; --st-green-bg:   #10291B;  /* Completed          8.5:1 */
+  --st-red-fg:     #FF8077; --st-red-bg:     #33171A;  /* Undelivered        6.7:1 */
+  --st-grey-fg:    #A3ABB8; --st-grey-bg:    #1C2129;  /* all other statuses 7.0:1 */
+
+  /* Type */
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --fs-xs: 0.8125rem;   /* 13px meta, timestamps; the smallest size used */
+  --fs-sm: 0.875rem;    /* 14px hints, badges */
+  --fs-base: 1rem;      /* 16px body; inputs never go below this (stops iOS zoom) */
+  --fs-lg: 1.125rem;    /* 18px lead text, panel titles on phone */
+  --fs-xl: 1.375rem;    /* 22px panel titles */
+  --fs-2xl: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);         /* section heads */
+  --fs-3xl: clamp(1.75rem, 1.25rem + 2.2vw, 2.75rem);    /* page titles */
+  --fs-amount: clamp(2.25rem, 1.5rem + 3.2vw, 3.5rem);   /* vault total */
+
+  --lh-tight: 1.15;
+  --lh-base: 1.5;
+
+  /* Spacing (4px base) */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
+
+  /* Radius: three values, no more */
+  --r-sm: 6px;      /* buttons, inputs, rows */
+  --r-md: 10px;     /* panels, vault */
+  --r-pill: 999px;  /* badges, counts */
+
+  /* Elevation: borders do the work; shadows only for overlays */
+  --shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.5), 0 0 0 1px var(--border);
+  --vault-edge: inset 0 1px 0 rgb(255 216 102 / 0.35);  /* the one gold hairline */
+
+  /* Layout */
+  --w-page: 1120px;
+  --w-read: 680px;
+  --gutter: 16px;   /* 24px at >= 600px, 32px at >= 960px (set in media queries) */
+  --tap: 48px;      /* minimum control height */
+  --header-h: 56px;
+
+  /* Motion */
+  --dur-1: 80ms;  --dur-2: 150ms; --dur-3: 250ms; --dur-4: 600ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* Light theme: follows the system. <html data-theme="dark"> forces dark (e.g. for the demo). */
+@media (prefers-color-scheme: light) {
+:root:not([data-theme="dark"]) {
+  color-scheme: light;
+  --bg:            #F6F2EA;   /* warm paper, not cold grey */
+  --surface-1:     #FFFFFF;
+  --surface-2:     #F0EBE1;
+  --surface-3:     #E7E0D3;
+  --text:          #1A160E;   /* 18:1 on white */
+  --text-muted:    #5A5244;   /* 7.7:1 */
+  --text-faint:    #6E6656;   /* 5.7:1 */
+  --border:        #E2DACB;
+  --border-strong: #8D8474;   /* 3.7:1 on white */
+
+  --primary:       var(--ink-900);   /* gold-on-white fails 3:1, so the primary button is ink with gold text, like the logo */
+  --primary-hover: #2C251A;
+  --on-primary:    var(--gold-300);  /* 13:1 on ink */
+  --link:          var(--text);
+  --link-underline: var(--text-faint);
+  --danger:        #B5322A;          /* 6.1:1 */
+  --danger-bg:     #FBE1DE;
+  --focus:         #6B3F00;          /* 9:1 */
+
+  --lock-price:    var(--gold-500);
+  --lock-deposit:  var(--gold-900);
+  --lock-released: var(--text-faint);
+
+  --st-neutral-fg: #1A160E; --st-neutral-bg: #FFFFFF; --st-neutral-bd: #8D8474;
+  --st-blue-fg:    #1D5BC2; --st-blue-bg:    #E3ECFB;  /* 5.3:1 */
+  --st-amber-fg:   #9A4500; --st-amber-bg:   #FCE6D2;  /* 5.4:1 */
+  --st-green-fg:   #1C7443; --st-green-bg:   #DDF1E4;  /* 4.9:1 */
+  --st-red-fg:     #B5322A; --st-red-bg:     #FBE1DE;  /* 4.9:1 */
+  --st-grey-fg:    #5B6270; --st-grey-bg:    #ECEAE6;  /* 5.1:1 */
+
+  --shadow-overlay: 0 12px 32px rgb(26 22 14 / 0.16), 0 0 0 1px var(--border);
+  --vault-edge: inset 0 2px 0 var(--gold-500);
+}
+}
+
+@media (min-width: 600px) { :root { --gutter: 24px; } }
+@media (min-width: 960px) { :root { --gutter: 32px; --header-h: 64px; } }

@@ -1,10 +1,15 @@
 import { Component, computed, input, signal } from '@angular/core';
+import { Icon } from './icon';
 
+/** A short wallet address; pressing it copies the full address. */
 @Component({
   selector: 'app-wallet-address',
+  imports: [Icon],
+  styleUrl: './wallet-address.css',
   template: `
-    <button type="button" class="mono linklike" [title]="wallet()" (click)="copy()">
+    <button type="button" class="address" [title]="wallet()" (click)="copy()">
       {{ copied() ? 'Copied' : short() }}
+      <app-icon [name]="copied() ? 'check' : 'copy'" />
     </button>
   `,
 })

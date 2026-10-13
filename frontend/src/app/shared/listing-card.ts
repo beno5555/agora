@@ -4,15 +4,17 @@ import { MinimalListingDto } from '../core/models';
 import { AmountPipe } from './amount.pipe';
 import { unitCount } from './unit';
 
+/** One listing as a ledger-style row: what it is on the left, the price on the right. */
 @Component({
   selector: 'app-listing-card',
   imports: [RouterLink, AmountPipe],
+  styleUrl: './listing-card.css',
   template: `
-    <a class="row-link" [routerLink]="['/l', listing().id]">
-      <div class="grow">
-        <strong>{{ listing().title }}</strong>
-        <div class="muted small">
-          {{ listing().gameName }} · {{ listing().type }} ·
+    <a class="listing-row" [routerLink]="['/l', listing().id]">
+      <div class="info">
+        <div class="meta">{{ listing().gameName }} · {{ listing().type }}</div>
+        <div class="title">{{ listing().title }}</div>
+        <div class="meta">
           {{ unitCount(listing().unit, listing().milestones) }} ·
           {{
             listing().seller.displayName ||
@@ -20,7 +22,7 @@ import { unitCount } from './unit';
           }}
         </div>
       </div>
-      <div class="price">\${{ listing().price | amount }}</div>
+      <div class="price num">\${{ listing().price | amount }}</div>
     </a>
   `,
 })

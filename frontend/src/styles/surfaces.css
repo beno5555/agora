@@ -1,0 +1,127 @@
+/* Panels hold information; there is no generic card. The gold-edged box is .vault (deal page). */
+.panel {
+  margin-bottom: var(--s-4);
+  padding: var(--s-4);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+@media (min-width: 600px) {
+  .panel {
+    padding: var(--s-5);
+  }
+}
+.panel > h2 {
+  margin-bottom: var(--s-3);
+}
+
+.notice {
+  margin-bottom: var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  background: var(--st-blue-bg);
+  color: var(--st-blue-fg);
+  border-radius: var(--r-sm);
+  font-weight: 500;
+}
+
+/* Text tabs: the selected one is marked by weight and a 3px underline, not by colour. */
+.tabs {
+  display: flex;
+  gap: var(--s-5);
+  margin-bottom: var(--s-4);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.tabs button {
+  min-height: var(--tap);
+  margin-bottom: -1px;
+  padding: 0 var(--s-1);
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  color: var(--text-muted);
+  font: 600 var(--fs-base) var(--font-body);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tabs button:hover {
+  color: var(--text);
+}
+.tabs button[aria-selected='true'] {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}
+
+dl.facts {
+  display: grid;
+  align-items: center;
+  grid-template-columns: max-content 1fr;
+  gap: var(--s-2) var(--s-5);
+  margin: 0;
+}
+dl.facts dt {
+  color: var(--text-muted);
+}
+dl.facts dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 500;
+}
+dl.facts .total {
+  color: var(--text);
+  font-weight: 700;
+}
+@media (max-width: 599px) {
+  dl.facts dd {
+    text-align: left;
+  }
+}
+
+/* Status and state pills. Colour is never the only signal: every pill also has text (and an icon). */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--badge-bd, var(--st-grey-fg));
+  border-radius: var(--r-pill);
+  background: var(--badge-bg, var(--st-grey-bg));
+  color: var(--badge-fg, var(--st-grey-fg));
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+@supports (color: color-mix(in srgb, red, blue)) {
+  .badge {
+    border-color: var(
+      --badge-bd,
+      color-mix(in srgb, var(--badge-fg, var(--st-grey-fg)) 40%, transparent)
+    );
+  }
+}
+.badge--neutral {
+  --badge-fg: var(--st-neutral-fg);
+  --badge-bg: var(--st-neutral-bg);
+  --badge-bd: var(--st-neutral-bd);
+}
+.badge--blue {
+  --badge-fg: var(--st-blue-fg);
+  --badge-bg: var(--st-blue-bg);
+}
+.badge--amber {
+  --badge-fg: var(--st-amber-fg);
+  --badge-bg: var(--st-amber-bg);
+}
+.badge--green {
+  --badge-fg: var(--st-green-fg);
+  --badge-bg: var(--st-green-bg);
+}
+.badge--red {
+  --badge-fg: var(--st-red-fg);
+  --badge-bg: var(--st-red-bg);
+}
+.badge--grey {
+  --badge-fg: var(--st-grey-fg);
+  --badge-bg: var(--st-grey-bg);
+}

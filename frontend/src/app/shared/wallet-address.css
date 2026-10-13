@@ -1,0 +1,18 @@
+.address {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: 44px;
+  padding: 0 var(--s-1);
+  background: none;
+  border: 0;
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.address:hover {
+  text-decoration: underline;
+}

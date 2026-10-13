@@ -49,9 +49,7 @@ import { WalletAddress } from '../../shared/wallet-address';
       </section>
 
       @if (isOwner()) {
-        <a [routerLink]="['/sell', l.id]"
-          ><button type="button" class="secondary">Edit listing</button></a
-        >
+        <a [routerLink]="['/sell', l.id]" class="btn btn--secondary">Edit listing</a>
       } @else {
         <section class="panel">
           <h2>Buy</h2>
@@ -77,10 +75,18 @@ import { WalletAddress } from '../../shared/wallet-address';
           }
           <button
             type="button"
+            class="btn btn--primary"
+            [class.is-loading]="actions.phase() !== 'idle'"
             [disabled]="actions.phase() !== 'idle' || !l.isActive"
             (click)="buy()"
           >
-            {{ actions.phase() === 'wallet' ? 'Waiting for wallet…' : 'Buy' }}
+            {{
+              actions.phase() === 'wallet'
+                ? 'Approve in Phantom…'
+                : actions.phase() === 'confirming'
+                  ? 'Confirming on Solana…'
+                  : 'Buy'
+            }}
           </button>
         </section>
       }

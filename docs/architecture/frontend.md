@@ -6,7 +6,7 @@ The app talks to the .NET API for everything off-chain. For anything involving m
 
 ## Stack and layout
 
-- Angular 21 in `frontend/`: standalone components with inline templates, signals, route params bound to inputs (`withComponentInputBinding`), `HttpClient` with `withFetch()` and an interceptor. One global stylesheet, `src/styles.css`.
+- Angular 21 in `frontend/`: standalone components with inline templates, signals, route params bound to inputs (`withComponentInputBinding`), `HttpClient` with `withFetch()` and an interceptor. Plain CSS, no framework: shared styles in `src/styles/` (tokens, base, controls, surfaces, utilities), the header and toasts in `app/app.css`, and a `.css` next to each component that has its own look. The visual design is [../design/DESIGN.md](../design/DESIGN.md).
 - Solana in the browser: `@solana/web3.js` (only to deserialize transactions), `bs58` (signatures), and Phantom's injected provider (`window.phantom.solana`, the browser extension).
 
 ```
@@ -57,7 +57,7 @@ Make "the money is locked, and nobody outside decides" visible:
 7. After every action, link the signature (`https://explorer.solana.com/tx/{sig}?cluster=devnet`), and always link the deal account (`…/address/{dealPda}?cluster=devnet`). Judges like seeing it on-chain.
 8. Poll `GET /api/deals/:id` every 10–15 s while the deal is open, so the other side's actions show up.
 
-Status badges: Draft/AwaitingSeller neutral, Active/Delivered blue, Disputed amber, Completed green, Undelivered red, the rest grey.
+Status badges (icon + text, never colour alone): Draft "Not funded" and AwaitingSeller "Waiting for seller" neutral, Active "In progress" and Delivered blue, Disputed "Disagreement" amber, Completed green, Undelivered "Not delivered" red, the rest grey.
 
 ## Wallet and sign-in
 

@@ -1,0 +1,189 @@
+/* Buttons. One .btn--primary per screen: it is the only place gold appears on a control. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: var(--tap);
+  padding: 0 var(--s-5);
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text);
+  font: 600 var(--fs-base) / 1.2 var(--font-body);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-2) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+.btn:active:not(:disabled, [aria-disabled='true']) {
+  transform: scale(0.98);
+}
+
+.btn--primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.btn--primary:hover:not(:disabled, [aria-disabled='true']) {
+  background: var(--primary-hover);
+}
+
+.btn--secondary {
+  border-color: var(--border-strong);
+}
+.btn--secondary:hover:not(:disabled, [aria-disabled='true']) {
+  background: var(--surface-2);
+}
+.btn--secondary:active:not(:disabled, [aria-disabled='true']) {
+  background: var(--surface-3);
+}
+
+.btn--danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.btn--danger:hover:not(:disabled, [aria-disabled='true']) {
+  background: var(--danger-bg);
+}
+
+.btn--ghost {
+  padding: 0 var(--s-3);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.btn--ghost:hover:not(:disabled, [aria-disabled='true']) {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.btn--sm {
+  min-height: 40px;
+  padding: 0 var(--s-4);
+}
+@media (max-width: 599px) {
+  .btn--sm {
+    min-height: var(--tap);
+  }
+  .btn--block-phone {
+    width: 100%;
+  }
+}
+
+/* A disabled button is plainly inert; the page says why next to it. */
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  background: var(--surface-3);
+  border-color: transparent;
+  color: var(--text-faint);
+  cursor: not-allowed;
+}
+.btn--ghost:disabled {
+  background: none;
+}
+
+/* Waiting on the wallet or on Solana: same size, label says the stage. */
+.btn.is-loading::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: btn-spin 800ms linear infinite;
+}
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn.is-loading::before {
+    display: none;
+  }
+}
+
+/* Form controls. Inputs sit on --surface-1 or --bg, never --surface-2 (edge contrast). */
+input,
+select,
+textarea {
+  display: block;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0 var(--s-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface-1);
+  color: var(--text);
+  font: inherit;
+}
+textarea {
+  min-height: 7rem;
+  padding: var(--s-3);
+  resize: vertical;
+}
+input:hover:not(:disabled),
+select:hover:not(:disabled),
+textarea:hover:not(:disabled) {
+  border-color: var(--text-muted);
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  border-color: var(--text);
+}
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background: var(--surface-3);
+  color: var(--text-faint);
+  cursor: not-allowed;
+}
+input[aria-invalid='true'],
+select[aria-invalid='true'],
+textarea[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+::placeholder {
+  color: var(--text-faint);
+}
+
+label {
+  display: block;
+  margin-bottom: var(--s-4);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+label > input,
+label > select,
+label > textarea {
+  margin-top: var(--s-1);
+  font-size: var(--fs-base);
+  font-weight: 400;
+}
+.hint {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-weight: 400;
+}
+.error-text {
+  margin: var(--s-1) 0 0;
+  color: var(--danger);
+  font-size: var(--fs-sm);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  align-items: center;
+}
+.inline-field .btn {
+  flex: none;
+}
+.inline-field {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+}

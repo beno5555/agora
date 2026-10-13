@@ -10,18 +10,31 @@ import { ToastService } from '../../core/toast.service';
 import { AmountPipe } from '../../shared/amount.pipe';
 import { ListingCard } from '../../shared/listing-card';
 import { StatusBadge } from '../../shared/status-badge';
+import { TabKeys } from '../../shared/tab-keys';
 
 @Component({
   selector: 'app-me',
-  imports: [DatePipe, FormsModule, RouterLink, AmountPipe, ListingCard, StatusBadge],
+  imports: [DatePipe, FormsModule, RouterLink, AmountPipe, ListingCard, StatusBadge, TabKeys],
   template: `
     <h1>My deals</h1>
 
-    <div class="tabs">
-      <button type="button" [class.on]="role() === 'buyer'" (click)="role.set('buyer')">
+    <div class="tabs" role="tablist" appTabKeys>
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="role() === 'buyer'"
+        [tabindex]="role() === 'buyer' ? 0 : -1"
+        (click)="role.set('buyer')"
+      >
         Buying
       </button>
-      <button type="button" [class.on]="role() === 'seller'" (click)="role.set('seller')">
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="role() === 'seller'"
+        [tabindex]="role() === 'seller' ? 0 : -1"
+        (click)="role.set('seller')"
+      >
         Selling
       </button>
     </div>
@@ -57,11 +70,11 @@ import { StatusBadge } from '../../shared/status-badge';
       <div class="with-action">
         <app-listing-card [listing]="listing" />
         @if (!listing.isActive) {
-          <span class="badge">Paused</span>
+          <span class="badge badge--grey">Paused</span>
         }
         <button
           type="button"
-          class="secondary"
+          class="btn btn--secondary btn--sm"
           [disabled]="toggling() === listing.id"
           (click)="toggle(listing)"
         >
@@ -85,7 +98,12 @@ import { StatusBadge } from '../../shared/status-badge';
         Discord <span class="hint">(so the other side of a deal can reach you)</span>
         <input maxlength="40" [(ngModel)]="discord" />
       </label>
-      <button type="button" [disabled]="savingProfile()" (click)="saveProfile()">
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="savingProfile()"
+        (click)="saveProfile()"
+      >
         {{ savingProfile() ? 'Saving…' : 'Save profile' }}
       </button>
     </section>

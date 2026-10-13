@@ -51,6 +51,11 @@
               }
             ],
             "styles": [
+              "src/styles/tokens.css",
+              "src/styles/base.css",
+              "src/styles/utilities.css",
+              "src/styles/controls.css",
+              "src/styles/surfaces.css",
               "src/styles.css"
             ]
           },

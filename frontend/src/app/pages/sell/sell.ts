@@ -87,7 +87,12 @@ import { LISTING_UNITS } from '../../shared/unit';
       @if (problem(); as message) {
         <p class="error-text">{{ message }}</p>
       }
-      <button type="button" [disabled]="saving() || problem() !== null" (click)="save()">
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="saving() || problem() !== null"
+        (click)="save()"
+      >
         {{ saving() ? 'Saving…' : id() ? 'Save changes' : 'Publish listing' }}
       </button>
     </section>

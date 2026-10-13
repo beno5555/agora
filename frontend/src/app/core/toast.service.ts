@@ -4,18 +4,21 @@ import { ApiError } from './api.service';
 export interface Toast {
   id: number;
   text: string;
-  kind: 'error' | 'info';
+  kind: 'success' | 'info' | 'error';
 }
+
+const AUTO_DISMISS_MS = 6000;
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {
   readonly toasts = signal<Toast[]>([]);
   private nextId = 1;
 
+  /** Success and info go away by themselves; an error stays until the user closes it. */
   show(text: string, kind: Toast['kind'] = 'info'): void {
     const id = this.nextId++;
     this.toasts.update((list) => [...list, { id, text, kind }]);
-    setTimeout(() => this.dismiss(id), 6000);
+    if (kind !== 'error') setTimeout(() => this.dismiss(id), AUTO_DISMISS_MS);
   }
 
   /** Shows the message of a failed call. 401, 429 and 503 are already handled by the interceptor. */

@@ -29,11 +29,11 @@ import { ListingCard } from '../../shared/listing-card';
       <input
         type="search"
         placeholder="Search listings"
+        aria-label="Search listings"
         [(ngModel)]="query"
         (keyup.enter)="load()"
-        style="width: 100%"
       />
-      <button type="button" (click)="load()">Search</button>
+      <button type="button" class="btn btn--secondary" (click)="load()">Search</button>
     </div>
     @for (listing of listings(); track listing.id) {
       <app-listing-card [listing]="listing" />

@@ -195,12 +195,12 @@ interface Outcome {
           <h2>Your options</h2>
           <div class="actions" style="gap: 1rem">
             @if (can('Accept')) {
-              <button type="button" [disabled]="busy()" (click)="run({ action: 'Accept' })">
+              <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="run({ action: 'Accept' })">
                 Accept &amp; lock deposit
               </button>
             }
             @if (can('MarkDelivered')) {
-              <button type="button" [disabled]="busy()" (click)="run({ action: 'MarkDelivered' })">
+              <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="run({ action: 'MarkDelivered' })">
                 Mark delivered
               </button>
             }
@@ -208,7 +208,7 @@ interface Outcome {
               <span class="stepper">
                 <button
                   type="button"
-                  class="secondary"
+                  class="btn btn--secondary"
                   aria-label="Fewer"
                   [disabled]="busy() || parts() <= 1"
                   (click)="parts.set(parts() - 1)"
@@ -217,7 +217,7 @@ interface Outcome {
                 </button>
                 <button
                   type="button"
-                  class="secondary"
+                  class="btn btn--secondary"
                   aria-label="More"
                   [disabled]="busy() || parts() >= maxParts()"
                   (click)="parts.set(parts() + 1)"
@@ -226,6 +226,7 @@ interface Outcome {
                 </button>
                 <button
                   type="button"
+                  class="btn btn--primary"
                   [disabled]="busy()"
                   (click)="run({ action: 'Confirm', parts: parts() })"
                 >
@@ -236,6 +237,7 @@ interface Outcome {
             @if (can('RefundUndelivered')) {
               <button
                 type="button"
+                class="btn btn--primary"
                 [disabled]="busy()"
                 (click)="run({ action: 'RefundUndelivered' })"
               >
@@ -243,14 +245,14 @@ interface Outcome {
               </button>
             }
             @if (can('AcceptSplit')) {
-              <button type="button" [disabled]="busy()" (click)="run({ action: 'AcceptSplit' })">
+              <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="run({ action: 'AcceptSplit' })">
                 Accept their offer: you get \${{ splitYouGet() | amount }}
               </button>
             }
             @if (can('SellerRefund')) {
               <button
                 type="button"
-                class="secondary"
+                class="btn btn--secondary"
                 [disabled]="busy()"
                 (click)="run({ action: 'SellerRefund' })"
               >
@@ -260,7 +262,7 @@ interface Outcome {
             @if (can('Cancel')) {
               <button
                 type="button"
-                class="danger"
+                class="btn btn--secondary"
                 [disabled]="busy()"
                 (click)="run({ action: 'Cancel' })"
               >
@@ -270,7 +272,7 @@ interface Outcome {
             @if (can('RaiseDispute')) {
               <button
                 type="button"
-                class="danger"
+                class="btn btn--danger"
                 [disabled]="busy()"
                 (click)="run({ action: 'RaiseDispute' })"
               >
@@ -289,6 +291,7 @@ interface Outcome {
                 <input inputmode="decimal" placeholder="0.00" [(ngModel)]="splitInput" />
                 <button
                   type="button"
+                  class="btn btn--secondary"
                   [disabled]="busy() || splitAmount() === null"
                   (click)="proposeSplit()"
                 >
