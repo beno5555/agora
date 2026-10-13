@@ -31,6 +31,8 @@ Team decisions (2026-10-11):
 - Deposits are dynamic (reputation + price); sellers don't enter them. More variables can be added later.
 - No review time limit for now: after delivery, the seller is paid only when the buyer confirms. Dispute resolution will be designed later.
 
+Team decision (2026-10-13, Sandro): **Steam items (CS2 skins) are in scope.** The alpha settles them like any other item: the buyer confirms. The 7-day trade-reversal rule proposed above is not built yet.
+
 Open decisions: how disagreements get resolved; the deposit formula's exact numbers (devnet values in program.md).
 
 ## Fee

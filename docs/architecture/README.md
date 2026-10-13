@@ -35,7 +35,7 @@ Technical design for the hackathon alpha. Product rules and the reasons behind t
 The alpha implements **services paid per match** (`milestones` = number of matches) end to end:
 list a service → buyer opens the listing link and pays → seller accepts with their deposit → seller marks delivered → buyer confirms match by match, **or** disputes → split offer → accept.
 
-Single-delivery items work through the same path with `milestones = 1`. Steam items and codes are out of scope (see PLAN.md).
+Single-delivery items work through the same path with `milestones = 1`. Steam items are in scope and take the same path for now (the buyer confirms; the 7-day trade-reversal rule in PLAN.md isn't built). Codes are out of scope.
 
 ## Environments
 

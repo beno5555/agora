@@ -88,7 +88,7 @@ This is a hackathon alpha on devnet. The program has not been audited. Known lim
 
 - A deal where buyer and seller never agree stays locked; dispute resolution beyond split offers is future work.
 - A seller with a bad record can start over with a new wallet.
-- Steam items (7-day trade reversal) and gift codes need their own settlement rules and are out of scope for the alpha.
+- Steam items settle like any other item for now: the buyer confirms. Waiting out Steam's 7-day trade-reversal window before paying the seller is future work. Gift codes need their own settlement rules and are out of scope for the alpha.
 
 ## Team
 
