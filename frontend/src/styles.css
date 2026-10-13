@@ -4,7 +4,6 @@
  */
 
 /* Pages not restyled yet keep their old reading width inside the wider main column. */
-app-home,
 app-game,
 app-sell,
 app-me,
@@ -46,29 +45,4 @@ app-profile {
 }
 .unread {
   border-left: 3px solid var(--text);
-}
-
-/* home */
-.games {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: var(--s-2);
-  margin-bottom: var(--s-6);
-}
-.games a {
-  display: block;
-  padding: var(--s-3) var(--s-4);
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  color: var(--text);
-  text-decoration: none;
-}
-.games a:hover {
-  background: var(--surface-2);
-  border-color: var(--border-strong);
-}
-.games strong {
-  display: block;
-  font-family: var(--font-display);
 }

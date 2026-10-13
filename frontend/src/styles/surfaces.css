@@ -15,6 +15,17 @@
   margin-bottom: var(--s-3);
 }
 
+/* An empty list: what's missing, and the one thing to do about it (DESIGN.md §7). */
+.empty-state {
+  padding: var(--s-5);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-md);
+  color: var(--text-muted);
+}
+.empty-state p:last-child {
+  margin-bottom: 0;
+}
+
 .notice {
   margin-bottom: var(--s-4);
   padding: var(--s-3) var(--s-4);

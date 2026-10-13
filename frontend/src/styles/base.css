@@ -11,6 +11,8 @@ html {
 body {
   margin: 0;
   min-height: 100dvh;
+  /* Full-bleed bands (the home hero) reach the window edges without a sideways scroll. */
+  overflow-x: clip;
   background: var(--bg);
   color: var(--text);
   font: 400 var(--fs-base) / var(--lh-base) var(--font-body);

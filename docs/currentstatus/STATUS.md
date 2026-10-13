@@ -36,14 +36,14 @@ The brief is [`../design/DESIGN.md`](../design/DESIGN.md): tokens, components, p
 | 6 Phone hand-off sheet and error copy | Done, pushed (`f8e9fba`), **not deployed**, waiting for Sandro's review |
 | Fix from Sandro's review: no scrollbar on the /me tabs | Done, pushed, **not deployed** |
 | 7 Motion: funds-lock and deal-complete | Done, pushed, **not deployed**, waiting for Sandro's review. The vault plays them when the deal page sees the change (your own action or the poll), and after Buy (router state from the listing page). |
-| 8 Home hero with the example vault, games as a text index | To do |
+| 8 Home hero with the example vault, games as a text index | Done, pushed, **not deployed**, waiting for Sandro's review |
 | 9 /sell, /me, /u restyle (+ "Your move" flag on deal rows, empty states from §7) | To do |
 | 10 Light theme pass (`index.html` forces `data-theme="dark"` for now) | To do |
 
 **Where things are:**
 - **Global CSS** (`frontend/src/styles/`, listed in `angular.json`): `tokens.css` (from DESIGN.md §3, plus `--lock-amount` and `--vault-border`; links are plain text with an underline, the gold rule wins over the brief's gold link token), `base.css`, `utilities.css`, `controls.css` (`.btn` variants, inputs, `.amount-input`), `surfaces.css` (`.panel`, `.tabs`, `dl.facts`, `.badge`, `.notice`).
-- **`frontend/src/styles.css`** only holds leftover rules for pages not restyled yet (home, game, sell, me, profile keep an 880px width there; `main` is 1120px). Each block goes when its page is restyled; delete the file when it's empty.
-- **Component CSS** sits next to each component (`styleUrl`): `app.css` (header, test-network band, sign-in/hand-off sheets, toasts), `shared/vault.css`, `listing-card.css`, `wallet-address.css`, `pages/deal/deal.css`, `deal-timeline.css`, `pages/listing/listing.css`.
+- **`frontend/src/styles.css`** only holds leftover rules for pages not restyled yet (game, sell, me, profile keep an 880px width there; `main` is 1120px). Each block goes when its page is restyled; delete the file when it's empty.
+- **Component CSS** sits next to each component (`styleUrl`): `app.css` (header, test-network band, sign-in/hand-off sheets, toasts), `pages/home/home.css`, `shared/vault.css`, `listing-card.css`, `wallet-address.css`, `pages/deal/deal.css`, `deal-timeline.css`, `pages/listing/listing.css`.
 - **New shared pieces:** `shared/vault.ts` (the gold vault; deal page, listing preview, and the home hero in step 8), `icon.ts` (Lucide icons as inline SVG), `media.ts` (`mediaQuery()` signal), `tab-keys.ts` (arrow keys in tablists), `status-badge.ts` exports `statusLook()`. `pages/deal/deal-money.ts` holds every amount and sentence of the deal page. `core/error-text.ts` holds the error copy.
 - **Brand files** cut with ImageMagick into `frontend/public/brand/` (lockup, mark, icons, `og-image.jpg`) plus `public/favicon.ico`.
 

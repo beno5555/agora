@@ -1,0 +1,203 @@
+:host {
+  display: block;
+}
+
+/*
+ * The hero: ink from edge to edge, with the background template's light lines and floor glow
+ * redrawn in CSS (DESIGN.md §8). The lines stay out of the text: one in the top-left corner above
+ * the headline, one low on the right behind the example vault.
+ */
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-areas: 'copy' 'example' 'actions';
+  gap: var(--s-5);
+  /* Out to the window edges (body clips the overflow); the content keeps the page column. */
+  margin: calc(-1 * var(--s-5)) calc(50% - 50vw) var(--s-7);
+  padding: var(--s-6) calc(50vw - 50%) var(--s-7);
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse 80% 16% at 50% 100%,
+      color-mix(in srgb, var(--gold-500) 18%, transparent),
+      transparent
+    ),
+    var(--ink-950);
+}
+.hero::before,
+.hero::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  display: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-500), transparent);
+  transform: rotate(-28deg);
+  pointer-events: none;
+}
+@media (min-width: 600px) {
+  .hero::before,
+  .hero::after {
+    display: block;
+  }
+  .hero::before {
+    top: 36px;
+    left: -83px;
+    width: 300px;
+  }
+  .hero::after {
+    right: -200px;
+    bottom: 20px;
+    width: 640px;
+  }
+}
+@media (min-width: 960px) {
+  .hero {
+    grid-template-columns: 7fr 5fr;
+    grid-template-areas: 'copy example' 'actions example';
+    align-items: center;
+    column-gap: var(--s-7);
+    min-height: 440px;
+    padding-block: var(--s-8);
+    background:
+      radial-gradient(
+        ellipse 50% 18% at 75% 100%,
+        color-mix(in srgb, var(--gold-500) 18%, transparent),
+        transparent
+      ),
+      var(--ink-950);
+  }
+  .copy {
+    align-self: end;
+  }
+  .actions {
+    align-self: start;
+  }
+}
+
+.copy {
+  grid-area: copy;
+}
+.copy h1 {
+  max-width: 14em;
+  margin-bottom: var(--s-4);
+  font-size: clamp(2rem, 1.3rem + 2.8vw, 3.25rem);
+}
+.lead {
+  max-width: 34em;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-lg);
+}
+
+.example {
+  grid-area: example;
+  margin: 0;
+}
+.example app-vault {
+  margin-bottom: var(--s-2);
+}
+.example figcaption {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.no-key {
+  margin: var(--s-4) 0 0;
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--border);
+  font-weight: 600;
+}
+.keys {
+  display: grid;
+  gap: var(--s-2);
+  margin: var(--s-3) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.keys li {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: var(--s-2);
+}
+.keys app-icon {
+  margin-top: 2px;
+}
+
+.actions {
+  grid-area: actions;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+}
+@media (max-width: 599px) {
+  .actions .btn {
+    flex: 1 1 100%;
+  }
+}
+
+/* Games: a text index with counts, no tiles and no game art. */
+.games-section {
+  margin-bottom: var(--s-7);
+}
+.games {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--s-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.games a {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 44px;
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+.games a:hover .name {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.games a.empty {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.count {
+  min-width: 24px;
+  padding: 0 var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+.arrow {
+  display: none;
+}
+@media (max-width: 599px) {
+  .games {
+    display: block;
+    border-top: 1px solid var(--border);
+  }
+  .games a {
+    min-height: var(--tap);
+    border-bottom: 1px solid var(--border);
+  }
+  .name {
+    flex: 1;
+  }
+  .arrow {
+    display: inline-flex;
+    color: var(--text-muted);
+  }
+}
+
+.search {
+  max-width: var(--w-read);
+  margin-bottom: var(--s-4);
+}
