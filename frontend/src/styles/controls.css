@@ -122,6 +122,16 @@ textarea {
   color: var(--text);
   font: inherit;
 }
+/* Our own chevron, inset from the edge (the native arrow sits against the border). */
+select {
+  padding-right: 40px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238790A0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  cursor: pointer;
+}
 textarea {
   min-height: 7rem;
   padding: var(--s-3);

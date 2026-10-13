@@ -87,6 +87,29 @@ nav {
 .menu-wrap {
   position: relative;
 }
+/* Header controls stay compact so the bar keeps its height; still an easy tap. */
+.site-header .btn {
+  min-height: 40px;
+  padding: 0 var(--s-4);
+}
+.menu-trigger.btn {
+  padding: 0 var(--s-3);
+}
+@media (max-width: 599px) {
+  .site-header .btn {
+    min-height: 36px;
+    padding: 0 var(--s-3);
+    font-size: var(--fs-sm);
+  }
+  .menu-trigger.btn {
+    width: 40px;
+    padding: 0;
+    border-color: transparent;
+  }
+  .nav-link {
+    padding: 0 var(--s-2);
+  }
+}
 .menu-trigger .addr {
   font-size: var(--fs-sm);
 }
