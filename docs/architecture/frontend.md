@@ -61,7 +61,7 @@ Status badges: Draft/AwaitingSeller neutral, Active/Delivered blue, Disputed amb
 
 ## Wallet and sign-in
 
-- **Phantom.** `WalletService` uses the injected `window.phantom.solana` provider (the browser extension); without it, Connect opens Phantom's download page. Phantom Connect (email sign-in with an embedded wallet, https://docs.phantom.com/phantom-connect) can replace it later behind the same `WalletService` interface.
+- **Phantom.** `WalletService` uses the injected `window.phantom.solana` provider (the browser extension); without it, Connect opens Phantom's download page on a computer, and on a phone (no extensions there) reopens the page in the Phantom app's built-in browser through `https://phantom.app/ul/browse/<page URL>`, where the same provider is injected. Connecting from the phone's own browser would need Phantom Connect or Phantom's deeplink protocol (backlog). Phantom Connect (email sign-in with an embedded wallet, https://docs.phantom.com/phantom-connect) can replace it later behind the same `WalletService` interface.
 - **Phantom must be set to devnet** (Settings → Developer settings → Testnet mode), or it simulates against mainnet and shows errors.
 - `WalletService`: `connect()`, `disconnect()`, `publicKey` (signal), `signMessage(bytes)`, `signAndSendTransaction(tx)`. If the wallet's account changes, log out: the session belongs to the old wallet.
 - `AuthService`: nonce → `signMessage(new TextEncoder().encode(message))` → `bs58.encode(signature)` → verify ([api.md](api.md#auth)). On app start, `GET /api/me` tells whether the cookie is still valid.

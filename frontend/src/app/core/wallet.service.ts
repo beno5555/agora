@@ -49,6 +49,14 @@ export class WalletService {
 
   async connect(): Promise<string> {
     if (!this.provider) {
+      if (this.isMobile()) {
+        // Phone browsers have no extensions: reopen this page in the Phantom app's own browser,
+        // which injects the same provider. Without the app installed, the link offers the download.
+        const page = encodeURIComponent(window.location.href);
+        const origin = encodeURIComponent(window.location.origin);
+        window.location.href = `https://phantom.app/ul/browse/${page}?ref=${origin}`;
+        throw new Error('Opening this page in the Phantom app');
+      }
       window.open('https://phantom.app/download', '_blank');
       throw new Error('Install the Phantom wallet extension, then reload this page');
     }
@@ -87,6 +95,15 @@ export class WalletService {
     } catch (error) {
       throw this.rejected(error) ? new WalletRejectedError() : error;
     }
+  }
+
+  /** iPadOS reports itself as a Mac, so a Mac with a touch screen counts too. */
+  private isMobile(): boolean {
+    const agent = navigator.userAgent;
+    return (
+      /Android|iPhone|iPad|iPod/i.test(agent) ||
+      (/Macintosh/.test(agent) && navigator.maxTouchPoints > 1)
+    );
   }
 
   private rejected(error: unknown): boolean {
