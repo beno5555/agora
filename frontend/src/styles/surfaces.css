@@ -24,13 +24,17 @@
   font-weight: 500;
 }
 
-/* Text tabs: the selected one is marked by weight and a 3px underline, not by colour. */
+/*
+ * Text tabs: the selected one is marked by weight and a 3px underline, not by colour.
+ * No overflow scrolling: two or three tabs always fit, and a scroll box would show a scrollbar
+ * for the underline that overlaps the bottom rule (and clip the focus ring).
+ */
 .tabs {
   display: flex;
-  gap: var(--s-5);
+  flex-wrap: wrap;
+  column-gap: var(--s-5);
   margin-bottom: var(--s-4);
   border-bottom: 1px solid var(--border);
-  overflow-x: auto;
 }
 .tabs button {
   min-height: var(--tap);

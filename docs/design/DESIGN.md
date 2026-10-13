@@ -324,7 +324,7 @@ Icons are inline SVGs at 16px, `aria-hidden="true"`; the word carries the meanin
   - Unselected: `--text-muted`.
   - Selected: `--text` plus a 3px underline in `--text`. The underline is not gold, per the gold rule.
 - **Keyboard:** Left/Right arrow keys move between tabs.
-- **Phone:** the row scrolls horizontally if it overflows (it won't with 2–3 tabs).
+- **Phone:** the row wraps if it overflows (it won't with 2–3 tabs). It isn't a scroll box: that showed a scrollbar for the underline and clipped the focus ring.
 
 ### Toasts `.toast` (the `toast.service`)
 
