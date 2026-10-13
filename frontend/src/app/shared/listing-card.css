@@ -18,6 +18,15 @@
   background: var(--surface-2);
   border-color: var(--border-strong);
 }
+/* Inside a bordered row that also holds other cells (/me): the parent draws the edge. */
+:host(.is-flush) {
+  margin-bottom: 0;
+}
+:host(.is-flush) .listing-row {
+  height: 100%;
+  border: 0;
+  border-radius: inherit;
+}
 
 .info {
   flex: 1;

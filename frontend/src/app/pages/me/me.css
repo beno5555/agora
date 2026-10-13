@@ -114,31 +114,48 @@ h2 {
   white-space: nowrap;
 }
 
-/* A listing row with Pause/Resume: under the row on a phone, in a fixed column beside it otherwise. */
+/*
+ * A listing with Pause/Resume: one outlined row, the listing and a control cell split by a hairline.
+ * The cell sits under the listing on a phone and beside it otherwise, at the row's full height, so
+ * the "Paused" badge appears inside it without moving anything.
+ */
 .listing {
   display: grid;
-  gap: var(--s-2);
-  margin-bottom: var(--s-3);
+  margin-bottom: var(--s-2);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+.listing:hover {
+  border-color: var(--border-strong);
 }
 .listing app-listing-card {
   min-width: 0;
-  margin-bottom: 0;
+  border-radius: calc(var(--r-sm) - 1px) calc(var(--r-sm) - 1px) 0 0;
 }
 .listing-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--s-2);
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-4);
+  border-top: 1px solid var(--border);
 }
 @media (min-width: 600px) {
   .listing {
-    grid-template-columns: 1fr 6.5rem;
-    align-items: center;
-    margin-bottom: var(--s-2);
+    grid-template-columns: 1fr 8rem;
+  }
+  .listing app-listing-card {
+    border-radius: calc(var(--r-sm) - 1px) 0 0 calc(var(--r-sm) - 1px);
   }
   .listing-actions {
     flex-direction: column;
+    justify-content: center;
     align-items: stretch;
+    gap: var(--s-2);
+    padding: var(--s-3);
+    border-top: 0;
+    border-left: 1px solid var(--border);
   }
   .listing-actions .badge {
     justify-content: center;

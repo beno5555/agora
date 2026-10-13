@@ -117,7 +117,7 @@ interface DealRow {
         <h2 id="listings-title">My listings</h2>
         @for (listing of listings(); track listing.id) {
           <div class="listing">
-            <app-listing-card [listing]="listing" />
+            <app-listing-card class="is-flush" [listing]="listing" />
             <div class="listing-actions">
               @if (!listing.isActive) {
                 <span class="badge badge--grey">Paused</span>

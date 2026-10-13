@@ -706,6 +706,7 @@ Desktop                                              Phone 390
 
 - **Deal rows** show "Your move" (Figtree 600 plus an arrow icon) when `allowedActions` for the viewer is non-empty. This is the dashboard's one emphasis. Sort rows with "Your move" first.
 - **Notifications:** unread rows get a 3px `--text` left bar plus hidden text "unread"; read rows are `--text-muted`.
+- **My listings:** each listing and its Pause/Resume share one outlined row, split by a hairline: the control cell sits beside the listing (8rem, the row's full height) on desktop and under it on phones. A paused listing shows the "Paused" badge in that cell, above Resume, so nothing moves when it is paused.
 - **Profile form** at the bottom, as today.
 
 ### 5.7 Public profile `/u/:wallet`
