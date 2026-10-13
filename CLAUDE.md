@@ -11,7 +11,7 @@ It is also meant to be shared with regular Claude chats (for example as claude.a
 **The full product plan is in [`docs/PLAN.md`](docs/PLAN.md):** settlement rules, fees, the alpha build plan, positioning and research evidence. Read it before working on product or architecture. Keep plan details there, not here. **The technical design is in [`docs/architecture/`](docs/architecture/README.md):** read the relevant file before writing code. **Latest progress, blockers and next steps:** [`docs/currentstatus/STATUS.md`](docs/currentstatus/STATUS.md). Read it at the start of a session. **Known issues left for later:** [`docs/currentstatus/ISSUES.md`](docs/currentstatus/ISSUES.md) — check it at the start of a session too. **Planned work that isn't urgent:** [`docs/currentstatus/BACKLOG.md`](docs/currentstatus/BACKLOG.md); add an item there when a task is agreed on but deferred.
 
 - **Event:** Colosseum's Crypto World's Fair (Build Station Tbilisi; partners Colosseum, Superteam Georgia, Solana). https://colosseum.com/worldsfair/resources
-- **Submission deadline:** 2026-10-13 06:59 UTC. The team aims to submit on Oct 12. **Presentation:** Oct 14.
+- **Submitted** on the Colosseum portal on Oct 13 (deadline 06:59 UTC). **Presentation:** Oct 14, offline Demo Day. **Results:** Oct 27. **Live site:** https://agora-market.duckdns.org (devnet).
 
 ### Team
 | Member | Role |
@@ -44,8 +44,8 @@ agora/
 ├── deploy/                   hosting: deploy.ps1 (build + upload to the DigitalOcean droplet), server setup, Caddy, systemd; README.md is the guide
 ├── docs/PLAN.md              detailed product plan
 ├── docs/architecture/        technical design: program, auth, API, data model, frontend
-├── docs/currentstatus/       STATUS.md (current state, next steps), ISSUES.md (known issues left for later), BACKLOG.md (planned work, not urgent), SUBMISSION.md (drafts for the Colosseum form)
-├── README.md                 public project overview (draft, for the submission)
+├── docs/currentstatus/       STATUS.md (current state, next steps), ISSUES.md (known issues left for later), BACKLOG.md (planned work, not urgent), SUBMISSION.md (the Colosseum form texts, demo setup)
+├── README.md                 public project overview, written for the judges
 ├── LICENSE                   MIT
 ├── .claude/skills/colosseum-copilot/   project-scoped Claude skill
 └── skills-lock.json          source and hash of installed skills
@@ -77,7 +77,7 @@ The end-to-end tests run against devnet, not a local validator: `solana-test-val
 
 Frontend (run from `frontend/`, with the backend running): `npm ci`, then `npm start` (`ng serve` on http://localhost:4200, proxying `/api` to `localhost:5107` via `proxy.conf.json`); `npx ng build` writes the production build to `dist/frontend/browser/`.
 
-Hosting (run from the repo root, PowerShell 7): `./deploy/deploy.ps1 -Server <droplet IP>` builds both, uploads and restarts; add `-Setup` once on a fresh droplet. See [deploy/README.md](deploy/README.md).
+Hosting (run from the repo root, PowerShell 7): `./deploy/deploy.ps1 -Server 46.101.154.81` builds both, uploads and restarts; `-Setup` (with `-HostName <name>`) only once on a fresh droplet. See [deploy/README.md](deploy/README.md).
 
 Solana program (run from `program/`, native Windows, no WSL): `cargo build-sbf --manifest-path programs/agora/Cargo.toml`, then `cargo test --manifest-path programs/agora/Cargo.toml` (needs the OpenSSL env vars from [program/README.md](program/README.md)).
 
@@ -85,4 +85,4 @@ Solana program (run from `program/`, native Windows, no WSL): `cargo build-sbf -
 
 The `colosseum-copilot` skill is installed in `.claude/skills/` so teammates get it through git. Each person signs in to Colosseum once on their own machine (`npx @colosseum-org/copilot-connect login`). Use it to check ideas against past Colosseum projects and to find event sponsors and tools.
 
-The `frontend-design` skill (Anthropic's, from `anthropics/skills`) is installed the same way and guides the frontend redesign: pick a design direction first, review the plan against the brief, then build. The design brief for the redesign lives in `docs/design/`.
+The `frontend-design` skill (Anthropic's, from `anthropics/skills`) is installed the same way and guided the frontend redesign (done Oct 13): pick a design direction first, review the plan against the brief, then build. The design brief lives in `docs/design/`.

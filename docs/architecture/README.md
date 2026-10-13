@@ -1,6 +1,6 @@
 # Agora architecture (alpha)
 
-Technical design for the hackathon alpha. Product rules and the reasons behind them are in [`../PLAN.md`](../PLAN.md). These docs are Claude's proposal. Change them as the team decides.
+Technical design for the hackathon alpha. Product rules and the reasons behind them are in [`../PLAN.md`](../PLAN.md). These docs describe what is built and running on devnet; change them in the same commit as the code.
 
 | Doc | Covers |
 |---|---|
@@ -46,4 +46,4 @@ Single-delivery items work through the same path with `milestones = 1`. Steam it
 | Stablecoin | Agora test token `7FutDfvw3Whjv6PcwCYdYb3FV25EHc3TRiUA4zw8pj21` (6 decimals), created by `colosseumbackend.Admin init`; set in `Solana:Mint` |
 | Backend | `http://localhost:5107` (dev) |
 | Frontend | Angular dev server, proxying `/api` to the backend |
-| Hosted | One process: the backend serves the Angular build from `wwwroot` next to `/api`, behind a proxy or tunnel (see `STATUS.md`, Hosting) |
+| Hosted | https://agora-market.duckdns.org: one process, the backend serving the Angular build from `wwwroot` next to `/api`, behind Caddy on a DigitalOcean droplet (see [`deploy/README.md`](../../deploy/README.md)) |

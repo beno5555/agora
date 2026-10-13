@@ -1,13 +1,13 @@
 # Submission texts
 
-The Colosseum form's missing fields, written by Claude on Oct 13 from the repo and the live site. The two text fields below are the **final versions** (Oct 13, ~06:00 UTC), in plain text because the form may not render formatting: read them through before pasting. Progress and next steps are in [`STATUS.md`](STATUS.md).
+The texts for the Colosseum form fields that needed writing, final since Oct 13 (~06:00 UTC), in plain text because the form may not render formatting, and how the demo video was set up. Progress and next steps are in [`STATUS.md`](STATUS.md).
 
 | Field | State |
 |---|---|
 | Access instructions (`liveProductAccessInstructions`) | Final text below (297 of the field's 300 characters), with Sandro's Telegram (@sandrobenashvili). Its sslip.io link now redirects to https://agora-market.duckdns.org |
-| Important context about the repo | Final text below (468 of the field's 500 characters). It says Claude Code wrote the Solana program; delete those lines if the team decides otherwise |
+| Important context about the repo | Final text below (468 of the field's 500 characters). It says Claude Code wrote the Solana program |
 | Demo video | Recorded on the hosted site (2:52). [Setup below](#technical-demo-setup) |
-| Repo `README.md` | Claude's older draft; rewrite it. Stale points listed at the bottom |
+| Repo `README.md` | Rewritten for judges on Oct 13: live link, how to try it, the repo map, tests and limits |
 
 ## Access instructions
 
@@ -27,7 +27,7 @@ The whole product, built during the hackathon (from Oct 11). program/: Anchor pr
 
 ## Technical demo setup
 
-**What it shows:** one deal on https://46-101-154-81.sslip.io from buying to getting paid and what happens on Solana at each step, then the missed-deadline refund and how it is built. Under 3 minutes.
+**What it shows:** one deal on the live site from buying to getting paid and what happens on Solana at each step, then the missed-deadline refund and how it is built. Under 3 minutes.
 
 **Setup:**
 1. **Hide test listings.** Signed in as Dealer1 (`CwjS…9HYJ`), pause "aa" and "service test 1" on `/me` if they are still public.
@@ -43,13 +43,4 @@ The whole product, built during the hackathon (from Oct 11). program/: Anchor pr
 What the setup above was built from:
 - **Live demo data:** 11 listings from three demo sellers across all six games, each seller funded with 100 test tokens + 0.05 SOL. Their keys are in `C:\Users\admin\.agora-demo\sellers.json` on Sandro's PC only (import a seller into Phantom: Add account → Import private key with `phantomPrivateKey`). A demo needs a buyer wallet and a seller wallet in Phantom, both funded.
 - **What shows the product best:** the vault locking both deposits after Buy and Accept (it animates), confirming part by part, a disagreement with a split offer, and the 2-minute missed-deadline refund. Each step links to the transaction on Solana Explorer.
-- **Not yet run end to end on the hosted site:** the full path (list → buy → accept → deliver → confirm) and the `2m` refund. Do it once before recording.
-
-## README: stale points to fix in the rewrite
-
-- Steam items are **in scope** (Sandro, Oct 13). The "Status and limits" line was corrected on Oct 13: they settle like any other item for now, and waiting out Steam's 7-day reversal window is future work. Keep that in the rewrite.
-
-- The web app table row says "(in progress)" and "Phantom Connect": the app is finished and uses the Phantom browser extension (on phones, the Phantom app's browser).
-- The Team table says Dato is the "Designer"; `CLAUDE.md` says Dato's role isn't set yet.
-- There is no live link yet: add https://agora-market.duckdns.org and the access steps above.
-- "Run it locally" sends readers to `frontend.md` for the frontend; one line is enough: `cd frontend && npm ci && npm start` (with the API running).
+- **Run end to end on the hosted site** for the demo video (Oct 13): a deal from buying to getting paid, and the `2m` missed-deadline refund.

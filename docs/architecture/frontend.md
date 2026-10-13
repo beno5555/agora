@@ -95,7 +95,7 @@ The injected Phantom provider takes the `Transaction` object; `WalletService.sig
    ```json
    { "/api": { "target": "http://localhost:5107", "secure": false, "changeOrigin": false } }
    ```
-   Production build: `npx ng build` → `dist/frontend/browser/`, which the backend serves from its `wwwroot` when hosted (see `STATUS.md`, Hosting).
+   Production build: `npx ng build` → `dist/frontend/browser/`, which the backend serves from its `wwwroot` when hosted (see [`deploy/README.md`](../../deploy/README.md)).
 3. Develop in Chrome, Edge or Firefox: they accept the `Secure` session cookie on `http://localhost`; Safari doesn't.
 4. **Two wallets per deal** (buyer ≠ seller): two Phantom accounts or two browser profiles. Each needs test tokens and devnet SOL: send the addresses to Sandro, who runs `Admin fund <wallet>` (100 tokens + 0.05 SOL).
 5. **Demo:** a listing with the `2m` deadline lets you show buy → accept → missed deadline → refund plus the seller's deposit live (covered by an end-to-end test).

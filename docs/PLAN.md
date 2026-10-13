@@ -1,6 +1,6 @@
-# Agora product notes (working draft, 2026-10-11)
+# Agora product notes (started 2026-10-11, updated 2026-10-13)
 
-The detailed product plan. Team decisions and Claude proposals are marked; proposals are not approved yet. General project context (team, deadline, stack, commands) lives in `CLAUDE.md`. Don't repeat it here.
+The detailed product plan. Team decisions and Claude proposals are marked; proposals are not approved yet. What the hackathon alpha actually built is under [Alpha](#alpha-hackathon-plan-and-what-was-built). General project context (team, deadline, stack, commands) lives in `CLAUDE.md`. Don't repeat it here.
 
 ## Direction (stated by the team)
 - Global product, not tied to any country. Built entirely on Solana; it must not work without it.
@@ -38,10 +38,11 @@ Open decisions: how disagreements get resolved; the deposit formula's exact numb
 ## Fee
 - About 2% per deal. Compare Eldorado.gg, where a $5 carry costs the buyer $5.70 and the seller gets $4.50 (see Evidence).
 
-## Alpha (hackathon) build plan
-- **Solana program (Anchor, written by Claude):** create and fund a deal (payment plus both deposits), mark delivered, confirm (fully or per milestone), refund if not delivered by the deadline, raise a disagreement, offer and accept a split, reputation per wallet. Devnet, with our own test stablecoin (CASH or USDC on mainnet later).
-- **Backend (.NET):** listings, game storefronts, deal pages, notifications, time-limit countdowns.
-- **Frontend (Angular):** storefronts, deal-link page, email sign-in via Phantom Connect (the event's recommended embedded wallet), split offers on the deal page.
+## Alpha (hackathon): plan and what was built
+Built and live on devnet at https://agora-market.duckdns.org (Oct 13). State and next steps: [currentstatus/STATUS.md](currentstatus/STATUS.md).
+- **Solana program (Anchor, written by Claude): built as planned.** Create and fund a deal (payment plus both deposits), mark delivered, confirm (fully or per milestone), refund if not delivered by the deadline, raise a disagreement, offer and accept a split, reputation per wallet. Devnet, with our own test stablecoin (CASH or USDC on mainnet later).
+- **Backend (.NET): built.** Listings, game storefronts, deal pages, notifications, deadline reminders.
+- **Frontend (Angular): built,** with one change: sign-in uses the **Phantom browser extension** (on phones, the Phantom app's browser), not Phantom Connect's email sign-in. Phantom Connect is in [BACKLOG.md](currentstatus/BACKLOG.md). Storefronts, the deal-link page, split offers and countdowns on the deal page are in.
 - **Mate and Dato (proposed):** recruit 10–20 real carriers and coaches, run devnet test deals, collect quotes.
 
 ## Positioning (Claude's opinion)

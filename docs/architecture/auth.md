@@ -1,6 +1,6 @@
 # Authentication: Sign in with Solana
 
-A user's wallet address is their account. They sign in by signing a one-time message with their wallet. No passwords or emails are stored, and no keys leave the wallet. Phantom Connect users who sign in with email get an embedded wallet, and the flow is the same. Endpoint details: [api.md](api.md#auth).
+A user's wallet address is their account. They sign in by signing a one-time message with their wallet. No passwords or emails are stored, and no keys leave the wallet. The wallet is the Phantom browser extension (on phones, the Phantom app's browser). If Phantom Connect's email sign-in is added later ([BACKLOG.md](../currentstatus/BACKLOG.md)), its embedded wallet uses the same flow. Endpoint details: [api.md](api.md#auth).
 
 ## Flow
 
@@ -17,7 +17,7 @@ Angular                          .NET API                         Wallet
 
 ## The message
 
-Built by the backend (`Solana/WalletSignIn.cs`), so the frontend can't change it. `<domain>` is `Auth:Domain` in appsettings; it must match the page host or Phantom may warn (`localhost:4200` in Development, matching `ng serve`).
+Built by the backend (`Solana/WalletSignIn.cs`), so the frontend can't change it. `<domain>` is `Auth:Domain` in appsettings; it must match the page host or Phantom refuses to sign (`localhost:4200` in Development, matching `ng serve`; `agora-market.duckdns.org` on the live site, set by the deploy).
 
 ```
 <domain> wants you to sign in with your Solana account:

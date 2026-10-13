@@ -1,5 +1,7 @@
 # Agora redesign brief (DESIGN.md)
 
+**Built:** every step in §9 was done and deployed on Oct 13 (commits in [`STATUS.md`](../currentstatus/STATUS.md#frontend-redesign-done)). The live app follows this file, so it stays the design reference; §0 describes the first build, before the redesign.
+
 This file is the visual design: tokens, components, page layouts, motion, copy and assets. Claude implements it. Behaviour, data and routes are in `docs/architecture/frontend.md`; this file does not change them, except for the wording it proposes (see below). No CSS framework.
 
 **How the CSS is organised (decided; it overrides anything below that says otherwise).** The old single `src/styles.css` is split up:
@@ -17,7 +19,7 @@ Status names, routes, action labels and the outcome table come from `frontend.md
 
 ---
 
-## 0. What the current build gets wrong (from the screenshots)
+## 0. What the first build got wrong (from the screenshots)
 
 These are the problems the redesign fixes:
 
