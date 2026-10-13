@@ -6,17 +6,18 @@ Builds Agora (frontend + self-contained Linux backend) and deploys it to the dro
 ./deploy/deploy.ps1 -Server 203.0.113.5 -Setup    # first time: set up the fresh droplet, then deploy
 
 .EXAMPLE
-./deploy/deploy.ps1 -Server 203.0.113.5           # every later deploy
+./deploy/deploy.ps1 -Server 203.0.113.5 -Setup -HostName agora-example.duckdns.org   # same, at a name pointed at the droplet
 
 .EXAMPLE
-./deploy/deploy.ps1 -Server 203.0.113.5 -HostName agora-example.duckdns.org   # served at a name pointed at the droplet
+./deploy/deploy.ps1 -Server 203.0.113.5           # every later deploy
 #>
 #Requires -Version 7.4
 param(
     # The droplet's public IPv4 address.
     [Parameter(Mandatory)] [string] $Server,
-    # The public host name, already pointed at $Server (e.g. a DuckDNS name). Without it the site is
-    # served at https://<ip-with-dashes>.sslip.io; with it, that sslip.io address redirects here.
+    # With -Setup: the public host name, already pointed at $Server (e.g. a DuckDNS name). Without it the
+    # site is served at https://<ip-with-dashes>.sslip.io; with it, that sslip.io address redirects here.
+    # Later deploys read the host from the server, so they don't need it.
     [string] $HostName,
     # One-time server setup (Caddy, firewall, swap, the systemd service, secrets) before deploying.
     [switch] $Setup
@@ -32,8 +33,12 @@ if (-not [System.Net.IPAddress]::TryParse($Server, [ref] $address) -or $address.
 
 $repo      = Split-Path $PSScriptRoot -Parent
 $sslipHost = ($Server -replace '\.', '-') + '.sslip.io'
-if (-not $HostName) { $HostName = $sslipHost }
 $remote    = "root@$Server"
+if (-not $HostName) {
+    # A set-up server already has its public host: Auth__Domain in its secrets file.
+    $HostName = if ($Setup) { $sslipHost } else { "$(ssh $remote "sed -n 's/^Auth__Domain=//p' /etc/agora/agora.env")".Trim() }
+    if (-not $HostName) { $HostName = $sslipHost }
+}
 $work      = Join-Path ([System.IO.Path]::GetTempPath()) 'agora-deploy'
 $publish   = Join-Path $work 'app'
 $archive   = Join-Path $work 'agora.tar.gz'

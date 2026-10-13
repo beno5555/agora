@@ -28,6 +28,12 @@ browser ──https──▶ Caddy (:443, Let's Encrypt cert) ──http──�
 | `agora.service` | The systemd service. Non-secret settings are here. |
 | `Caddyfile` | The Caddy config (`AGORA_HOST` is filled in by `setup-server.sh`). |
 
+## Before you start
+
+- **Live server:** droplet `agora`, IP `46.101.154.81`, site https://agora-market.duckdns.org.
+- **On the dev PC:** Windows (the script uses Windows' own `tar`), PowerShell 7.4+, the .NET 10 SDK, Node.js 22+ and npm, OpenSSH (built into Windows).
+- **Access:** only PCs whose SSH key is on the droplet can deploy (now Sandro's). To add someone, append their `~/.ssh/id_ed25519.pub` to `/root/.ssh/authorized_keys` on the droplet.
+
 ## One-time setup
 
 ### 1. SSH key (on the dev PC)
@@ -57,9 +63,9 @@ It takes a few minutes. It ends with `Deployed: https://<ip-with-dashes>.sslip.i
 ## Every later deploy
 ```powershell
 git pull --rebase
-./deploy/deploy.ps1 -Server <ip> -HostName agora-market.duckdns.org
+./deploy/deploy.ps1 -Server 46.101.154.81
 ```
-`-HostName` only matters for the final `/health` check; the server keeps whatever host it was set up with.
+The script reads the site's host from the server (`Auth__Domain`) for its final `/health` check, so no other flag is needed.
 
 `ng serve` can keep running, except when `package-lock.json` changed since the last install: then the script runs `npm ci`, which replaces `frontend/node_modules` and fails with `EPERM` while `ng serve` holds files there. The app is down for a few seconds while it restarts. The database is kept.
 
