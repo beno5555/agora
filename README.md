@@ -58,7 +58,7 @@ All of it is the product, built during the hackathon.
 | [`frontend/`](frontend/) | The Angular web app, with Phantom for signing. |
 | [`deploy/`](deploy/) | How the live site is hosted and deployed. |
 | [`docs/`](docs/) | Product plan, technical design, visual design, and the team's working notes. |
-| `CLAUDE.md`, `.claude/` | Setup for Claude Code, the AI coding assistant the team used. Not product code. Claude Code wrote the Rust program. |
+| `CLAUDE.md`, `.claude/` | Development tooling. Not product code. |
 
 **Where to read more:**
 - **Technical design:** [`docs/architecture/`](docs/architecture/README.md), with the on-chain rules in [`program.md`](docs/architecture/program.md).
@@ -126,4 +126,4 @@ A hackathon alpha on devnet. The program has not been audited. Known limits:
 | Sandro | Backend and frontend |
 | Saba | Frontend |
 | Mate | Product |
-| Dato | Team member |
+| Dato | Design and social media |

@@ -2,7 +2,7 @@
 
 A snapshot of where things stand, kept short; history is in `git log`. Plan: [`../PLAN.md`](../PLAN.md). Design: [`../architecture/`](../architecture/README.md).
 
-**Deadline:** passed (2026-10-13 06:59 UTC). **Presentation:** Oct 14, offline Demo Day.
+**Submitted** (Oct 13) on the Colosseum portal and the Superteam Georgia Track. **Presentation:** Oct 14, offline Demo Day. **Results:** Oct 27.
 
 ## Where we are
 
@@ -12,19 +12,17 @@ A snapshot of where things stand, kept short; history is in `git log`. Plan: [`.
 | Backend API | Complete for the alpha. **15 end-to-end tests pass on devnet** (through Helius): a full deal paid match by match, a dispute settled by a split, a missed 2-minute deadline refunded with the seller's deposit, my listings, access checks, validation, sign-in replay and impostor signatures. |
 | Admin tool | `init` done. `fund <wallet>` gives a demo wallet 100 test tokens + 0.05 devnet SOL. |
 | Frontend | **Redesign done and deployed (Oct 13, 03:10 UTC), see [Frontend redesign](#frontend-redesign-done).** **First version pushed Oct 12** (`c4a2126`, Angular 21): every page in [`frontend.md`](../architecture/frontend.md) (home, game, listing, deal, sell, `/me` with pause/resume and profile editing, the `/u/:wallet` profile); sign-in with the Phantom browser extension (not Phantom Connect yet); every deal action through the backend-built transaction, with polling, the deadline refetch and a "where the money goes" table. `ng build` passes (~0.7 MB). **Clicked through end to end on devnet (Oct 12)** by an automated browser run (Chrome driven by Playwright, with a stand-in for Phantom that signs with throwaway keys): a deal paid match by match, the `2m` missed-deadline refund, pause/resume, profile editing, the public profile. All passed. **Sandro then tried most of it by hand with the real Phantom extension (Oct 12–13): fine.** |
-| Demo, pitch, submission | **Submitted on Colosseum in time.** **Missed the Superteam Georgia Track** on Superteam Earn by minutes; see [Next steps](#next-steps). Form texts in [`SUBMISSION.md`](SUBMISSION.md). |
+| Demo, pitch, submission | **Submitted** on the Colosseum portal and the Superteam Georgia Track (Superteam Earn). Demo video recorded (2:52). |
 
 Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro's PC only): ~5.5 SOL (topped up Oct 12). A full test run uses ~0.3 SOL (the faucet at https://faucet.solana.com tops it up), and each funded demo wallet 0.05.
 
 ## Next steps
-**The code is done (Oct 13, 05:15 UTC):** only fixes for something broken. Everything is deployed (frontend code last changed in `30aee15`). The form texts and the demo setup are in [`SUBMISSION.md`](SUBMISSION.md). **All docs were brought up to date on Oct 13**, and `README.md` was rewritten for judges (live link, how to try it, repo map, tests, limits).
+**The code is done (Oct 13, 05:15 UTC):** only fixes for something broken. Everything is deployed (frontend code last changed in `30aee15`). **All docs were brought up to date on Oct 13**, and `README.md` was rewritten for judges (live link, how to try it, repo map, tests, limits).
 
-**Submission (Oct 13):** the team leader submitted Agora on the **Colosseum portal** in time. The **Superteam Georgia Track** on Superteam Earn ([listing](https://superteam.fun/earn/listing/colosseum-crypto-worlds-fair-hackathon-superteam-georgia-track/)) is a **separate submission** (the listing requires both the Colosseum portal and Superteam Earn, Georgia as the team's country on Colosseum, and the offline Demo Day). It **closed before the team leader could submit**; its status is now "Submissions in Review" and winners are announced Oct 14. No late-submission rule or extension was found for either (checked Oct 13). The listing's contact is **@mariamgoya** on Telegram.
+**Submission (Oct 13):** Agora is submitted on the **Colosseum portal** and the **Superteam Georgia Track** on Superteam Earn ([listing](https://superteam.fun/earn/listing/colosseum-crypto-worlds-fair-hackathon-superteam-georgia-track/)), whose winners are announced at the offline Demo Day on Oct 14.
 
-1. **Now, team leader:** message @mariamgoya: Agora is submitted on Colosseum in time, the Earn form closed minutes before we could submit, can they still accept it; we present at the offline Demo Day on Oct 14.
-2. **Sandro:** upload the demo video (2:52, setup in [SUBMISSION.md](SUBMISSION.md#technical-demo-setup)). It also goes with the Superteam entry if they accept it, and is the backup for Oct 14.
-3. **Team, for Oct 14:** prepare the presentation: the pitch plus a live deal on the hosted site, with the backup video ready if devnet is slow. Pre-stage a deal the day before like in the demo plan.
-4. **Sandro, ongoing:** `Admin fund <wallet>` for judges who send their address; accept the deals judges start on demo listings (import a demo seller into Phantom, see below); keep the droplet running.
+1. **Team, for Oct 14:** prepare the presentation: the pitch plus a live deal on the hosted site, with the demo video (2:52) as the backup if devnet is slow. Start the `Demo: 2-minute deadline` deal a few minutes before presenting, so its refund is ready to show.
+2. **Sandro, ongoing:** `Admin fund <wallet>` for judges who send their address; accept the deals judges start on demo listings (import a demo seller into Phantom, see below); keep the droplet running.
 
 **Demo data on the live site (Oct 13):** three demo sellers (NovaCarry, LootSmith, RiftCoach) with 11 listings across all six games, including `Demo: 2-minute deadline (try the refund)`; each funded with 100 test tokens + 0.05 SOL. **Their keys are in `C:\Users\admin\.agora-demo\sellers.json` on Sandro's PC only** (`phantomPrivateKey` imports into Phantom: Add account → Import private key). Sandro's own test listings are paused. **Steam items are in scope** (Sandro, Oct 13; recorded in PLAN.md): a CS2 skin listing was swapped for "Faceit duo, 4 matches" on a wrong assumption, and it stays as is.
 
@@ -78,7 +76,7 @@ Checked locally on Oct 12: with the settings on, a second client IP gets its own
 - The frontend build is `npm ci` then `npx ng build` in `frontend/`, output in `frontend/dist/frontend/browser/` (~0.7 MB). In the automated browser run, the only console error was a `401` on `/api/me` for signed-out visitors, which is normal.
 - Database migrations run at startup, so a fresh `agora.db` on the host is fine. The newest one (`ListingUnitEnum`) applies without warnings.
 - A running backend locks `bin/Debug`, so a build or test in another terminal needs `-c Release`.
-- The access instructions for judges are final in [`SUBMISSION.md`](SUBMISSION.md) (Phantom's "unknown" token is a backlog item in [`BACKLOG.md`](BACKLOG.md)).
+- The access steps for judges are in [`README.md`](../../README.md#try-it) (Phantom's "unknown" token is a backlog item in [`BACKLOG.md`](BACKLOG.md)).
 - `Auth__Domain` must be the exact public host, or Phantom warns on sign-in. `deploy.ps1 -Setup` sets it to the `-HostName` given, else the sslip.io host. It is `agora-market.duckdns.org` now.
 
 ## Things to know

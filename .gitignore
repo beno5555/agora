@@ -49,3 +49,6 @@ id.json
 *.db
 *.db-shm
 *.db-wal
+
+# Colosseum form drafts and demo setup: local only
+docs/currentstatus/SUBMISSION.md

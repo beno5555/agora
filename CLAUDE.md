@@ -11,7 +11,7 @@ It is also meant to be shared with regular Claude chats (for example as claude.a
 **The full product plan is in [`docs/PLAN.md`](docs/PLAN.md):** settlement rules, fees, the alpha build plan, positioning and research evidence. Read it before working on product or architecture. Keep plan details there, not here. **The technical design is in [`docs/architecture/`](docs/architecture/README.md):** read the relevant file before writing code. **Latest progress, blockers and next steps:** [`docs/currentstatus/STATUS.md`](docs/currentstatus/STATUS.md). Read it at the start of a session. **Known issues left for later:** [`docs/currentstatus/ISSUES.md`](docs/currentstatus/ISSUES.md) — check it at the start of a session too. **Planned work that isn't urgent:** [`docs/currentstatus/BACKLOG.md`](docs/currentstatus/BACKLOG.md); add an item there when a task is agreed on but deferred.
 
 - **Event:** Colosseum's Crypto World's Fair (Build Station Tbilisi; partners Colosseum, Superteam Georgia, Solana). https://colosseum.com/worldsfair/resources
-- **Submitted** on the Colosseum portal on Oct 13 (deadline 06:59 UTC). **Presentation:** Oct 14, offline Demo Day. **Results:** Oct 27. **Live site:** https://agora-market.duckdns.org (devnet).
+- **Submitted** on Oct 13 on the Colosseum portal and the Superteam Georgia Track (Superteam Earn). **Presentation:** Oct 14, offline Demo Day. **Results:** Oct 27. **Live site:** https://agora-market.duckdns.org (devnet).
 
 ### Team
 | Member | Role |
@@ -19,7 +19,7 @@ It is also meant to be shared with regular Claude chats (for example as claude.a
 | Sandro | Backend (C#/.NET) and frontend (Angular) |
 | Saba | Frontend (Angular) |
 | Mate | Product ideas |
-| Dato | Not set yet |
+| Dato | Design and social media |
 
 Nobody on the team writes Rust, so Claude writes the Solana program, using Anchor.
 
@@ -44,7 +44,7 @@ agora/
 ├── deploy/                   hosting: deploy.ps1 (build + upload to the DigitalOcean droplet), server setup, Caddy, systemd; README.md is the guide
 ├── docs/PLAN.md              detailed product plan
 ├── docs/architecture/        technical design: program, auth, API, data model, frontend
-├── docs/currentstatus/       STATUS.md (current state, next steps), ISSUES.md (known issues left for later), BACKLOG.md (planned work, not urgent), SUBMISSION.md (the Colosseum form texts, demo setup)
+├── docs/currentstatus/       STATUS.md (current state, next steps), ISSUES.md (known issues left for later), BACKLOG.md (planned work, not urgent)
 ├── README.md                 public project overview, written for the judges
 ├── LICENSE                   MIT
 ├── .claude/skills/colosseum-copilot/   project-scoped Claude skill

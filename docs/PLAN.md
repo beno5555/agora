@@ -40,7 +40,7 @@ Open decisions: how disagreements get resolved; the deposit formula's exact numb
 
 ## Alpha (hackathon): plan and what was built
 Built and live on devnet at https://agora-market.duckdns.org (Oct 13). State and next steps: [currentstatus/STATUS.md](currentstatus/STATUS.md).
-- **Solana program (Anchor, written by Claude): built as planned.** Create and fund a deal (payment plus both deposits), mark delivered, confirm (fully or per milestone), refund if not delivered by the deadline, raise a disagreement, offer and accept a split, reputation per wallet. Devnet, with our own test stablecoin (CASH or USDC on mainnet later).
+- **Solana program (Anchor): built as planned.** Create and fund a deal (payment plus both deposits), mark delivered, confirm (fully or per milestone), refund if not delivered by the deadline, raise a disagreement, offer and accept a split, reputation per wallet. Devnet, with our own test stablecoin (CASH or USDC on mainnet later).
 - **Backend (.NET): built.** Listings, game storefronts, deal pages, notifications, deadline reminders.
 - **Frontend (Angular): built,** with one change: sign-in uses the **Phantom browser extension** (on phones, the Phantom app's browser), not Phantom Connect's email sign-in. Phantom Connect is in [BACKLOG.md](currentstatus/BACKLOG.md). Storefronts, the deal-link page, split offers and countdowns on the deal page are in.
 - **Mate and Dato (proposed):** recruit 10–20 real carriers and coaches, run devnet test deals, collect quotes.
