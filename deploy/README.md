@@ -9,7 +9,7 @@ browser ──https──▶ Caddy (:443, Let's Encrypt cert) ──http──�
 
 | Decision | Choice | Why |
 |---|---|---|
-| Provider | DigitalOcean droplet, Basic $6/mo (1 GB RAM), Ubuntu 24.04, Frankfurt | Simple, instant signup. Billing is hourly, so the $5 credit covers about 25 days. |
+| Provider | DigitalOcean droplet, Basic $6/mo (1 GB RAM), Ubuntu 24.04, Frankfurt | Simple, instant signup. Billing is hourly ($0.00893 an hour), so the $5 credit covers about 23 days. When it runs out, DigitalOcean keeps the droplet running and bills the card on file; a powered-off droplet is still billed, only **Destroy** stops the charges. |
 | Address | `https://<ip-with-dashes>.sslip.io` (e.g. `203-0-113-5.sslip.io`) | No domain to buy. sslip.io resolves the name to the IP. HTTPS is required: the session cookie is `Secure`. |
 | Reverse proxy | Caddy | Gets and renews the HTTPS certificate on its own; the config is 3 lines. |
 | .NET | Self-contained publish (`-r linux-x64 --self-contained`) | The runtime ships inside the app folder, so the server needs no .NET install. Everything is built on the dev PC; the server only runs the result. |
