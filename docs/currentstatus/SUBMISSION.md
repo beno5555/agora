@@ -4,31 +4,17 @@ The Colosseum form's missing fields, written by Claude on Oct 13 from the repo a
 
 | Field | State |
 |---|---|
-| Access instructions (`liveProductAccessInstructions`) | Final text below, with Sandro's Telegram (@sandrobenashvili) |
+| Access instructions (`liveProductAccessInstructions`) | Final text below (297 of the field's 300 characters), with Sandro's Telegram (@sandrobenashvili) |
 | Important context about the repo | Final text below (468 of the field's 500 characters). It says Claude Code wrote the Solana program; delete those lines if the team decides otherwise |
 | Demo video | **Planned** ([below](#technical-demo-plan-oct-13-0545-utc)); recorded with Loom on the hosted site |
 | Repo `README.md` | Claude's older draft; rewrite it. Stale points listed at the bottom |
 
 ## Access instructions
 
-The last line (the Loom link) is optional: the form has its own video field.
+**The field takes 300 characters at most**; this is 297. It keeps the steps a judge needs and that our team accepts deals; the 2-minute refund listing is shown in the demo video instead.
 
 ```
-Agora runs on Solana devnet with our own test stablecoin, so trying it costs nothing.
-
-1. Install Phantom: the browser extension (Chrome, Brave or Firefox) from https://phantom.com/download, or the Phantom app on a phone.
-2. In Phantom, open Settings > Developer Settings, turn on Testnet Mode and choose Solana Devnet.
-3. Send your Phantom wallet address to Sandro on Telegram: @sandrobenashvili. He sends you 100 test USDC and 0.05 devnet SOL for network fees. The app can't fund wallets by itself, because our backend holds no keys.
-4. Open https://46-101-154-81.sslip.io and click Connect. Signing in is a message signature, not a transaction, so it costs nothing. On a phone, Connect reopens the site inside the Phantom app's browser.
-5. Buy any listing. Phantom shows our test token as an unknown token. That's expected: it's our own devnet stablecoin.
-
-The demo sellers (NovaCarry, LootSmith, RiftCoach) are run by our team, so a new deal waits until one of us accepts it. If it waits too long, message @sandrobenashvili on Telegram.
-
-To see the missed-deadline rule, buy "Demo: 2-minute deadline (try the refund)". Once the seller accepts, they have 2 minutes to deliver. If they don't, the deal page lets you take back your payment plus the seller's deposit, without asking anyone.
-
-You can also sell: create a listing on the Sell page, then buy it from a second Phantom wallet (send us both addresses to fund them).
-
-Demo video: <Loom link>
+Free on Solana devnet. 1) Install Phantom; in Settings > Developer Settings turn on Testnet Mode, Solana Devnet. 2) Send your address to @sandrobenashvili on Telegram for test USDC and SOL. 3) Open https://46-101-154-81.sslip.io, click Connect, buy a listing. Our team accepts deals as the seller.
 ```
 
 ## Important context about the repo
