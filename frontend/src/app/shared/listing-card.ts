@@ -15,7 +15,12 @@ import { unitCount } from './unit';
         <div class="meta">{{ listing().gameName }} · {{ listing().type }}</div>
         <div class="title">{{ listing().title }}</div>
         <div class="meta">
-          {{ unitCount(listing().unit, listing().milestones) }} ·
+          {{
+            listing().milestones === 1 && !listing().unit
+              ? 'Paid in one go'
+              : unitCount(listing().unit, listing().milestones)
+          }}
+          ·
           {{
             listing().seller.displayName ||
               listing().seller.wallet.slice(0, 4) + '…' + listing().seller.wallet.slice(-4)
