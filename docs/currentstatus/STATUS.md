@@ -34,7 +34,8 @@ The brief is [`../design/DESIGN.md`](../design/DESIGN.md): tokens, components, p
 | Fixes from Sandro's review: compact phone header buttons, inset select arrows | Done, pushed (`3afe672`), **not deployed** |
 | 5 Listing page | Done, pushed (`3a837c1`), **not deployed**, waiting for Sandro's review |
 | 6 Phone hand-off sheet and error copy | Done, pushed (`f8e9fba`), **not deployed**, waiting for Sandro's review |
-| 7 Motion: funds-lock and deal-complete | Next |
+| Fix from Sandro's review: no scrollbar on the /me tabs | Done, pushed, **not deployed** |
+| 7 Motion: funds-lock and deal-complete | Done, pushed, **not deployed**, waiting for Sandro's review. The vault plays them when the deal page sees the change (your own action or the poll), and after Buy (router state from the listing page). |
 | 8 Home hero with the example vault, games as a text index | To do |
 | 9 /sell, /me, /u restyle (+ "Your move" flag on deal rows, empty states from §7) | To do |
 | 10 Light theme pass (`index.html` forces `data-theme="dark"` for now) | To do |

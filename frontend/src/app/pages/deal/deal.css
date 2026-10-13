@@ -20,6 +20,15 @@
 .title-row h1 {
   margin: 0;
 }
+/* The badge crossfades to how the deal ended while the vault drains. */
+.crossfade {
+  animation: badge-in var(--dur-2) var(--ease-out);
+}
+@keyframes badge-in {
+  from {
+    opacity: 0;
+  }
+}
 .status-line {
   max-width: 60ch;
   margin: var(--s-3) 0 0;

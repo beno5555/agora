@@ -31,6 +31,7 @@ const WHEN = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle
   selector: 'app-deal-timeline',
   imports: [Icon],
   styleUrl: './deal-timeline.css',
+  host: { '[class.just-closed]': 'justClosed()' },
   template: `
     <ol class="steps">
       @for (step of steps(); track step.label) {
@@ -72,6 +73,8 @@ const WHEN = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle
 })
 export class DealTimeline {
   readonly deal = input.required<FullDealDto>();
+  /** The deal closed while the page was open: the final marker fills in after the vault drains. */
+  readonly justClosed = input(false);
   protected readonly unitCount = unitCount;
 
   protected readonly cells = computed(() =>

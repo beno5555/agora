@@ -2,6 +2,9 @@ import { Component, computed, input } from '@angular/core';
 import { AmountPipe } from './amount.pipe';
 import { Icon } from './icon';
 
+/** A money event the vault animates (DESIGN.md §6): funds just locked, or the deal just closed. */
+export type MoneyMoment = 'lock' | 'close';
+
 /**
  * The locked money of one deal: the total, a bar of buyer deposit | price | seller deposit, and the
  * amounts under it (DESIGN.md §4, "Vault breakdown"). The bar is decoration; the numbers are in the
@@ -14,10 +17,29 @@ import { Icon } from './icon';
   host: {
     '[class.is-disputed]': "state() === 'disputed'",
     '[class.is-closed]': "state() === 'closed'",
+    '[class.play-lock]': "moment() === 'lock'",
+    '[class.play-close]': "moment() === 'close'",
   },
   template: `
     <div class="top">
-      <span class="heading"><app-icon name="lock" />{{ heading() }}</span>
+      <span class="heading">
+        <!-- Lucide "lock", inline so its shackle can close when the funds lock. -->
+        <svg
+          viewBox="0 0 24 24"
+          width="16"
+          height="16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+          <path class="shackle" d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        {{ heading() }}
+      </span>
       @if (recordHref(); as href) {
         <a class="record" [href]="href" target="_blank" rel="noopener"
           >Deal record<app-icon name="external-link" /><span class="visually-hidden">
@@ -32,7 +54,8 @@ import { Icon } from './icon';
     }
 
     <div class="bar" [class.bar--empty]="state() === 'closed'" aria-hidden="true">
-      @if (state() !== 'closed') {
+      <!-- On a close, the segments stay for the length of the drain, then the dashed outline shows. -->
+      @if (state() !== 'closed' || moment() === 'close') {
         <span class="seg seg--deposit" [style.flex-grow]="share(buyerDeposit())"></span>
         <span class="seg seg--price" [style.flex-grow]="share(price())">
           @if (releasedPercent() > 0) {
@@ -97,6 +120,8 @@ export class Vault {
   /** Overrides the computed total (e.g. "You lock now" on a listing). */
   readonly total = input<bigint | null>(null);
   readonly recordHref = input<string | null>(null);
+  /** Plays the funds-lock or the close animation while set; the page clears it afterwards. */
+  readonly moment = input<MoneyMoment | null>(null);
 
   protected readonly shownTotal = computed(() => {
     const total = this.total();

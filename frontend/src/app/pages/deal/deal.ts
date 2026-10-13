@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ApiError, ApiService } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { DealActionService } from '../../core/deal-action.service';
@@ -13,15 +13,17 @@ import { ExplorerLink } from '../../shared/explorer-link';
 import { Icon } from '../../shared/icon';
 import { mediaQuery } from '../../shared/media';
 import { StatusBadge } from '../../shared/status-badge';
-import { Vault } from '../../shared/vault';
+import { MoneyMoment, Vault } from '../../shared/vault';
 import { WalletAddress } from '../../shared/wallet-address';
-import { DealMoney, changeNotice } from './deal-money';
+import { DealMoney, changeNotice, moneyMoment } from './deal-money';
 import { DealTimeline } from './deal-timeline';
 
 const POLL_MS = 12_000;
 /** RefundUndelivered only appears 15 s after the deadline, so the page refetches right after. */
 const REFUND_DELAY_MS = 16_000;
 const TEN_MINUTES = 600;
+/** Long enough for the longest vault animation (the lock's light sweep) to finish. */
+const MOMENT_MS = 1_500;
 
 /** Button labels (frontend.md) and the toast after each action succeeds. */
 const LABEL: Record<DealAction, string> = {
@@ -70,7 +72,7 @@ const DONE: Record<DealAction, string> = {
         </p>
         <div class="title-row">
           <h1>{{ d.title }}</h1>
-          <app-status-badge [status]="d.status" />
+          <app-status-badge [status]="d.status" [class.crossfade]="moment() === 'close'" />
         </div>
         <p class="status-line">{{ m.statusLine }}</p>
         @if (d.status === 'Active' && d.deliveryDeadline) {
@@ -107,6 +109,7 @@ const DONE: Record<DealAction, string> = {
             [priceNote]="d.milestones > 1 ? m.money(m.perPart) + ' each' : ''"
             [releasedNote]="releasedNote()"
             [recordHref]="explorer('address', d.dealPda)"
+            [moment]="moment()"
           >
             @if (m.isLocked) {
               @if (d.status === 'Disputed') {
@@ -168,7 +171,7 @@ const DONE: Record<DealAction, string> = {
 
           <section class="panel area-progress">
             <h2>Progress</h2>
-            <app-deal-timeline [deal]="d" />
+            <app-deal-timeline [deal]="d" [justClosed]="moment() === 'close'" />
           </section>
 
           <section class="panel area-solana">
@@ -441,6 +444,12 @@ export class Deal {
   /** Disagree and Refund buyer ask once more before they run. */
   protected readonly confirming = signal<DealAction | null>(null);
   protected readonly wide = mediaQuery('(min-width: 960px)');
+  /** The money event the vault is animating right now, if any. */
+  protected readonly moment = signal<MoneyMoment | null>(null);
+  private momentTimer?: ReturnType<typeof setTimeout>;
+  /** The listing page sends the buyer here right after Buy: the first load plays the lock. */
+  private arrivalMoment = (inject(Router).currentNavigation()?.extras.state?.['moment'] ??
+    null) as MoneyMoment | null;
 
   protected readonly secondsLeft = computed(() => {
     const deadline = this.deal()?.deliveryDeadline;
@@ -605,7 +614,9 @@ export class Deal {
     const updated = await this.actions.act(d.id, dto);
     this.running.set(null);
     if (!updated) return;
+    const moment = moneyMoment(d, updated);
     this.deal.set(updated);
+    if (moment) this.play(moment);
     this.parts.set(1);
     this.splitInput.set('');
     this.toast.show(DONE[dto.action], 'success');
@@ -627,12 +638,27 @@ export class Deal {
       const m = this.money();
       const notice = prev && m && prev.id === next.id ? changeNotice(prev, m) : null;
       if (notice) this.toast.show(notice);
+      const moment =
+        prev?.id === next.id
+          ? moneyMoment(prev, next)
+          : m?.isLocked
+            ? this.arrivalMoment
+            : null;
+      this.arrivalMoment = null;
+      if (moment) this.play(moment);
     } catch (error) {
       // A failed poll keeps what is on screen; only the first load shows an error.
       if (this.deal()) return;
       if (error instanceof ApiError && error.status === 404) this.notFound.set(true);
       else this.error.set(error instanceof Error ? error.message : 'Could not load this deal.');
     }
+  }
+
+  /** Runs the vault's animation for this money event, then clears it so the next one can play. */
+  private play(moment: MoneyMoment): void {
+    clearTimeout(this.momentTimer);
+    this.moment.set(moment);
+    this.momentTimer = setTimeout(() => this.moment.set(null), MOMENT_MS);
   }
 
   private async loadOther(wallet: string): Promise<void> {

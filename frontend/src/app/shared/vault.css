@@ -1,5 +1,6 @@
 /* The one gold-edged box in the app. */
 :host {
+  position: relative;
   display: block;
   margin-bottom: var(--s-4);
   padding: var(--s-4);
@@ -146,4 +147,76 @@
   margin: var(--s-3) 0 0;
   color: var(--text-muted);
   font-size: var(--fs-sm);
+}
+
+/*
+ * Motion (DESIGN.md §6), only when money moves.
+ * Funds lock: the segments fill left to right, the shackle closes, one light sweeps the top edge.
+ * Close: the segments drain, then the dashed outline of an empty vault fades in.
+ */
+.seg {
+  transform-origin: left;
+}
+:host(.play-lock) .seg {
+  animation: seg-fill var(--dur-4) var(--ease-out) both;
+}
+:host(.play-lock) .seg:nth-child(2) {
+  animation-delay: 80ms;
+}
+:host(.play-lock) .seg:nth-child(3) {
+  animation-delay: 160ms;
+}
+@keyframes seg-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+:host(.play-lock) .shackle {
+  animation: shackle-close var(--dur-3) var(--ease-out) 450ms both;
+}
+@keyframes shackle-close {
+  from {
+    transform: translateY(-5px);
+  }
+}
+
+/* Parked off the left edge; the lock moves it across once. */
+:host::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: var(--r-md);
+  left: var(--r-md);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-100), transparent) no-repeat;
+  background-position: -50% 0;
+  background-size: 30% 100%;
+  pointer-events: none;
+}
+:host(.play-lock)::before {
+  animation: sweep 900ms var(--ease-out) 300ms;
+}
+@keyframes sweep {
+  to {
+    background-position: 150% 0;
+  }
+}
+
+:host(.play-close) .seg {
+  animation: seg-drain var(--dur-4) ease-in-out both;
+}
+@keyframes seg-drain {
+  to {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+}
+:host(.play-close) .bar--empty {
+  animation: outline-in var(--dur-2) var(--ease-out) var(--dur-4) both;
+}
+@keyframes outline-in {
+  from {
+    border-color: transparent;
+  }
 }

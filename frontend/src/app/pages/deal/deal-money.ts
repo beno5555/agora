@@ -1,6 +1,7 @@
 import { DealAction, DealStatus, FullDealDto } from '../../core/models';
 import { formatAmount } from '../../shared/amount.pipe';
 import { unitCount, unitName } from '../../shared/unit';
+import { MoneyMoment } from '../../shared/vault';
 
 export const FINAL_STATUSES: DealStatus[] = [
   'Completed',
@@ -43,6 +44,16 @@ export interface KeyLine {
   icon: 'key' | 'clock';
   who: string;
   what: string;
+}
+
+/** The money event between two versions of a deal, for the vault to animate; null if none. */
+export function moneyMoment(prev: FullDealDto, next: FullDealDto): MoneyMoment | null {
+  if (prev.status === next.status) return null;
+  if (FINAL_STATUSES.includes(next.status)) return 'close';
+  const locked =
+    (prev.status === 'Draft' && next.status === 'AwaitingSeller') ||
+    (prev.status === 'AwaitingSeller' && next.status === 'Active');
+  return locked ? 'lock' : null;
 }
 
 /** What the other side just did, for a toast when polling picks it up; null if nothing worth saying. */

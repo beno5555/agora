@@ -59,6 +59,15 @@
 .final .marker {
   border: 2px solid currentColor;
 }
+:host(.just-closed) .final .marker {
+  animation: marker-fill var(--dur-2) var(--ease-out) var(--dur-4) both;
+}
+@keyframes marker-fill {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
 .tone-green {
   color: var(--st-green-fg);
 }

@@ -300,7 +300,8 @@ export class Listing {
     const deal = await this.actions.buy(this.id(), this.note().trim());
     if (!deal) return;
     this.setNote('');
-    await this.router.navigate(['/d', deal.id]);
+    // The deal page plays the funds-lock animation on arrival.
+    await this.router.navigate(['/d', deal.id], { state: { moment: 'lock' } });
   }
 
   protected async copyLink(): Promise<void> {
