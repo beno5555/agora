@@ -6,7 +6,7 @@ The Colosseum form's missing fields, written by Claude on Oct 13 from the repo a
 |---|---|
 | Access instructions (`liveProductAccessInstructions`) | Final text below (297 of the field's 300 characters), with Sandro's Telegram (@sandrobenashvili) |
 | Important context about the repo | Final text below (468 of the field's 500 characters). It says Claude Code wrote the Solana program; delete those lines if the team decides otherwise |
-| Demo video | **Planned** ([below](#technical-demo-plan-rewritten-oct-13-after-the-deadline)); recorded with Loom on the hosted site |
+| Demo video | Not in the submission (Loom failed). Script rewritten as a natural workflow walkthrough ([below](#technical-demo-plan-rewritten-oct-13-after-the-deadline)) |
 | Repo `README.md` | Claude's older draft; rewrite it. Stale points listed at the bottom |
 
 ## Access instructions
