@@ -66,7 +66,12 @@ try {
     Write-Host '== Building the frontend'
     Push-Location (Join-Path $repo 'frontend')
     try {
-        npm.cmd ci
+        # npm ci replaces node_modules, which fails while `ng serve` holds files there, so only run it
+        # when package-lock.json changed since the last install (npm's copy is node_modules/.package-lock.json).
+        $installed = 'node_modules/.package-lock.json'
+        if (-not (Test-Path $installed) -or (Get-Item 'package-lock.json').LastWriteTime -gt (Get-Item $installed).LastWriteTime) {
+            npm.cmd ci
+        }
         npx.cmd ng build
     }
     finally {

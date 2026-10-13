@@ -59,7 +59,7 @@ It takes a few minutes. It ends with `Deployed: https://<ip-with-dashes>.sslip.i
 git pull --rebase
 ./deploy/deploy.ps1 -Server <ip>
 ```
-Stop `ng serve` first: `npm ci` replaces `frontend/node_modules`. The app is down for a few seconds while it restarts. The database is kept.
+`ng serve` can keep running, except when `package-lock.json` changed since the last install: then the script runs `npm ci`, which replaces `frontend/node_modules` and fails with `EPERM` while `ng serve` holds files there. The app is down for a few seconds while it restarts. The database is kept.
 
 ## Check that it works
 From a phone on mobile data, not the dev PC:
@@ -90,4 +90,4 @@ ssh root@<ip> systemctl stop agora; scp root@<ip>:/var/lib/agora/agora.db* .; ss
 | `502 Bad Gateway` | Caddy is fine but the app isn't running: `journalctl -u agora -n 50`. |
 | Sign-in works but you're signed out on reload | The page isn't on HTTPS (the cookie is `Secure`). |
 | `400 Bad Request` on every page | The host isn't in `AllowedHosts` in `/etc/agora/agora.env`. |
-| `deploy.ps1` fails at `npm ci` with `EPERM` | `ng serve` (or an editor) is holding files in `node_modules`; stop it and rerun. |
+| `deploy.ps1` fails at `npm ci` with `EPERM` (exit code -4048) | `package-lock.json` changed, and `ng serve` (or an editor) is holding files in `node_modules`; stop it and rerun. |
