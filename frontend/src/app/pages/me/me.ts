@@ -257,7 +257,9 @@ export class Me {
   protected readonly rows = computed<DealRow[]>(() =>
     this.deals()
       .map((deal) => {
-        const action = primaryAction(deal.allowedActions);
+        // A backend from before rows carried allowedActions sends none; one row that throws here
+        // would stop the whole page from updating.
+        const action = primaryAction(deal.allowedActions ?? []);
         return { deal, move: action ? (MOVE[action] ?? null) : null };
       })
       .sort((a, b) => Number(!!b.move) - Number(!!a.move)),
