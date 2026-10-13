@@ -38,7 +38,7 @@ The brief is [`../design/DESIGN.md`](../design/DESIGN.md): tokens, components, p
 | 7 Motion: funds-lock and deal-complete | Done, pushed, **not deployed**, waiting for Sandro's review. The vault plays them when the deal page sees the change (your own action or the poll), and after Buy (router state from the listing page). |
 | 8 Home hero with the example vault, games as a text index | Done, pushed, **not deployed**, waiting for Sandro's review |
 | 9 /sell, /me, /u and /g restyle (+ "Your move" flag on deal rows, empty states from §7) | Done, pushed, **not deployed**, waiting for Sandro's review. **Includes a backend change** (`GET /api/me/deals` rows now carry `allowedActions`), so its deploy needs the backend too (`deploy.ps1` ships both). |
-| 10 Light theme pass (`index.html` forces `data-theme="dark"` for now) | To do |
+| 10 Light theme pass | Done, pushed, **not deployed**, waiting for Sandro's review. Every page was checked with a light system setting; the one break (the home hero's text went dark on ink) is fixed with an `.ink` class that re-applies the dark tokens. **`index.html` still forces `data-theme="dark"`** for the demo (DESIGN.md §3); removing that attribute turns the light theme on for light-mode systems. |
 
 **Where things are:**
 - **Global CSS** (`frontend/src/styles/`, listed in `angular.json`): `tokens.css` (from DESIGN.md §3, plus `--lock-amount` and `--vault-border`; links are plain text with an underline, the gold rule wins over the brief's gold link token), `base.css`, `utilities.css`, `controls.css` (`.btn` variants, inputs, `.amount-input`), `surfaces.css` (`.panel`, `.tabs`, `dl.facts`, `.badge`, `.notice`, `.empty-state`).

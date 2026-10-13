@@ -24,6 +24,8 @@
       transparent
     ),
     var(--ink-950);
+  /* .ink keeps the dark tokens here in the light theme; the text colour must be set again. */
+  color: var(--text);
 }
 .hero::before,
 .hero::after {

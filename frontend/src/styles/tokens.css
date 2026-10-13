@@ -1,5 +1,7 @@
 /* ============ Agora tokens ============ */
-:root {
+/* Dark theme (default). .ink re-applies it to a band that stays ink in the light theme (the home hero). */
+:root,
+.ink {
   color-scheme: dark;
 
   /* Brand, theme-independent */
@@ -132,5 +134,5 @@
 }
 }
 
-@media (min-width: 600px) { :root { --gutter: 24px; } }
-@media (min-width: 960px) { :root { --gutter: 32px; --header-h: 64px; } }
+@media (min-width: 600px) { :root, .ink { --gutter: 24px; } }
+@media (min-width: 960px) { :root, .ink { --gutter: 32px; --header-h: 64px; } }

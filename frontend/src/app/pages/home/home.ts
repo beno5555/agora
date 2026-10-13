@@ -17,7 +17,7 @@ const EXAMPLE = { price: 10, deposit: 2, parts: 8 };
   imports: [FormsModule, RouterLink, Icon, ListingCard, Vault],
   styleUrl: './home.css',
   template: `
-    <section class="hero" aria-labelledby="hero-title">
+    <section class="hero ink" aria-labelledby="hero-title">
       <div class="copy">
         <h1 id="hero-title">Gaming deals where nobody holds your money.</h1>
         <p class="lead">
