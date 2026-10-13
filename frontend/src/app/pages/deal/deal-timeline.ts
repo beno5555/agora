@@ -109,7 +109,13 @@ export class DealTimeline {
       const look = statusLook(d.status);
       steps = [
         ...raw.filter((s) => s.state === 'done'),
-        { label: FINAL_LABEL[d.status] ?? look.label, meta: '', state: 'final', icon: look.icon, tone: look.tone },
+        {
+          label: FINAL_LABEL[d.status] ?? look.label,
+          meta: '',
+          state: 'final',
+          icon: look.icon,
+          tone: look.tone,
+        },
       ];
     } else {
       if (d.status === 'Disputed')

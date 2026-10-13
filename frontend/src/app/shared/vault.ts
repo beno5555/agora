@@ -66,7 +66,9 @@ import { Icon } from './icon';
         <dd>
           <span class="num">\${{ sellerDeposit() | amount }}</span>
           @if (sellerPending()) {
-            <span class="note">locks when {{ viewer() === 'seller' ? 'you accept' : 'they accept' }}</span>
+            <span class="note"
+              >locks when {{ viewer() === 'seller' ? 'you accept' : 'they accept' }}</span
+            >
           }
         </dd>
       </div>

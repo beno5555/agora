@@ -1,0 +1,162 @@
+:host {
+  display: block;
+}
+
+.head {
+  margin-bottom: var(--s-5);
+}
+.meta {
+  margin-bottom: var(--s-2);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.head h1 {
+  margin: 0;
+}
+
+/* Phone: price, what you lock, the seller's record, then the details and the note.
+   Desktop: the details left, price / vault / buy right and sticky. */
+.layout {
+  display: flex;
+  flex-direction: column;
+}
+.col-main,
+.col-side {
+  display: contents;
+}
+.area-price {
+  order: 1;
+}
+.area-vault {
+  order: 2;
+}
+.area-seller {
+  order: 3;
+}
+.area-what {
+  order: 4;
+}
+.area-protect {
+  order: 5;
+}
+.area-buy {
+  order: 6;
+}
+.layout.with-bar {
+  padding-bottom: 88px;
+}
+@media (min-width: 960px) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: var(--s-6);
+    align-items: start;
+  }
+  .col-main,
+  .col-side {
+    display: block;
+  }
+  .col-side {
+    position: sticky;
+    top: calc(var(--header-h) + var(--s-4));
+  }
+}
+
+/* The details read as one ruled column, not a stack of cards. */
+.block {
+  margin-bottom: var(--s-5);
+  padding-bottom: var(--s-5);
+  border-bottom: 1px solid var(--border);
+}
+@media (min-width: 960px) {
+  .col-main > .block:last-child {
+    border-bottom: 0;
+  }
+}
+.block h2 {
+  margin-bottom: var(--s-3);
+}
+.description {
+  max-width: 65ch;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.steps {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-3);
+  padding-left: 2em;
+}
+.steps li::marker {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+.strong {
+  font-weight: 600;
+}
+.record-label {
+  margin-bottom: var(--s-1);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.record .num {
+  font-size: var(--fs-lg);
+}
+
+.price {
+  margin: 0 0 var(--s-1);
+  font-size: var(--fs-2xl);
+  font-weight: 500;
+}
+.area-price p:not(.price) {
+  margin: 0;
+}
+.vault-line {
+  margin: var(--s-4) 0 0;
+}
+
+.area-buy h2 {
+  margin-bottom: var(--s-2);
+}
+.area-buy label {
+  margin-bottom: var(--s-1);
+}
+.area-buy input {
+  margin-bottom: var(--s-4);
+}
+.area-buy .btn {
+  width: 100%;
+}
+.stack {
+  display: grid;
+  gap: var(--s-2);
+}
+.fine {
+  margin: var(--s-2) 0 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+@media (max-width: 959px) {
+  /* The bar at the bottom carries Buy on a phone. */
+  .buy-inline {
+    display: none;
+  }
+}
+
+.action-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  padding: var(--s-3) var(--gutter) calc(var(--s-3) + env(safe-area-inset-bottom));
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+.action-bar .btn {
+  width: 100%;
+}
+
+.missing {
+  max-width: var(--w-read);
+}

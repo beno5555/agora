@@ -56,7 +56,7 @@ export function changeNotice(prev: FullDealDto, next: DealMoney): string | null 
           ? `The seller accepted. Their ${next.money(next.sellerDepositTerms)} deposit is locked.`
           : null;
       case 'Delivered':
-        return next.isBuyer ? "The seller marked it delivered. Check, then confirm." : null;
+        return next.isBuyer ? 'The seller marked it delivered. Check, then confirm.' : null;
       case 'Disputed':
         return `${them} disagreed. The money stays locked until you both accept the same split.`;
       case 'Completed':
@@ -66,7 +66,11 @@ export function changeNotice(prev: FullDealDto, next: DealMoney): string | null 
     }
   }
   const mine = next.isBuyer ? d.buyerWallet : d.sellerWallet;
-  if (d.splitOffer && d.splitOffer.by !== mine && d.splitOffer.buyerAmount !== prev.splitOffer?.buyerAmount)
+  if (
+    d.splitOffer &&
+    d.splitOffer.by !== mine &&
+    d.splitOffer.buyerAmount !== prev.splitOffer?.buyerAmount
+  )
     return `${them} offered a split.`;
   const confirmed = d.milestonesReleased - prev.milestonesReleased;
   if (confirmed > 0 && !next.isBuyer)

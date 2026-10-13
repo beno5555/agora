@@ -109,7 +109,7 @@
 
 .amounts {
   display: grid;
-  grid-template-columns: 1fr 1.6fr 1fr;
+  grid-template-columns: 1fr 1.2fr 1.2fr;
   gap: var(--s-3);
   margin: var(--s-3) 0 0;
 }

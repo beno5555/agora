@@ -121,12 +121,16 @@ const DONE: Record<DealAction, string> = {
               }
               <p class="no-key">Nobody else. Agora has no key.</p>
               <details class="keys" [open]="wide()">
-                <summary>Who can move this money<app-icon name="chevron-down" class="chev" /></summary>
+                <summary>
+                  Who can move this money<app-icon name="chevron-down" class="chev" />
+                </summary>
                 <ul>
                   @for (line of m.keyLines; track line.who) {
                     <li>
                       <app-icon [name]="line.icon" size="18" />
-                      <span><strong>{{ line.who }}:</strong> {{ line.what }}</span>
+                      <span
+                        ><strong>{{ line.who }}:</strong> {{ line.what }}</span
+                      >
                     </li>
                   }
                 </ul>
@@ -138,7 +142,10 @@ const DONE: Record<DealAction, string> = {
 
           @if (m.outcomes.length > 0) {
             <details class="panel area-outcomes outcomes" [open]="wide()">
-              <summary><h2>What happens if…</h2><app-icon name="chevron-down" size="20" class="chev" /></summary>
+              <summary>
+                <h2>What happens if…</h2>
+                <app-icon name="chevron-down" size="20" class="chev" />
+              </summary>
               <dl>
                 @for (o of m.outcomes; track o.kind) {
                   <div class="outcome" [class.next]="o.kind === nextStep()">
@@ -317,8 +324,8 @@ const DONE: Record<DealAction, string> = {
                     @if (confirming() === 'RaiseDispute') {
                       <div class="confirm-box" role="group" aria-label="Disagree">
                         <p>
-                          <strong>Disagree?</strong> {{ m.consequence('RaiseDispute') }} Nobody
-                          else can decide for you.
+                          <strong>Disagree?</strong> {{ m.consequence('RaiseDispute') }} Nobody else
+                          can decide for you.
                         </p>
                         <button
                           type="button"

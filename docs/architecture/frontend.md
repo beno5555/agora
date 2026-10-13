@@ -26,7 +26,7 @@ frontend/src/app/
 |---|---|---|---|
 | `/` | Home: games grid, newest listings | `GET /api/games`, `GET /api/listings` | browse, search (`q`) |
 | `/g/:slug` | Game storefront, filter Service/Item | `GET /api/listings?game=:slug&type=` | open a listing |
-| `/l/:id` | Listing, **the deal link sellers share** | `GET /api/listings/:id` | terms, seller's on-chain record, deposit preview; **Buy** (with an optional note such as an in-game name) |
+| `/l/:id` | Listing, **the deal link sellers share** | `GET /api/listings/:id` | terms, seller's on-chain record, what you lock (the vault preview, signed in); **Buy · lock $X** ("Connect Phantom to buy" when signed out; an optional note such as an in-game name, kept in sessionStorage). The seller sees Copy deal link, Edit and Pause instead |
 | `/d/:id` | **Deal page** | `GET /api/deals/:id` | status timeline, countdown, vault breakdown, buttons from `allowedActions` |
 | `/sell`, `/sell/:id` | Create or edit a listing | `GET /api/games`, `GET /api/config`, `POST`/`PATCH /api/listings` | deadline dropdown from `deliveryWindows` (label `2m` "2 minutes (demo)"), preselect `defaultDeliveryWindow` |
 | `/me` | Dashboard: my deals (buying / selling tabs), my listings (pause/resume), notifications, profile | `GET /api/me/deals?role=`, `GET /api/me/listings`, `GET /api/me/notifications`, `PATCH /api/me` | |
