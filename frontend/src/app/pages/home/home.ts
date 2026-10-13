@@ -7,22 +7,26 @@ import { GameDto, MinimalListingDto } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
 import { Icon } from '../../shared/icon';
 import { ListingCard } from '../../shared/listing-card';
+import { Pager, fetchPage } from '../../shared/pager';
 import { Vault } from '../../shared/vault';
 
 /** The example deal in the hero: a $10.00 service in 8 parts, with $2.00 deposits on both sides. */
 const EXAMPLE = { price: 10, deposit: 2, parts: 8 };
+const PAGE_SIZE = 10;
+/** How long typing must pause before the search runs. */
+const SEARCH_DELAY_MS = 500;
 
 @Component({
   selector: 'app-home',
-  imports: [FormsModule, RouterLink, Icon, ListingCard, Vault],
+  imports: [FormsModule, RouterLink, Icon, ListingCard, Pager, Vault],
   styleUrl: './home.css',
   template: `
     <section class="hero ink" aria-labelledby="hero-title">
       <div class="copy">
         <h1 id="hero-title">Gaming deals where nobody holds your money.</h1>
         <p class="lead">
-          You and the seller each lock a deposit on Solana. Money moves when you both agree, or
-          when the seller's deadline runs out. Agora never holds it.
+          You and the seller each lock a deposit on Solana. Money moves when you both agree, or when
+          the seller's deadline runs out. Agora never holds it.
         </p>
       </div>
 
@@ -83,7 +87,8 @@ const EXAMPLE = { price: 10, deposit: 2, parts: 8 };
           name="q"
           placeholder="Search listings…"
           aria-label="Search listings"
-          [(ngModel)]="query"
+          [ngModel]="query()"
+          (ngModelChange)="typed($event)"
         />
         <button type="submit" class="btn btn--secondary">Search</button>
       </form>
@@ -103,6 +108,7 @@ const EXAMPLE = { price: 10, deposit: 2, parts: 8 };
           </div>
         }
       }
+      <app-pager label="Listing pages" [page]="page()" [hasNext]="hasNext()" (go)="goTo($event)" />
     </section>
   `,
 })
@@ -117,12 +123,15 @@ export class Home {
   protected readonly query = signal('');
   /** The query the shown listings were searched with, for the empty state. */
   protected readonly searched = signal('');
+  protected readonly page = signal(1);
+  protected readonly hasNext = signal(false);
+  private typingTimer?: ReturnType<typeof setTimeout>;
+  /** Number of the newest request; answers to older ones are dropped. */
+  private latest = 0;
 
   /** Games with listings first; the order within each group stays the API's. */
   protected readonly sortedGames = computed(() =>
-    [...this.games()].sort(
-      (a, b) => Number(b.activeListings > 0) - Number(a.activeListings > 0),
-    ),
+    [...this.games()].sort((a, b) => Number(b.activeListings > 0) - Number(a.activeListings > 0)),
   );
 
   protected readonly example = computed(() => {
@@ -147,19 +156,47 @@ export class Home {
     document.getElementById('listings')?.scrollIntoView({ behavior: 'smooth' });
   }
 
+  /** Searches once typing pauses; every keystroke restarts the wait. */
+  protected typed(value: string): void {
+    this.query.set(value);
+    clearTimeout(this.typingTimer);
+    this.typingTimer = setTimeout(() => this.search(), SEARCH_DELAY_MS);
+  }
+
+  /** Search now (Enter or the button), or when typing paused; a query already shown isn't refetched. */
   protected search(): void {
+    clearTimeout(this.typingTimer);
+    if (this.query().trim() === this.searched() && this.page() === 1) return;
+    this.page.set(1);
     void this.load();
+  }
+
+  protected goTo(page: number): void {
+    this.page.set(page);
+    void this.load();
+    document.getElementById('listings')?.scrollIntoView({ behavior: 'smooth' });
   }
 
   private async load(): Promise<void> {
     const q = this.query().trim();
+    const request = ++this.latest;
     try {
-      this.listings.set(await this.api.get<MinimalListingDto[]>('/api/listings', { q }));
+      const result = await fetchPage<MinimalListingDto>(
+        this.api,
+        '/api/listings',
+        { q },
+        this.page(),
+        PAGE_SIZE,
+      );
+      // A slower, older search must not overwrite a newer one.
+      if (request !== this.latest) return;
+      this.listings.set(result.items);
+      this.hasNext.set(result.hasNext);
       this.searched.set(q);
     } catch (error) {
-      this.toast.fromError(error);
+      if (request === this.latest) this.toast.fromError(error);
     } finally {
-      this.loaded.set(true);
+      if (request === this.latest) this.loaded.set(true);
     }
   }
 }

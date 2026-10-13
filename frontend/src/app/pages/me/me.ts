@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, linkedSignal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
@@ -10,6 +10,7 @@ import { ToastService } from '../../core/toast.service';
 import { AmountPipe } from '../../shared/amount.pipe';
 import { Icon } from '../../shared/icon';
 import { ListingCard } from '../../shared/listing-card';
+import { Pager, fetchPage } from '../../shared/pager';
 import { StatusBadge } from '../../shared/status-badge';
 import { TabKeys } from '../../shared/tab-keys';
 import { TimeAgoPipe } from '../../shared/time-ago.pipe';
@@ -23,6 +24,9 @@ const MOVE: Partial<Record<DealAction, string>> = {
   AcceptSplit: 'answer their offer',
   RefundUndelivered: 'take your refund',
 };
+
+const PAGE_SIZE = 10;
+const NOTES_COLLAPSED = 5;
 
 interface DealRow {
   deal: MinimalDealDto;
@@ -38,6 +42,7 @@ interface DealRow {
     AmountPipe,
     Icon,
     ListingCard,
+    Pager,
     StatusBadge,
     TabKeys,
     TimeAgoPipe,
@@ -97,32 +102,59 @@ interface DealRow {
           </div>
         }
       }
+      <app-pager
+        label="Deal pages"
+        [page]="dealPage()"
+        [hasNext]="moreDeals()"
+        (go)="dealPage.set($event)"
+      />
     </div>
 
     <div class="columns">
       <section aria-labelledby="notes-title">
         <h2 id="notes-title">Notifications</h2>
-        @for (n of notifications.items(); track n.id) {
-          <a
-            class="note-row"
-            [class.unread]="!n.isRead"
-            [routerLink]="n.dealId ? ['/d', n.dealId] : null"
-            (click)="notifications.markRead(n.id)"
+        <div id="note-list">
+          @for (n of shownNotes(); track n.id) {
+            <a
+              class="note-row"
+              [class.unread]="!n.isRead"
+              [routerLink]="n.dealId ? ['/d', n.dealId] : null"
+              (click)="notifications.markRead(n.id)"
+            >
+              <span class="grow"
+                >{{ text(n.kind) }}
+                @if (!n.isRead) {
+                  <span class="visually-hidden">(unread)</span>
+                }
+              </span>
+              <time
+                class="when"
+                [attr.datetime]="n.createdAt"
+                [title]="n.createdAt | date: 'medium'"
+                >{{ n.createdAt | timeAgo }}</time
+              >
+            </a>
+          } @empty {
+            <p class="empty-state">
+              Nothing new. You'll get a note here when the other side of a deal does something.
+            </p>
+          }
+        </div>
+        @if (notifications.items().length > NOTES_COLLAPSED) {
+          <button
+            type="button"
+            class="btn btn--ghost btn--sm see-more"
+            aria-controls="note-list"
+            [attr.aria-expanded]="notesOpen()"
+            (click)="notesOpen.set(!notesOpen())"
           >
-            <span class="grow"
-              >{{ text(n.kind) }}
-              @if (!n.isRead) {
-                <span class="visually-hidden">(unread)</span>
-              }
-            </span>
-            <time class="when" [attr.datetime]="n.createdAt" [title]="n.createdAt | date: 'medium'">{{
-              n.createdAt | timeAgo
-            }}</time>
-          </a>
-        } @empty {
-          <p class="empty-state">
-            Nothing new. You'll get a note here when the other side of a deal does something.
-          </p>
+            {{
+              notesOpen()
+                ? 'See less'
+                : 'See ' + (notifications.items().length - NOTES_COLLAPSED) + ' more'
+            }}
+            <app-icon name="chevron-down" class="chevron" [class.open]="notesOpen()" />
+          </button>
         }
       </section>
 
@@ -156,6 +188,12 @@ interface DealRow {
             </div>
           }
         }
+        <app-pager
+          label="Listing pages"
+          [page]="listingPage()"
+          [hasNext]="moreListings()"
+          (go)="listingPage.set($event)"
+        />
       </section>
     </div>
 
@@ -200,6 +238,20 @@ export class Me {
   protected readonly discord = signal(this.auth.user()?.discord ?? '');
   protected readonly savingProfile = signal(false);
   protected readonly text = notificationText;
+  /** Deals start over at page 1 when the Buying/Selling tab changes. */
+  protected readonly dealPage = linkedSignal({ source: this.role, computation: () => 1 });
+  protected readonly moreDeals = signal(false);
+  private latestDeals = 0;
+  protected readonly listingPage = signal(1);
+  protected readonly moreListings = signal(false);
+  /** Notifications show the newest few until "See more" opens the rest. */
+  protected readonly NOTES_COLLAPSED = NOTES_COLLAPSED;
+  protected readonly notesOpen = signal(false);
+  protected readonly shownNotes = computed(() =>
+    this.notesOpen()
+      ? this.notifications.items()
+      : this.notifications.items().slice(0, NOTES_COLLAPSED),
+  );
 
   /** Deals waiting on the viewer first; otherwise the API's order (newest first). */
   protected readonly rows = computed<DealRow[]>(() =>
@@ -212,8 +264,8 @@ export class Me {
   );
 
   constructor() {
-    effect(() => void this.loadDeals(this.role()));
-    void this.loadListings();
+    effect(() => void this.loadDeals(this.role(), this.dealPage()));
+    effect(() => void this.loadListings(this.listingPage()));
   }
 
   protected toListings(event: Event): void {
@@ -228,7 +280,7 @@ export class Me {
     this.toggling.set(listing.id);
     try {
       await this.api.post(`/api/listings/${listing.id}/${action}`);
-      await this.loadListings();
+      await this.loadListings(this.listingPage());
     } catch (error) {
       this.toast.fromError(error);
     } finally {
@@ -253,21 +305,40 @@ export class Me {
     }
   }
 
-  private async loadDeals(role: 'buyer' | 'seller'): Promise<void> {
+  private async loadDeals(role: 'buyer' | 'seller', page: number): Promise<void> {
     this.loadedDeals.set(false);
+    const request = ++this.latestDeals;
     try {
-      this.deals.set(await this.api.get<MinimalDealDto[]>('/api/me/deals', { role }));
+      const result = await fetchPage<MinimalDealDto>(
+        this.api,
+        '/api/me/deals',
+        { role },
+        page,
+        PAGE_SIZE,
+      );
+      // Switching tabs quickly must not show the other tab's answer.
+      if (request !== this.latestDeals) return;
+      this.deals.set(result.items);
+      this.moreDeals.set(result.hasNext);
     } catch (error) {
-      this.toast.fromError(error);
+      if (request === this.latestDeals) this.toast.fromError(error);
     } finally {
-      this.loadedDeals.set(true);
+      if (request === this.latestDeals) this.loadedDeals.set(true);
     }
   }
 
   /** The caller's own listings, paused ones included. */
-  private async loadListings(): Promise<void> {
+  private async loadListings(page: number): Promise<void> {
     try {
-      this.listings.set(await this.api.get<FullListingDto[]>('/api/me/listings'));
+      const result = await fetchPage<FullListingDto>(
+        this.api,
+        '/api/me/listings',
+        {},
+        page,
+        PAGE_SIZE,
+      );
+      this.listings.set(result.items);
+      this.moreListings.set(result.hasNext);
     } catch (error) {
       this.toast.fromError(error);
     } finally {

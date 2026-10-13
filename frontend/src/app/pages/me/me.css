@@ -103,6 +103,15 @@ h2 {
   font-weight: 600;
   box-shadow: inset 3px 0 0 var(--text);
 }
+.see-more {
+  width: 100%;
+}
+.chevron {
+  transition: transform var(--dur-2) var(--ease-out);
+}
+.chevron.open {
+  transform: rotate(180deg);
+}
 .grow {
   flex: 1;
   min-width: 0;

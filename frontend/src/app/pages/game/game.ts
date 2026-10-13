@@ -1,11 +1,14 @@
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, linkedSignal, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { GameDto, ListingType, MinimalListingDto } from '../../core/models';
 import { PageTitle } from '../../core/page-title';
 import { ToastService } from '../../core/toast.service';
 import { ListingCard } from '../../shared/listing-card';
+import { Pager, fetchPage } from '../../shared/pager';
 import { TabKeys } from '../../shared/tab-keys';
+
+const PAGE_SIZE = 10;
 
 const TABS: { value: ListingType | ''; label: string; plural: string }[] = [
   { value: '', label: 'All', plural: 'listings' },
@@ -15,7 +18,7 @@ const TABS: { value: ListingType | ''; label: string; plural: string }[] = [
 
 @Component({
   selector: 'app-game',
-  imports: [RouterLink, ListingCard, TabKeys],
+  imports: [RouterLink, ListingCard, Pager, TabKeys],
   styleUrl: './game.css',
   template: `
     <h1>{{ name() }}</h1>
@@ -56,6 +59,7 @@ const TABS: { value: ListingType | ''; label: string; plural: string }[] = [
         </div>
       }
     }
+    <app-pager label="Listing pages" [page]="page()" [hasNext]="hasNext()" (go)="goTo($event)" />
   `,
 })
 export class Game {
@@ -72,6 +76,9 @@ export class Game {
   protected readonly games = signal<GameDto[]>([]);
   protected readonly listings = signal<MinimalListingDto[]>([]);
   protected readonly loaded = signal(false);
+  protected readonly hasNext = signal(false);
+  /** Number of the newest request; answers to older ones are dropped. */
+  private latest = 0;
 
   protected readonly selected = computed<ListingType | ''>(
     () => TABS.find((t) => t.value === this.type())?.value ?? '',
@@ -79,6 +86,11 @@ export class Game {
   protected readonly plural = computed(
     () => TABS.find((t) => t.value === this.selected())?.plural ?? 'listings',
   );
+  /** Back to the first page whenever the game or the tab changes. */
+  protected readonly page = linkedSignal({
+    source: () => [this.slug(), this.selected()],
+    computation: () => 1,
+  });
   protected readonly game = computed(() => this.games().find((g) => g.slug === this.slug()));
   protected readonly name = computed(
     () => this.game()?.name ?? this.listings()[0]?.gameName ?? this.slug(),
@@ -89,8 +101,13 @@ export class Game {
       (g) => this.games.set(g),
       (e) => this.toast.fromError(e),
     );
-    effect(() => void this.load(this.slug(), this.selected()));
+    effect(() => void this.load(this.slug(), this.selected(), this.page()));
     effect(() => this.pageTitle.set(this.name()));
+  }
+
+  protected goTo(page: number): void {
+    this.page.set(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   protected select(type: ListingType | ''): void {
@@ -101,14 +118,24 @@ export class Game {
     });
   }
 
-  private async load(game: string, type: ListingType | ''): Promise<void> {
+  private async load(game: string, type: ListingType | '', page: number): Promise<void> {
     this.loaded.set(false);
+    const request = ++this.latest;
     try {
-      this.listings.set(await this.api.get<MinimalListingDto[]>('/api/listings', { game, type }));
+      const result = await fetchPage<MinimalListingDto>(
+        this.api,
+        '/api/listings',
+        { game, type },
+        page,
+        PAGE_SIZE,
+      );
+      if (request !== this.latest) return;
+      this.listings.set(result.items);
+      this.hasNext.set(result.hasNext);
     } catch (error) {
-      this.toast.fromError(error);
+      if (request === this.latest) this.toast.fromError(error);
     } finally {
-      this.loaded.set(true);
+      if (request === this.latest) this.loaded.set(true);
     }
   }
 }

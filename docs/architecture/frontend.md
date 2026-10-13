@@ -24,12 +24,12 @@ frontend/src/app/
 
 | Route | Page | Data | Main actions |
 |---|---|---|---|
-| `/` | Home: hero with an example vault, games as a text index (games with listings first), newest listings | `GET /api/games`, `GET /api/listings` | browse, search (`q`) |
-| `/g/:slug` | Game storefront, filter Service/Item (the tabs set `?type=`) | `GET /api/games`, `GET /api/listings?game=:slug&type=` | open a listing; empty state links to `/sell?game=:slug` |
+| `/` | Home: hero with an example vault, games as a text index (games with listings first), newest listings, 10 per page | `GET /api/games`, `GET /api/listings` | browse, search (`q`): runs 0.5s after typing pauses, or at once on Enter/Search |
+| `/g/:slug` | Game storefront, filter Service/Item (the tabs set `?type=`), 10 per page | `GET /api/games`, `GET /api/listings?game=:slug&type=` | open a listing; empty state links to `/sell?game=:slug` |
 | `/l/:id` | Listing, **the deal link sellers share** | `GET /api/listings/:id` | terms, seller's on-chain record, what you lock (the vault preview, signed in); **Buy · lock $X** ("Connect Phantom to buy" when signed out; an optional note such as an in-game name, kept in sessionStorage). The seller sees Copy deal link, Edit and Pause instead |
 | `/d/:id` | **Deal page** | `GET /api/deals/:id` | status timeline, countdown, vault breakdown, buttons from `allowedActions` |
 | `/sell`, `/sell/:id` | Create or edit a listing | `GET /api/games`, `GET /api/config`, `POST`/`PATCH /api/listings` | deadline dropdown from `deliveryWindows` (label `2m` "2 minutes (demo)"), preselect `defaultDeliveryWindow`; `?game=:slug` preselects the game; price and parts are checked inline (at most 6 decimals, the price splits evenly into the parts, with two nearby prices that do) |
-| `/me` | Dashboard: my deals (buying / selling tabs; "Your move" on rows whose `allowedActions` include a primary action, sorted first), my listings (pause/resume), notifications, profile | `GET /api/me/deals?role=`, `GET /api/me/listings`, `GET /api/me/notifications`, `PATCH /api/me` | |
+| `/me` | Dashboard: my deals (buying / selling tabs; "Your move" on rows whose `allowedActions` include a primary action, sorted first within the page), my listings (pause/resume), both 10 per page; notifications (the newest 5, "See more" opens the rest), profile | `GET /api/me/deals?role=`, `GET /api/me/listings`, `GET /api/me/notifications`, `PATCH /api/me` | |
 | `/u/:wallet` | Public profile: record on Solana (completed, not delivered, disagreements) + active listings | `GET /api/users/:wallet` | |
 
 `/d/:id`, `/sell` and `/me` need a session; their guard asks the user to connect and sign in. Everything else works signed out.
