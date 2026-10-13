@@ -12,6 +12,7 @@ import { Icon } from '../../shared/icon';
 import { ListingCard } from '../../shared/listing-card';
 import { StatusBadge } from '../../shared/status-badge';
 import { TabKeys } from '../../shared/tab-keys';
+import { TimeAgoPipe } from '../../shared/time-ago.pipe';
 import { primaryAction } from '../deal/deal-money';
 
 /** What "Your move" means on a deal row, by the action waiting on the viewer. */
@@ -30,7 +31,17 @@ interface DealRow {
 
 @Component({
   selector: 'app-me',
-  imports: [DatePipe, FormsModule, RouterLink, AmountPipe, Icon, ListingCard, StatusBadge, TabKeys],
+  imports: [
+    DatePipe,
+    FormsModule,
+    RouterLink,
+    AmountPipe,
+    Icon,
+    ListingCard,
+    StatusBadge,
+    TabKeys,
+    TimeAgoPipe,
+  ],
   styleUrl: './me.css',
   template: `
     <h1>My deals</h1>
@@ -104,7 +115,9 @@ interface DealRow {
                 <span class="visually-hidden">(unread)</span>
               }
             </span>
-            <span class="when">{{ n.createdAt | date: 'short' }}</span>
+            <time class="when" [attr.datetime]="n.createdAt" [title]="n.createdAt | date: 'medium'">{{
+              n.createdAt | timeAgo
+            }}</time>
           </a>
         } @empty {
           <p class="empty-state">
