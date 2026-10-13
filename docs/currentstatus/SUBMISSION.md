@@ -5,7 +5,7 @@ The Colosseum form's missing fields, written by Claude on Oct 13 from the repo a
 | Field | State |
 |---|---|
 | Access instructions (`liveProductAccessInstructions`) | Final text below, with Sandro's Telegram (@sandrobenashvili) |
-| Important context about the repo | Final text below. It says Claude Code wrote the Solana program; delete those lines if the team decides otherwise |
+| Important context about the repo | Final text below (468 of the field's 500 characters). It says Claude Code wrote the Solana program; delete those lines if the team decides otherwise |
 | Demo video | **Planned** ([below](#technical-demo-plan-oct-13-0545-utc)); recorded with Loom on the hosted site |
 | Repo `README.md` | Claude's older draft; rewrite it. Stale points listed at the bottom |
 
@@ -33,27 +33,10 @@ Demo video: <Loom link>
 
 ## Important context about the repo
 
-The form asks: "Please share any important context about your repo. For example, if it only represents part of the product, or includes elements of unrelated products."
+The form asks: "Please share any important context about your repo. For example, if it only represents part of the product, or includes elements of unrelated products." **The field takes 500 characters at most**; this is 468.
 
 ```
-The repo is the whole product, built during the hackathon (first commit Oct 11, 2026). Nothing in it comes from an earlier or unrelated product.
-
-What's where:
-- program/ : the Solana program (Anchor, Rust). It holds each deal's payment and both deposits in a vault owned by the program and enforces every rule: create and fund a deal, accept with the seller's deposit, mark delivered, confirm part by part (for example, a 4-rank boost pays out per rank), disagree, offer and accept a split, refund plus the seller's deposit after a missed deadline, cancel before acceptance, and seller refund. The program sets deposits from each wallet's on-chain record, and every closed deal updates that record. A 2% fee is taken only from what the seller is paid.
-- backend/ : a .NET 10 API. It builds unsigned transactions for the user's wallet to sign and holds no keys, so Agora never holds user funds. It stores what doesn't belong on-chain (listings, profiles, notifications) in SQLite and reads deal state back from the chain. Sign-in is a signed message (Sign-In With Solana style). colosseumbackend.Admin is our own setup tool: it initialized the program and funds demo wallets with test tokens.
-- frontend/ : the Angular 21 web app, used with the Phantom wallet.
-- deploy/ : the script and config that host the app on a DigitalOcean server.
-- docs/ : the product plan (PLAN.md), the technical design (architecture/) and the design brief.
-
-Not product code:
-- .claude/skills/ and skills-lock.json : two third-party Claude Code skills we used as development tools (Colosseum Copilot for research, Anthropic's frontend-design for the redesign).
-- CLAUDE.md : instructions for Claude Code. Nobody on our team writes Rust, so Claude Code wrote the Solana program. The team designed the product and worked on the backend and frontend with it.
-
-Tested: 8 program tests (LiteSVM) and 15 end-to-end API tests against the deployed program on devnet. They cover a deal paid match by match, a disagreement settled by a split, a missed deadline refunded with the seller's deposit, access checks, and sign-in replay and impostor signatures.
-
-Deployed: program J4fL4Q8nnndro2xmVdCayRt5apXhexkkVQoqqwf4AKi4 on devnet. Live app: https://46-101-154-81.sslip.io
-
-Limits: devnet only, with a test stablecoin. The program has not been audited. A deal whose two sides never agree stays locked: resolving disagreements beyond split offers is future work. Steam items currently settle like any other item; waiting out Steam's 7-day trade reversal window is future work.
+The whole product, built during the hackathon (from Oct 11). program/: Anchor program that enforces every rule; a program-owned vault holds each payment and both deposits. backend/: .NET API that builds unsigned transactions and holds no keys. frontend/: Angular app with Phantom. deploy/, docs/: hosting and design. Not product code: .claude/skills/ (third-party dev tools) and CLAUDE.md; Claude Code wrote the Rust program. Devnet only, test stablecoin, not audited.
 ```
 
 ## Technical demo plan (Oct 13, 05:45 UTC)
