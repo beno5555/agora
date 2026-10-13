@@ -6,7 +6,7 @@ The Colosseum form's missing fields, written by Claude on Oct 13 from the repo a
 |---|---|
 | Access instructions (`liveProductAccessInstructions`) | Final text below (297 of the field's 300 characters), with Sandro's Telegram (@sandrobenashvili) |
 | Important context about the repo | Final text below (468 of the field's 500 characters). It says Claude Code wrote the Solana program; delete those lines if the team decides otherwise |
-| Demo video | Not in the Colosseum submission (Loom's desktop app failed to record by the deadline). Recorded afterwards with OBS on the hosted site (2:52), to upload on Loom. [Setup below](#technical-demo-setup) |
+| Demo video | Not in the Colosseum submission. Recorded afterwards on the hosted site (2:52). [Setup below](#technical-demo-setup) |
 | Repo `README.md` | Claude's older draft; rewrite it. Stale points listed at the bottom |
 
 ## Access instructions
@@ -35,9 +35,8 @@ The whole product, built during the hackathon (from Oct 11). program/: Anchor pr
 3. Both Phantoms on **Devnet**, both signed in. Browser zoom 110–125%. Close other tabs and notifications.
 4. **Start the 2-minute deal a few minutes before recording:** buyer buys "Demo: 2-minute deadline (try the refund)" ($2), seller accepts.
 5. Buyer window on the home page; the listing "Ranked boost, Gold IV to Platinum IV" (Apex, NovaCarry, $24, 4 ranks of $6) one click away. A tab with the GitHub repo open at `program/programs/agora/src/lib.rs`.
-6. Recorder: OBS (Display Capture of the whole screen, so the Phantom popups are in it; the microphone with a Noise Suppression filter). Pause the recording while a Phantom approval confirms.
 
-**After recording:** trim long pauses, upload to Loom, make the link viewable by anyone with it, check it plays in a private window.
+**After recording:** trim long pauses, upload it, make the link viewable by anyone with it, check it plays in a private window.
 
 ## Demo: inputs for planning
 
