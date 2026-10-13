@@ -428,7 +428,7 @@ Phone 390, signed in                     Phone 390, signed out
 
 - The wallet chip opens a menu: Copy address, Public profile, Sign out. On a phone, the `≡` sheet holds Sell, My listings, Public profile, the wallet address with copy, and Sign out.
 - "My deals (1)": the count is a pill plus hidden text "1 unread".
-- The logo lockup links to `/`. Its height is 28px on phones and 32px on desktop (section 8).
+- The brand links to `/`: the mark, then the name as live text, "AGORA" in Cinzel 700 with a gold gradient (section 8).
 
 **Phantom hand-off (phone, no injected provider).** Tapping Connect opens a bottom sheet (on desktop without Phantom, a centered dialog):
 
@@ -845,11 +845,13 @@ Signed-out viewers see a neutral version, for example "Waiting for the seller to
 |---|---|---|
 | `mark.png` (and `@2x`) | `AgoraLogo.webp` (1024×1024) | Square crop around the mark: x 162–862, y 139–839. Export 64 and 128 px. |
 | `lockup.png` (and `@2x`) | `AgoraBackground.webp` (1672×941) | Crop the mark plus wordmark: about x 440–1290, y 270–630. Export at 64 and 128 px tall. |
+| `mark-header.png` | `AgoraLogo.webp` | The `mark.png` crop at 96 px, with the black background turned into transparency (alpha from the brightest channel, levels 7%–85%). The header uses it. |
 | `og-image.jpg` | `AgoraBackground.webp` | Scale to 1200 wide, then center-crop to 1200×630. Under 300 KB. |
 | favicons | `mark.png` | `favicon.ico` (16, 32), `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` (180, on an `#07090E` square, no transparency) |
 
 - **The black backgrounds.** Both source files have black backgrounds, not transparency. In the header (always ink), use them with `mix-blend-mode: screen`: the black drops out and the gold and glow stay. Ask whoever made the logo for a transparent PNG or SVG export; when it exists, remove the blend mode.
-- **Logo sizes:** header lockup 28px tall on phones, 32px on desktop. Mark alone at 24px minimum (it becomes a gold column, which is fine). Never use the lockup below 24px tall.
+- **The header brand (Oct 13, Sandro's call):** the mark and the name are set apart instead of the baked-in lockup. Mark 34px on phones, 42px from 600px; the name in Cinzel 700 (Roman inscription capitals, for a site named after the Greek marketplace), uppercase, 20px / 26px, tracked 0.14–0.16em, filled with a `--gold-100` → `--gold-500` → `--gold-700` gradient. Cinzel is loaded only for the letters A, G, O, R.
+- **Logo sizes:** mark alone at 24px minimum (it becomes a gold column, which is fine). Never use the lockup below 24px tall.
 - **Clear space:** the height of the mark's entablature (top block, about 1/5 of the mark's height) on all sides. Nothing else goes inside that space.
 - **The logo never goes on a light surface.** In the light theme it lives only in the ink header and ink hero.
 

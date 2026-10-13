@@ -29,21 +29,44 @@
   border-bottom: 1px solid var(--border);
 }
 
+/* The mark and the name, set apart: the name is live text in Cinzel, Roman inscription capitals. */
 .brand {
   display: inline-flex;
   align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
   border-radius: var(--r-sm);
+  text-decoration: none;
 }
-/* The supplied lockup has a near-black background; blending drops it out against the ink header. */
+/* `mark-header.png` is the mark cut out of the logo's black background (transparent, 96px for 2x). */
 .brand img {
   display: block;
-  width: auto;
-  height: 28px;
-  mix-blend-mode: screen;
+  width: 34px;
+  height: 34px;
 }
-@media (min-width: 960px) {
+.wordmark {
+  padding-top: 2px; /* Cinzel's capitals sit high in their line box */
+  font-family: "Cinzel", var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, var(--gold-100), var(--gold-500) 55%, var(--gold-700));
+  background-clip: text;
+  color: transparent;
+}
+@media (min-width: 600px) {
+  .brand {
+    gap: 12px;
+  }
   .brand img {
-    height: 32px;
+    width: 42px;
+    height: 42px;
+  }
+  .wordmark {
+    font-size: 26px;
+    letter-spacing: 0.16em;
   }
 }
 

@@ -15,7 +15,8 @@ import { Icon } from './shared/icon';
   template: `
     <header class="site-header">
       <a routerLink="/" class="brand" aria-label="Agora, home">
-        <img src="brand/lockup.png" alt="" height="32" />
+        <img src="brand/mark-header.png" alt="" width="42" height="42" />
+        <span class="wordmark" aria-hidden="true">Agora</span>
       </a>
       <nav aria-label="Main">
         <a routerLink="/sell" routerLinkActive="is-active" class="nav-link only-desk">Sell</a>
