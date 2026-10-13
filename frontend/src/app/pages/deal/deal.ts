@@ -5,6 +5,7 @@ import { ApiError, ApiService } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { DealActionService } from '../../core/deal-action.service';
 import { DealAction, DealActionDto, FullDealDto, StandardUserDto } from '../../core/models';
+import { PageTitle } from '../../core/page-title';
 import { ToastService } from '../../core/toast.service';
 import { parseAmount } from '../../shared/amount.pipe';
 import { ClockService } from '../../shared/clock.service';
@@ -426,6 +427,7 @@ export class Deal {
 
   protected readonly actions = inject(DealActionService);
   private readonly api = inject(ApiService);
+  private readonly pageTitle = inject(PageTitle);
   private readonly config = inject(ConfigService);
   private readonly clock = inject(ClockService);
   private readonly toast = inject(ToastService);
@@ -530,6 +532,10 @@ export class Deal {
 
   constructor() {
     effect(() => void this.load(this.id()));
+    effect(() => {
+      const deal = this.deal();
+      if (deal) this.pageTitle.set(deal.title);
+    });
 
     // Poll while the deal is open so the other side's actions show up.
     effect((onCleanup) => {

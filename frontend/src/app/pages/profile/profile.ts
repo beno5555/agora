@@ -2,6 +2,7 @@ import { Component, computed, effect, inject, input, signal } from '@angular/cor
 import { RouterLink } from '@angular/router';
 import { ApiError, ApiService } from '../../core/api.service';
 import { StandardUserDto } from '../../core/models';
+import { PageTitle } from '../../core/page-title';
 import { Icon } from '../../shared/icon';
 import { ListingCard } from '../../shared/listing-card';
 import { Reputation } from '../../shared/reputation';
@@ -52,6 +53,7 @@ export class Profile {
   readonly wallet = input.required<string>();
 
   private readonly api = inject(ApiService);
+  private readonly pageTitle = inject(PageTitle);
 
   protected readonly user = signal<StandardUserDto | null>(null);
   protected readonly error = signal<string | null>(null);
@@ -62,6 +64,10 @@ export class Profile {
 
   constructor() {
     effect(() => void this.load(this.wallet()));
+    effect(() => {
+      const user = this.user();
+      if (user) this.pageTitle.set(user.displayName || this.short(user.wallet));
+    });
   }
 
   protected short(wallet: string): string {

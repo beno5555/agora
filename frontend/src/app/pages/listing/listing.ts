@@ -6,6 +6,7 @@ import { AuthService } from '../../core/auth.service';
 import { ConfigService } from '../../core/config.service';
 import { DealActionService } from '../../core/deal-action.service';
 import { StandardListingDto, StandardUserDto } from '../../core/models';
+import { PageTitle } from '../../core/page-title';
 import { ToastService } from '../../core/toast.service';
 import { AmountPipe, formatAmount } from '../../shared/amount.pipe';
 import { windowLabel } from '../../shared/delivery-window';
@@ -216,6 +217,7 @@ export class Listing {
   protected readonly auth = inject(AuthService);
   protected readonly actions = inject(DealActionService);
   private readonly api = inject(ApiService);
+  private readonly pageTitle = inject(PageTitle);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
   private readonly config = inject(ConfigService);
@@ -273,6 +275,10 @@ export class Listing {
       void this.load(this.id());
     });
     effect(() => this.note.set(this.readNote(this.id())));
+    effect(() => {
+      const listing = this.listing();
+      if (listing) this.pageTitle.set(listing.title);
+    });
   }
 
   protected bigint(value: string): bigint {

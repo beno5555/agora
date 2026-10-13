@@ -2,6 +2,7 @@ import { Component, computed, effect, inject, input, signal } from '@angular/cor
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { GameDto, ListingType, MinimalListingDto } from '../../core/models';
+import { PageTitle } from '../../core/page-title';
 import { ToastService } from '../../core/toast.service';
 import { ListingCard } from '../../shared/listing-card';
 import { TabKeys } from '../../shared/tab-keys';
@@ -63,6 +64,7 @@ export class Game {
   readonly type = input<string>();
 
   private readonly api = inject(ApiService);
+  private readonly pageTitle = inject(PageTitle);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
 
@@ -88,6 +90,7 @@ export class Game {
       (e) => this.toast.fromError(e),
     );
     effect(() => void this.load(this.slug(), this.selected()));
+    effect(() => this.pageTitle.set(this.name()));
   }
 
   protected select(type: ListingType | ''): void {
