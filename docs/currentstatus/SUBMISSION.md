@@ -27,7 +27,7 @@ The whole product, built during the hackathon (from Oct 11). program/: Anchor pr
 
 ## Technical demo plan (rewritten Oct 13, after the deadline)
 
-**What it is:** a walkthrough of one deal's workflow and what happens on Solana at each step. It explains how things work; benefits come up only in passing, since the pitch video covers them. About 2:30 of speech (358 words at a normal pace), under 3 minutes with clicks. Recorded on https://46-101-154-81.sslip.io. The first version, recorded with Loom by the deadline, failed: Loom's desktop app wouldn't record.
+**What it is:** a walkthrough of one deal's workflow and what happens on Solana at each step. It explains how things work; benefits come up only in passing, since the pitch video covers them. About 2:15 of speech (322 words at a normal pace), leaving room for your own wording and the clicks. Recorded on https://46-101-154-81.sslip.io. The first version, recorded with Loom by the deadline, failed: Loom's desktop app wouldn't record.
 
 **Setup:**
 1. **Hide test listings.** Signed in as Dealer1 (`CwjS…9HYJ`), pause "aa" and "service test 1" on `/me` if they are still public.
@@ -42,7 +42,7 @@ The whole product, built during the hackathon (from Oct 11). program/: Anchor pr
 ```
 1. INTRO
 DO: Home page.
-SAY: Hi, this is Agora. I'll walk you through one deal, from buying to getting paid, and show what happens on Solana at each step. On the left I'm the buyer, on the right the seller, both using Phantom on devnet.
+SAY: Hi, this is Agora. I'll walk you through one deal, from buying to getting paid, and show what happens on Solana at each step. Buyer on the left, seller on the right.
 
 2. BUY
 DO: Buyer: open the Apex "Ranked boost" listing > Buy > approve in Phantom ⏸
@@ -68,15 +68,15 @@ SAY: Now say we don't agree about the last two ranks. I press Disagree, and the 
 
 7. MISSED DEADLINE
 DO: Buyer: open the 2-minute deal > Take refund + seller's deposit > Phantom ⏸
-SAY: One more case. I started this deal earlier, on a listing with a two-minute deadline. The seller accepted but never delivered. Once the deadline passed, a new button appeared for me: take the refund plus the seller's deposit. One signature, and it's back in my wallet.
+SAY: One more case. I started this deal earlier, on a listing with a two-minute deadline. The seller accepted but never delivered. Once the deadline passed, a new button appeared for me: take the refund plus the seller's deposit.
 
 8. HOW IT'S BUILT
 DO: GitHub tab: program/programs/agora/src/lib.rs > then the backend folder.
-SAY: Quickly, how it's built. All the rules live in this Anchor program: creating deals, deposits, part payments, splits and the deadline refund. The .NET backend stores listings and profiles, builds unsigned transactions for the wallet to sign, and reads the deal back from the chain after each step. It never holds any keys. The frontend is Angular with Phantom.
+SAY: Quickly, how it's built. The rules live in this Anchor program: creating deals, deposits, part payments, splits and the deadline refund. The .NET backend stores listings and profiles, builds unsigned transactions for the wallet to sign, and reads the deal back from the chain after each step. It never holds any keys.
 
 9. CLOSE
 DO: Back to the live site.
-SAY: That's the whole flow. You can try it yourself on devnet with the link in our submission. Thanks for watching.
+SAY: That's the whole flow. Thanks for watching.
 
 IF SOMETHING BREAKS
 - "Transaction Not Confirmed": stay paused, reload the deal page, resume.
