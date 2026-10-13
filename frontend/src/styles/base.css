@@ -52,6 +52,13 @@ a:hover {
   outline-offset: 2px;
 }
 
+/* A page with a fixed action bar at the bottom (the deal page on a phone) lifts the toasts above it. */
+@media (max-width: 959px) {
+  body:has(.action-bar) {
+    --action-bar-h: 76px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

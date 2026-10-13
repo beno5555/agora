@@ -36,7 +36,7 @@ frontend/src/app/
 
 ## The deal page (the heart of the demo)
 
-Make "the money is locked, and nobody outside decides" visible:
+Make "the money is locked, and nobody outside decides" visible. The layout, the status line under the title (whose move it is), the vault with "who can move this money" and the copy are in [DESIGN.md](../design/DESIGN.md) §4, §5.4 and §7; the amounts and sentences are worked out in `pages/deal/deal-money.ts`.
 
 1. **Vault breakdown:** price, buyer deposit and seller deposit, and the total locked.
 2. **What happens under each outcome.** Remaining = `price - price/milestones × milestonesReleased`; fee = `feeBps` of whatever the seller is paid.
@@ -52,7 +52,7 @@ Make "the money is locked, and nobody outside decides" visible:
 
 3. **Timeline:** created → accepted → delivered → final status (the buyer can confirm straight from `Active`, so when `deliveredAt` is empty but `milestonesReleased` > 0, show "Delivered" as done, "confirmed by the buyer"), with parts shown as "2 of 3 matches" (`unit`; "milestones" when it's null).
 4. **Countdown** to `deliveryDeadline` while `Active`. At zero, show "Refund available in a few seconds…" and refetch at deadline + 16 s; that's when the buyer's `RefundUndelivered` appears.
-5. **Buttons come only from `allowedActions`.** Labels: Accept → "Accept & lock deposit", Cancel → "Cancel & refund", MarkDelivered → "Mark delivered", Confirm → "Confirm N {unit}(s)" (stepper), RefundUndelivered → "Take refund + seller's deposit", RaiseDispute → "Disagree", ProposeSplit → "Offer a split" (amount going back to the buyer), AcceptSplit → "Accept their offer: you get X", SellerRefund → "Refund buyer".
+5. **Buttons come only from `allowedActions`.** Labels: Accept → "Accept & lock deposit", Cancel → "Cancel & refund", MarkDelivered → "Mark delivered", Confirm → "Confirm N {unit}(s)" (stepper), RefundUndelivered → "Take refund + seller's deposit", RaiseDispute → "Disagree", ProposeSplit → an "Offer a split" amount field (what goes back to the buyer) and an "Offer this split" button, AcceptSplit → "Accept their offer: you get X", SellerRefund → "Refund buyer". One primary button (the first of Accept, Confirm, MarkDelivered, AcceptSplit, RefundUndelivered); the rest are secondary and Disagree is the only danger button. Each button has one line under it saying what it does in dollars. Disagree and Refund buyer ask once more inline before they run. On a phone the primary also sits in a bar at the bottom of the screen.
 6. **Disputed:** show the current `splitOffer`, who made it, and that the funds stay locked until both agree.
 7. After every action, link the signature (`https://explorer.solana.com/tx/{sig}?cluster=devnet`), and always link the deal account (`…/address/{dealPda}?cluster=devnet`). Judges like seeing it on-chain.
 8. Poll `GET /api/deals/:id` every 10–15 s while the deal is open, so the other side's actions show up.

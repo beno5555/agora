@@ -138,7 +138,7 @@ nav {
 }
 
 main {
-  max-width: 880px;
+  max-width: var(--w-page);
   margin: 0 auto;
   padding: var(--s-5) var(--gutter) var(--s-8);
 }
@@ -184,7 +184,7 @@ main {
 .toasts {
   position: fixed;
   right: var(--s-4);
-  bottom: calc(var(--s-4) + env(safe-area-inset-bottom));
+  bottom: calc(var(--s-4) + var(--action-bar-h, 0px) + env(safe-area-inset-bottom));
   left: var(--s-4);
   z-index: 20;
   display: grid;

@@ -1,0 +1,120 @@
+:host {
+  display: block;
+}
+
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.steps li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: var(--s-2);
+  padding-bottom: var(--s-4);
+}
+.steps li:last-child {
+  padding-bottom: 0;
+}
+/* The connector from this marker down to the next one. */
+.steps li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 28px;
+  bottom: 4px;
+  left: 15px;
+  border-left: 2px solid var(--text-muted);
+}
+.steps li.dashed-after::after {
+  border-left-style: dashed;
+  border-left-color: var(--border-strong);
+}
+
+.marker {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: 0 auto;
+  border-radius: 50%;
+}
+.done .marker {
+  background: var(--text);
+  color: var(--bg);
+}
+.current .marker {
+  border: 2px solid var(--st-blue-fg);
+}
+.current .marker::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--st-blue-fg);
+}
+.upcoming .marker {
+  border: 2px dashed var(--border-strong);
+}
+.final .marker {
+  border: 2px solid currentColor;
+}
+.tone-green {
+  color: var(--st-green-fg);
+}
+.tone-red {
+  color: var(--st-red-fg);
+}
+.tone-amber {
+  color: var(--st-amber-fg);
+}
+.tone-grey,
+.tone-neutral,
+.tone-blue {
+  color: var(--text-muted);
+}
+
+.text {
+  display: grid;
+  padding-top: 1px;
+}
+.label {
+  font-weight: 500;
+}
+.upcoming .label {
+  color: var(--text-muted);
+}
+.meta {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.parts-text {
+  margin: var(--s-4) 0 var(--s-2);
+}
+.cells {
+  display: flex;
+  gap: 4px;
+}
+.cell {
+  flex: 1;
+  max-width: 32px;
+  height: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+}
+.cell.filled {
+  background: var(--text);
+  border-color: var(--text);
+}
+.progress {
+  height: 10px;
+  background: var(--surface-3);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.progress span {
+  display: block;
+  height: 100%;
+  background: var(--text);
+}

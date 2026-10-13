@@ -58,6 +58,10 @@
   text-decoration: underline;
 }
 
+.btn--lg {
+  min-height: 56px;
+  font-size: var(--fs-lg);
+}
 .btn--sm {
   min-height: 40px;
   padding: 0 var(--s-4);
@@ -186,4 +190,31 @@ label > textarea {
   display: flex;
   gap: var(--s-2);
   align-items: center;
+}
+
+/* An amount in dollars: a fixed $ in front and the token name behind. */
+.amount-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.amount-input input {
+  padding-right: 7.5rem;
+  padding-left: calc(var(--s-3) + 1.25ch);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.amount-input .prefix,
+.amount-input .suffix {
+  position: absolute;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.amount-input .prefix {
+  left: var(--s-3);
+  font-family: var(--font-mono);
+}
+.amount-input .suffix {
+  right: var(--s-3);
+  font-size: var(--fs-sm);
 }

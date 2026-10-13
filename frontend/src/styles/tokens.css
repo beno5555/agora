@@ -37,6 +37,8 @@
   --lock-price:    var(--gold-500);
   --lock-deposit:  var(--gold-700);   /* 5.8:1 against surface-1 */
   --lock-released: var(--text-faint);
+  --lock-amount:   var(--gold-300);   /* the locked total */
+  --vault-border:  var(--gold-900);
 
   /* Status: fg = text and icon, bg = pill fill. Every pair passes AA (4.5:1+). */
   --st-neutral-fg: #E6E0D4; --st-neutral-bg: #0E121A; --st-neutral-bd: #5A667A;  /* Draft, AwaitingSeller */
@@ -115,6 +117,8 @@
   --lock-price:    var(--gold-500);
   --lock-deposit:  var(--gold-900);
   --lock-released: var(--text-faint);
+  --lock-amount:   var(--text);
+  --vault-border:  var(--border);
 
   --st-neutral-fg: #1A160E; --st-neutral-bg: #FFFFFF; --st-neutral-bd: #8D8474;
   --st-blue-fg:    #1D5BC2; --st-blue-bg:    #E3ECFB;  /* 5.3:1 */

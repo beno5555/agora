@@ -3,6 +3,18 @@
  * restyled (DESIGN.md §9); this file is deleted when it is empty.
  */
 
+/* Pages not restyled yet keep their old reading width inside the wider main column. */
+app-home,
+app-game,
+app-listing,
+app-sell,
+app-me,
+app-profile {
+  display: block;
+  max-width: 880px;
+  margin-inline: auto;
+}
+
 /* me */
 .row-link {
   display: flex;
@@ -60,91 +72,4 @@
 .games strong {
   display: block;
   font-family: var(--font-display);
-}
-
-/* deal */
-.stepper {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-1);
-}
-.vault-bar {
-  display: flex;
-  gap: 2px;
-  height: 2.25rem;
-  margin: var(--s-3) 0 var(--s-4);
-  overflow: hidden;
-  background: var(--surface-3);
-  border-radius: var(--r-sm);
-}
-.vault-bar span {
-  display: flex;
-  align-items: center;
-  padding: 0 var(--s-3);
-  overflow: hidden;
-  color: var(--on-primary);
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  white-space: nowrap;
-}
-.vault-bar .price-seg {
-  background: var(--lock-price);
-}
-.vault-bar .buyer-seg,
-.vault-bar .seller-seg {
-  background: var(--lock-deposit);
-}
-table.outcomes {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--fs-sm);
-}
-table.outcomes th {
-  padding: 0 var(--s-2) var(--s-2) 0;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-muted);
-  font-weight: 500;
-  text-align: left;
-}
-table.outcomes td {
-  padding: var(--s-2) var(--s-2) var(--s-2) 0;
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
-}
-table.outcomes td + td,
-table.outcomes th + th {
-  text-align: right;
-  white-space: nowrap;
-}
-.timeline {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.timeline li {
-  display: flex;
-  gap: var(--s-3);
-  padding: var(--s-1) 0;
-  color: var(--text-muted);
-}
-.timeline li::before {
-  content: '';
-  flex: none;
-  width: 0.75rem;
-  height: 0.75rem;
-  margin-top: 0.4rem;
-  border: 2px solid var(--border-strong);
-  border-radius: 50%;
-}
-.timeline li.done {
-  color: var(--text);
-}
-.timeline li.done::before {
-  background: var(--text);
-  border-color: var(--text);
-}
-.timeline .when {
-  margin-left: auto;
-  color: var(--text-muted);
-  font-size: var(--fs-sm);
 }

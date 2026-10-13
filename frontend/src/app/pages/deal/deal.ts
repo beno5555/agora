@@ -1,336 +1,411 @@
-import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ApiService } from '../../core/api.service';
-import { AuthService } from '../../core/auth.service';
+import { ApiError, ApiService } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { DealActionService } from '../../core/deal-action.service';
-import { DealAction, DealActionDto, DealStatus, FullDealDto } from '../../core/models';
-import { AmountPipe, formatAmount, parseAmount } from '../../shared/amount.pipe';
+import { DealAction, DealActionDto, FullDealDto, StandardUserDto } from '../../core/models';
+import { ToastService } from '../../core/toast.service';
+import { parseAmount } from '../../shared/amount.pipe';
 import { ClockService } from '../../shared/clock.service';
 import { Countdown } from '../../shared/countdown';
 import { ExplorerLink } from '../../shared/explorer-link';
-import { unitCount, unitName } from '../../shared/unit';
+import { Icon } from '../../shared/icon';
+import { mediaQuery } from '../../shared/media';
 import { StatusBadge } from '../../shared/status-badge';
+import { Vault } from '../../shared/vault';
 import { WalletAddress } from '../../shared/wallet-address';
+import { DealMoney, changeNotice } from './deal-money';
+import { DealTimeline } from './deal-timeline';
 
-const FINAL: DealStatus[] = [
-  'Completed',
-  'Split',
-  'Undelivered',
-  'SellerRefunded',
-  'Cancelled',
-  'Expired',
-];
-const NOTHING = '—';
+const POLL_MS = 12_000;
+/** RefundUndelivered only appears 15 s after the deadline, so the page refetches right after. */
+const REFUND_DELAY_MS = 16_000;
+const TEN_MINUTES = 600;
 
-/** One row of the "Where the money goes" table. */
-interface Outcome {
-  label: string;
-  buyer: string;
-  seller: string;
-}
+/** Button labels (frontend.md) and the toast after each action succeeds. */
+const LABEL: Record<DealAction, string> = {
+  Accept: 'Accept & lock deposit',
+  Cancel: 'Cancel & refund',
+  MarkDelivered: 'Mark delivered',
+  Confirm: 'Confirm',
+  RefundUndelivered: "Take refund + seller's deposit",
+  RaiseDispute: 'Disagree',
+  ProposeSplit: 'Offer this split',
+  AcceptSplit: 'Accept their offer',
+  SellerRefund: 'Refund buyer',
+};
+const DONE: Record<DealAction, string> = {
+  Accept: 'Accepted. Your deposit is locked and the clock has started.',
+  Cancel: 'Cancelled. Your money is back in your wallet.',
+  MarkDelivered: 'Marked delivered. The buyer can confirm now.',
+  Confirm: 'Confirmed. The money is on its way to the seller.',
+  RefundUndelivered: 'Refund taken, with the seller’s deposit.',
+  RaiseDispute: 'You disagreed. The money stays locked until you both agree.',
+  ProposeSplit: 'Offer sent.',
+  AcceptSplit: 'Split accepted. The deal is closed.',
+  SellerRefund: 'Buyer refunded.',
+};
 
 @Component({
   selector: 'app-deal',
   imports: [
-    DatePipe,
     FormsModule,
     RouterLink,
-    AmountPipe,
     Countdown,
+    DealTimeline,
     ExplorerLink,
+    Icon,
     StatusBadge,
+    Vault,
     WalletAddress,
   ],
+  styleUrl: './deal.css',
   template: `
-    @if (deal(); as d) {
-      <p class="muted small">
-        <a [routerLink]="['/l', d.listingId]">{{ d.gameName }}</a> · you are the {{ d.role }}
-      </p>
-      <h1>{{ d.title }} <app-status-badge [status]="d.status" /></h1>
-
-      @if (actions.phase() === 'confirming') {
-        <p class="notice">Confirming on Solana…</p>
-      }
-
-      <section class="panel">
-        <h2>The vault</h2>
-        @if (isLocked()) {
-          <div class="vault-bar" aria-hidden="true">
-            @if (width(remaining()) > 0) {
-              <span class="price-seg" [style.width.%]="width(remaining())">Price</span>
-            }
-            @if (width(buyerDeposit()) > 0) {
-              <span class="buyer-seg" [style.width.%]="width(buyerDeposit())">Buyer deposit</span>
-            }
-            @if (width(sellerDeposit()) > 0) {
-              <span class="seller-seg" [style.width.%]="width(sellerDeposit())"
-                >Seller deposit</span
-              >
-            }
-          </div>
-        }
-        <dl class="facts">
-          <dt>Price</dt>
-          <dd>\${{ d.price | amount }}</dd>
-          @if (d.milestonesReleased > 0) {
-            <dt>Already released</dt>
-            <dd>\${{ released() | amount }}</dd>
-          }
-          <dt>Buyer deposit</dt>
-          <dd>\${{ d.buyerDeposit | amount }}</dd>
-          <dt>Seller deposit</dt>
-          <dd>
-            {{
-              d.status === 'AwaitingSeller'
-                ? 'locks when the seller accepts'
-                : '$' + (d.sellerDeposit | amount)
-            }}
-          </dd>
-          <dt class="total">Total locked</dt>
-          <dd class="total">\${{ locked() | amount }}</dd>
-        </dl>
-        <p class="muted small" style="margin: 0.75rem 0 0">
-          {{
-            isLocked()
-              ? 'Held by the Solana program. Nobody outside this deal can move it.'
-              : 'This deal is closed. Nothing is locked.'
-          }}
+    @if (money(); as m) {
+      @let d = m.deal;
+      <header class="head">
+        <p class="meta">
+          <a [routerLink]="['/l', d.listingId]">{{ d.gameName }}</a> · you are the {{ d.role }}
         </p>
-      </section>
-
-      @if (outcomes().length > 0) {
-        <section class="panel">
-          <h2>Where the money goes</h2>
-          <table class="outcomes">
-            <thead>
-              <tr>
-                <th>If…</th>
-                <th>Buyer gets</th>
-                <th>Seller gets</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (o of outcomes(); track o.label) {
-                <tr>
-                  <td>{{ o.label }}</td>
-                  <td>{{ o.buyer }}</td>
-                  <td>{{ o.seller }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-          <p class="muted small" style="margin: 0.75rem 0 0">
-            What the seller is paid has the {{ feePercent() }}% fee taken out. Refunds to the buyer
-            have no fee.
-          </p>
-        </section>
-      }
-
-      <section class="panel">
-        <h2>Progress</h2>
-        <p>{{ d.milestonesReleased }} of {{ unitCount(d.unit, d.milestones) }} released</p>
-        <ul class="timeline">
-          <li class="done">
-            Created <span class="when">{{ d.createdAt | date: 'medium' }}</span>
-          </li>
-          <li [class.done]="d.acceptedAt">
-            Accepted by seller
-            @if (d.acceptedAt) {
-              <span class="when">{{ d.acceptedAt | date: 'medium' }}</span>
-            }
-          </li>
-          <li [class.done]="d.deliveredAt || deliveredByBuyer()">
-            Delivered
-            @if (d.deliveredAt) {
-              <span class="when">{{ d.deliveredAt | date: 'medium' }}</span>
-            } @else if (deliveredByBuyer()) {
-              <span class="when">confirmed by the buyer</span>
-            }
-          </li>
-          @if (isFinal()) {
-            <li class="done">{{ finalLabel() }}</li>
-          }
-        </ul>
-
+        <div class="title-row">
+          <h1>{{ d.title }}</h1>
+          <app-status-badge [status]="d.status" />
+        </div>
+        <p class="status-line">{{ m.statusLine }}</p>
         @if (d.status === 'Active' && d.deliveryDeadline) {
-          <p style="margin-top: 0.75rem">
-            Delivery deadline in <strong><app-countdown [deadline]="d.deliveryDeadline" /></strong>
-            @if (pastDeadline()) {
-              <br />
-              <span class="muted">
-                {{
-                  d.role === 'buyer' && !can('RefundUndelivered')
-                    ? 'Refund available in a few seconds…'
-                    : 'The deadline has passed.'
-                }}
-              </span>
-            }
-          </p>
-        }
-      </section>
-
-      @if (d.status === 'Disputed') {
-        <section class="panel">
-          <h2>Disagreement</h2>
-          @if (d.splitOffer; as offer) {
-            <p>
-              {{ offer.by === me() ? 'You offered' : 'The other side offered' }}
-              to send <strong>\${{ offer.buyerAmount | amount }}</strong> of the remaining \${{
-                remaining() | amount
-              }}
-              back to the buyer.
-            </p>
-          } @else {
-            <p>No offer yet. Either side can propose how to split what is left.</p>
-          }
-          <p class="muted small" style="margin: 0">Funds stay locked until both sides agree.</p>
-        </section>
-      }
-
-      @if (d.allowedActions.length > 0) {
-        <section class="panel">
-          <h2>Your options</h2>
-          <div class="actions" style="gap: 1rem">
-            @if (can('Accept')) {
-              <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="run({ action: 'Accept' })">
-                Accept &amp; lock deposit
-              </button>
-            }
-            @if (can('MarkDelivered')) {
-              <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="run({ action: 'MarkDelivered' })">
-                Mark delivered
-              </button>
-            }
-            @if (can('Confirm')) {
-              <span class="stepper">
-                <button
-                  type="button"
-                  class="btn btn--secondary"
-                  aria-label="Fewer"
-                  [disabled]="busy() || parts() <= 1"
-                  (click)="parts.set(parts() - 1)"
-                >
-                  −
-                </button>
-                <button
-                  type="button"
-                  class="btn btn--secondary"
-                  aria-label="More"
-                  [disabled]="busy() || parts() >= maxParts()"
-                  (click)="parts.set(parts() + 1)"
-                >
-                  +
-                </button>
-                <button
-                  type="button"
-                  class="btn btn--primary"
-                  [disabled]="busy()"
-                  (click)="run({ action: 'Confirm', parts: parts() })"
-                >
-                  Confirm {{ unitCount(d.unit, parts()) }}
-                </button>
-              </span>
-            }
-            @if (can('RefundUndelivered')) {
-              <button
-                type="button"
-                class="btn btn--primary"
-                [disabled]="busy()"
-                (click)="run({ action: 'RefundUndelivered' })"
+          <div class="deadline">
+            @if (!pastDeadline()) {
+              <span
+                >{{ m.isBuyer ? 'Seller must deliver by' : 'Deliver by' }}
+                {{ m.deadlineText }}</span
               >
-                Take refund + seller's deposit
-              </button>
-            }
-            @if (can('AcceptSplit')) {
-              <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="run({ action: 'AcceptSplit' })">
-                Accept their offer: you get \${{ splitYouGet() | amount }}
-              </button>
-            }
-            @if (can('SellerRefund')) {
-              <button
-                type="button"
-                class="btn btn--secondary"
-                [disabled]="busy()"
-                (click)="run({ action: 'SellerRefund' })"
-              >
-                Refund buyer
-              </button>
-            }
-            @if (can('Cancel')) {
-              <button
-                type="button"
-                class="btn btn--secondary"
-                [disabled]="busy()"
-                (click)="run({ action: 'Cancel' })"
-              >
-                Cancel &amp; refund
-              </button>
-            }
-            @if (can('RaiseDispute')) {
-              <button
-                type="button"
-                class="btn btn--danger"
-                [disabled]="busy()"
-                (click)="run({ action: 'RaiseDispute' })"
-              >
-                Disagree
-              </button>
+              <app-countdown class="clock" [deadline]="d.deliveryDeadline" />
+              @if (secondsLeft() <= tenMinutes) {
+                <span class="soon"><app-icon name="clock" />Less than 10 minutes left</span>
+              }
+            } @else if (m.isBuyer && !can('RefundUndelivered')) {
+              <span class="soon"><app-icon name="clock" />Refund available in a few seconds…</span>
             }
           </div>
+        }
+      </header>
 
-          @if (can('ProposeSplit')) {
-            <label style="margin-top: 1.25rem">
-              Offer a split
-              <span class="hint"
-                >(amount going back to the buyer, up to \${{ remaining() | amount }})</span
-              >
-              <span class="inline-field">
-                <input inputmode="decimal" placeholder="0.00" [(ngModel)]="splitInput" />
-                <button
-                  type="button"
-                  class="btn btn--secondary"
-                  [disabled]="busy() || splitAmount() === null"
-                  (click)="proposeSplit()"
-                >
-                  Offer a split
-                </button>
-              </span>
-            </label>
-            @if (splitError(); as message) {
-              <p class="error-text">{{ message }}</p>
+      <div class="layout" [class.with-bar]="showBar()">
+        <div class="col-main">
+          <app-vault
+            class="area-vault"
+            [buyerDeposit]="m.buyerDeposit"
+            [price]="m.price"
+            [released]="m.released"
+            [sellerDeposit]="m.sellerDepositTerms"
+            [sellerPending]="!m.sellerHasLocked"
+            [state]="vaultState()"
+            [heading]="m.isLocked ? 'Locked on Solana' : 'Deal on Solana'"
+            [viewer]="d.role"
+            [priceLabel]="d.milestones > 1 ? 'Price, ' + m.units(d.milestones) : 'Price'"
+            [priceNote]="d.milestones > 1 ? m.money(m.perPart) + ' each' : ''"
+            [releasedNote]="releasedNote()"
+            [recordHref]="explorer('address', d.dealPda)"
+          >
+            @if (m.isLocked) {
+              @if (d.status === 'Disputed') {
+                <p class="vault-line strong">The money stays locked until you both agree.</p>
+                @if (m.offerLine; as offer) {
+                  @if (!can('AcceptSplit')) {
+                    <p class="vault-line">{{ offer }}</p>
+                  }
+                } @else {
+                  <p class="vault-line">No offer yet. Either side can propose a split.</p>
+                }
+              }
+              <p class="no-key">Nobody else. Agora has no key.</p>
+              <details class="keys" [open]="wide()">
+                <summary>Who can move this money<app-icon name="chevron-down" class="chev" /></summary>
+                <ul>
+                  @for (line of m.keyLines; track line.who) {
+                    <li>
+                      <app-icon [name]="line.icon" size="18" />
+                      <span><strong>{{ line.who }}:</strong> {{ line.what }}</span>
+                    </li>
+                  }
+                </ul>
+              </details>
+            } @else {
+              <p class="vault-line">{{ m.closedSentence }}</p>
             }
-          }
-        </section>
-      }
+          </app-vault>
 
-      <section class="panel">
-        <h2>On Solana</h2>
-        <dl class="facts">
-          <dt>Deal account</dt>
-          <dd><app-explorer-link kind="address" [value]="d.dealPda" /></dd>
-          @if (d.lastSignature) {
-            <dt>Last transaction</dt>
-            <dd><app-explorer-link kind="tx" [value]="d.lastSignature" /></dd>
+          @if (m.outcomes.length > 0) {
+            <details class="panel area-outcomes outcomes" [open]="wide()">
+              <summary><h2>What happens if…</h2><app-icon name="chevron-down" size="20" class="chev" /></summary>
+              <dl>
+                @for (o of m.outcomes; track o.kind) {
+                  <div class="outcome" [class.next]="o.kind === nextStep()">
+                    <dt>
+                      {{ o.label }}
+                      @if (o.kind === nextStep()) {
+                        <span class="next-tag">Your next step</span>
+                      }
+                    </dt>
+                    <dd>{{ o.result }}</dd>
+                  </div>
+                }
+              </dl>
+              <p class="fine">
+                What the seller is paid has the {{ m.feePercent }}% fee taken out. Refunds to the
+                buyer have no fee.
+              </p>
+            </details>
           }
-          <dt>Buyer</dt>
-          <dd>
-            <a [routerLink]="['/u', d.buyerWallet]">profile</a>&ngsp;
-            <app-wallet-address [wallet]="d.buyerWallet" />
-          </dd>
-          <dt>Seller</dt>
-          <dd>
-            <a [routerLink]="['/u', d.sellerWallet]">profile</a>&ngsp;
-            <app-wallet-address [wallet]="d.sellerWallet" />
-          </dd>
-          @if (d.buyerNote) {
-            <dt>Buyer note</dt>
-            <dd>{{ d.buyerNote }}</dd>
+
+          <section class="panel area-progress">
+            <h2>Progress</h2>
+            <app-deal-timeline [deal]="d" />
+          </section>
+
+          <section class="panel area-solana">
+            <h2>On Solana</h2>
+            <dl class="facts">
+              <dt>Deal record</dt>
+              <dd><app-explorer-link kind="address" [value]="d.dealPda" /></dd>
+              @if (d.lastSignature) {
+                <dt>Last transaction</dt>
+                <dd><app-explorer-link kind="tx" [value]="d.lastSignature" /></dd>
+              }
+              <dt>Buyer{{ m.isBuyer ? ' (you)' : '' }}</dt>
+              <dd class="who">
+                <app-wallet-address [wallet]="d.buyerWallet" />
+                <a [routerLink]="['/u', d.buyerWallet]">profile</a>
+              </dd>
+              <dt>Seller{{ m.isBuyer ? '' : ' (you)' }}</dt>
+              <dd class="who">
+                <app-wallet-address [wallet]="d.sellerWallet" />
+                <a [routerLink]="['/u', d.sellerWallet]">profile</a>
+              </dd>
+            </dl>
+          </section>
+        </div>
+
+        <div class="col-side">
+          @if (!m.isFinal) {
+            <section class="panel area-move move" aria-labelledby="move-title">
+              @if (d.allowedActions.length > 0) {
+                <h2 id="move-title">Your move</h2>
+
+                @if (can('Confirm')) {
+                  <div class="action">
+                    @if (m.partsLeft > 1) {
+                      <p class="prompt">Got some {{ m.unitPlural }}?</p>
+                      <div class="stepper" role="group" aria-label="How many to confirm">
+                        <button
+                          type="button"
+                          class="btn btn--secondary step"
+                          aria-label="One fewer"
+                          [disabled]="busy() || parts() <= 1"
+                          (click)="parts.set(parts() - 1)"
+                        >
+                          <app-icon name="minus" size="20" />
+                        </button>
+                        <span class="count num" aria-live="polite">{{ m.units(parts()) }}</span>
+                        <button
+                          type="button"
+                          class="btn btn--secondary step"
+                          aria-label="One more"
+                          [disabled]="busy() || parts() >= m.partsLeft"
+                          (click)="parts.set(parts() + 1)"
+                        >
+                          <app-icon name="plus" size="20" />
+                        </button>
+                      </div>
+                    }
+                    <button
+                      type="button"
+                      [class]="btnClass('Confirm')"
+                      [class.is-loading]="running() === 'Confirm'"
+                      [disabled]="busy()"
+                      (click)="run({ action: 'Confirm', parts: parts() })"
+                    >
+                      {{ label('Confirm', 'Confirm ' + m.units(parts())) }}
+                    </button>
+                    <p class="consequence">{{ m.consequence('Confirm', parts()) }}</p>
+                  </div>
+                }
+
+                @for (action of simpleActions(); track action) {
+                  <div class="action">
+                    @if (action === 'AcceptSplit' && m.offerLine) {
+                      <p class="prompt">{{ m.offerLine }}</p>
+                    }
+                    @if (confirming() === action) {
+                      <div class="confirm-box" role="group" [attr.aria-label]="LABEL[action]">
+                        <p>
+                          <strong>{{ LABEL[action] }}?</strong> {{ m.consequence(action) }}
+                        </p>
+                        <button
+                          type="button"
+                          [class]="btnClass(action)"
+                          [disabled]="busy()"
+                          (click)="run({ action })"
+                        >
+                          Yes, {{ LABEL[action].toLowerCase() }}
+                        </button>
+                        <button type="button" class="btn btn--ghost" (click)="confirming.set(null)">
+                          Keep the deal as it is
+                        </button>
+                      </div>
+                    } @else {
+                      <button
+                        type="button"
+                        [class]="btnClass(action)"
+                        [class.is-loading]="running() === action"
+                        [disabled]="busy()"
+                        (click)="press(action)"
+                      >
+                        {{ label(action, actionText(action, m)) }}
+                      </button>
+                      <p class="consequence">{{ m.consequence(action) }}</p>
+                    }
+                  </div>
+                }
+
+                @if (can('ProposeSplit')) {
+                  <div class="action">
+                    <label for="split-amount" class="split-label">
+                      {{ d.splitOffer ? 'Or offer a different split' : 'Offer a split' }}
+                    </label>
+                    <p class="hint" id="split-hint">
+                      The amount that goes back to the buyer, up to {{ m.money(m.remaining) }}.
+                    </p>
+                    <div class="amount-input">
+                      <span class="prefix" aria-hidden="true">$</span>
+                      <input
+                        id="split-amount"
+                        inputmode="decimal"
+                        placeholder="0.00"
+                        autocomplete="off"
+                        [attr.aria-invalid]="splitError() ? true : null"
+                        aria-describedby="split-hint split-note"
+                        [(ngModel)]="splitInput"
+                      />
+                      <span class="suffix" aria-hidden="true">USDC (test)</span>
+                    </div>
+                    <p class="consequence" id="split-note" [class.error-text]="splitError()">
+                      @if (splitError(); as message) {
+                        <app-icon name="alert-triangle" />{{ message }}
+                      } @else if (splitAmount() !== null) {
+                        {{ m.splitResult(splitAmount()!) }}
+                      } @else {
+                        Enter an amount to offer it.
+                      }
+                    </p>
+                    <button
+                      type="button"
+                      class="btn btn--secondary"
+                      [class.is-loading]="running() === 'ProposeSplit'"
+                      [disabled]="busy() || splitAmount() === null"
+                      (click)="proposeSplit()"
+                    >
+                      {{ label('ProposeSplit', 'Offer this split') }}
+                    </button>
+                  </div>
+                }
+
+                @if (can('RaiseDispute')) {
+                  <div class="action">
+                    <p class="prompt">Something wrong?</p>
+                    @if (confirming() === 'RaiseDispute') {
+                      <div class="confirm-box" role="group" aria-label="Disagree">
+                        <p>
+                          <strong>Disagree?</strong> {{ m.consequence('RaiseDispute') }} Nobody
+                          else can decide for you.
+                        </p>
+                        <button
+                          type="button"
+                          class="btn btn--danger"
+                          [disabled]="busy()"
+                          (click)="run({ action: 'RaiseDispute' })"
+                        >
+                          <app-icon name="alert-triangle" />Yes, disagree
+                        </button>
+                        <button type="button" class="btn btn--ghost" (click)="confirming.set(null)">
+                          Keep the deal as it is
+                        </button>
+                      </div>
+                    } @else {
+                      <button
+                        type="button"
+                        class="btn btn--danger"
+                        [class.is-loading]="running() === 'RaiseDispute'"
+                        [disabled]="busy()"
+                        (click)="confirming.set('RaiseDispute')"
+                      >
+                        <app-icon name="alert-triangle" />{{ label('RaiseDispute', 'Disagree') }}
+                      </button>
+                      <p class="consequence">{{ m.consequence('RaiseDispute') }}</p>
+                    }
+                  </div>
+                }
+              } @else {
+                <h2 id="move-title">Nothing to do right now</h2>
+                <p class="consequence">
+                  This page updates by itself when the other side does something.
+                </p>
+              }
+            </section>
           }
-        </dl>
-      </section>
+
+          <section class="panel area-contact">
+            <h2>Contact</h2>
+            <dl class="facts">
+              <dt>{{ m.isBuyer ? 'Seller' : 'Buyer' }}</dt>
+              <dd>
+                <a [routerLink]="['/u', otherWallet()]">{{
+                  other()?.displayName || short(otherWallet())
+                }}</a>
+              </dd>
+              <dt>Discord</dt>
+              <dd>
+                @if (other()?.discord; as discord) {
+                  <button type="button" class="copy" (click)="copy(discord, 'Discord name')">
+                    {{ discord }}<app-icon name="copy" />
+                  </button>
+                } @else {
+                  <span class="muted">not on their profile</span>
+                }
+              </dd>
+              @if (d.buyerNote) {
+                <dt>{{ m.isBuyer ? 'Your note' : 'Buyer’s note' }}</dt>
+                <dd class="note">“{{ d.buyerNote }}”</dd>
+              }
+            </dl>
+          </section>
+        </div>
+      </div>
+
+      @if (showBar()) {
+        <div class="action-bar">
+          <button
+            type="button"
+            [class]="btnClass(primary()!)"
+            [class.is-loading]="running() === primary()"
+            [disabled]="busy()"
+            (click)="pressPrimary()"
+          >
+            {{
+              primary() === 'Confirm'
+                ? label('Confirm', 'Confirm ' + m.units(parts()))
+                : label(primary()!, actionText(primary()!, m))
+            }}
+          </button>
+        </div>
+      }
+    } @else if (notFound()) {
+      <div class="missing">
+        <h1>Deal not found</h1>
+        <p>This deal doesn't exist, or the link is wrong.</p>
+        <a routerLink="/me" class="btn btn--secondary">Go to my deals</a>
+      </div>
     } @else {
       <p class="muted">{{ error() ?? 'Loading…' }}</p>
     }
@@ -341,165 +416,100 @@ export class Deal {
 
   protected readonly actions = inject(DealActionService);
   private readonly api = inject(ApiService);
-  private readonly auth = inject(AuthService);
   private readonly config = inject(ConfigService);
   private readonly clock = inject(ClockService);
+  private readonly toast = inject(ToastService);
+
+  protected readonly LABEL = LABEL;
+  protected readonly tenMinutes = TEN_MINUTES;
 
   protected readonly deal = signal<FullDealDto | null>(null);
   protected readonly error = signal<string | null>(null);
+  protected readonly notFound = signal(false);
+  protected readonly other = signal<StandardUserDto | null>(null);
   protected readonly parts = signal(1);
   protected readonly splitInput = signal('');
-  protected readonly unitCount = unitCount;
+  /** The action whose button shows the wallet / Solana stage. */
+  protected readonly running = signal<DealAction | null>(null);
+  /** Disagree and Refund buyer ask once more before they run. */
+  protected readonly confirming = signal<DealAction | null>(null);
+  protected readonly wide = mediaQuery('(min-width: 960px)');
 
-  protected readonly me = computed(() => this.auth.user()?.wallet);
-  protected readonly busy = computed(() => this.actions.phase() !== 'idle');
-  protected readonly isFinal = computed(() => FINAL.includes(this.deal()?.status ?? 'Draft'));
-  private readonly isOpen = computed(() => !!this.deal() && !this.isFinal());
-  protected readonly isLocked = computed(() => {
-    const status = this.deal()?.status;
-    return (
-      status === 'AwaitingSeller' ||
-      status === 'Active' ||
-      status === 'Delivered' ||
-      status === 'Disputed'
-    );
-  });
-
-  private readonly perPart = computed(() => {
-    const d = this.deal();
-    return d ? BigInt(d.price) / BigInt(d.milestones) : 0n;
-  });
-  protected readonly released = computed(
-    () => this.perPart() * BigInt(this.deal()?.milestonesReleased ?? 0),
-  );
-  protected readonly remaining = computed(() => BigInt(this.deal()?.price ?? 0) - this.released());
-  protected readonly buyerDeposit = computed(() => BigInt(this.deal()?.buyerDeposit ?? 0));
-  /** Set when the deal is created, but only in the vault once the seller accepts. */
-  protected readonly sellerDeposit = computed(() => {
-    const d = this.deal();
-    const sellerHasPaid = !!d && d.status !== 'AwaitingSeller';
-    return sellerHasPaid ? BigInt(d.sellerDeposit) : 0n;
-  });
-  protected readonly locked = computed(() =>
-    this.isLocked() ? this.remaining() + this.buyerDeposit() + this.sellerDeposit() : 0n,
-  );
-
-  protected readonly maxParts = computed(() => {
-    const d = this.deal();
-    return d ? Math.max(1, d.milestones - d.milestonesReleased) : 1;
-  });
-
-  // The buyer can confirm straight from Active, so the seller may never mark delivered.
-  // Released money means the buyer received something: show that step as done anyway.
-  protected readonly deliveredByBuyer = computed(() => {
-    const d = this.deal();
-    return !!d && !d.deliveredAt && d.milestonesReleased > 0;
-  });
-
-  protected readonly pastDeadline = computed(() => {
+  protected readonly secondsLeft = computed(() => {
     const deadline = this.deal()?.deliveryDeadline;
-    return !!deadline && this.clock.now() >= new Date(deadline).getTime();
+    if (!deadline) return Infinity;
+    return Math.floor((new Date(deadline).getTime() - this.clock.now()) / 1000);
+  });
+  protected readonly pastDeadline = computed(() => this.secondsLeft() <= 0);
+
+  protected readonly money = computed(() => {
+    const d = this.deal();
+    return d
+      ? new DealMoney(d, this.config.decimals(), this.config.feeBps(), this.pastDeadline())
+      : null;
+  });
+
+  protected readonly busy = computed(() => this.actions.phase() !== 'idle');
+  protected readonly primary = computed(() => {
+    const m = this.money();
+    return m ? m.primaryOf(m.deal.allowedActions) : null;
+  });
+  protected readonly nextStep = computed(
+    () => this.money()?.nextStepKind(this.primary(), this.parts()) ?? null,
+  );
+  /** On a phone the primary action also sits in a bar at the bottom of the screen. */
+  protected readonly showBar = computed(() => !!this.primary() && !this.wide());
+
+  /** One-button actions in the order they appear, the primary first; Confirm, ProposeSplit and Disagree have their own blocks. */
+  protected readonly simpleActions = computed<DealAction[]>(() => {
+    const allowed = this.deal()?.allowedActions ?? [];
+    const order: DealAction[] = [
+      'Accept',
+      'MarkDelivered',
+      'AcceptSplit',
+      'RefundUndelivered',
+      'Cancel',
+      'SellerRefund',
+    ];
+    const primary = this.primary();
+    return order
+      .filter((a) => allowed.includes(a))
+      .sort((a, b) => Number(b === primary) - Number(a === primary));
+  });
+
+  protected readonly vaultState = computed(() => {
+    const m = this.money();
+    if (m?.deal.status === 'Disputed') return 'disputed';
+    return m?.isLocked ? 'locked' : 'closed';
+  });
+
+  protected readonly releasedNote = computed(() => {
+    const m = this.money();
+    if (!m || m.deal.milestonesReleased === 0 || m.isFinal) return '';
+    return `Released to the seller so far: ${m.money(m.released)} (${m.deal.milestonesReleased} of ${m.units(m.deal.milestones)}).`;
+  });
+
+  protected readonly otherWallet = computed(() => {
+    const d = this.deal();
+    if (!d) return '';
+    return d.role === 'buyer' ? d.sellerWallet : d.buyerWallet;
   });
 
   protected readonly splitAmount = computed(() => {
+    const m = this.money();
     const amount = parseAmount(this.splitInput(), this.config.decimals());
-    return amount !== null && amount <= this.remaining() ? amount : null;
+    return m && amount !== null && amount <= m.remaining ? amount : null;
   });
   protected readonly splitError = computed(() => {
-    const input = this.splitInput().trim();
-    if (!input) return null;
-    const amount = parseAmount(input, this.config.decimals());
-    if (amount === null) return `Enter an amount with up to ${this.config.decimals()} decimals`;
-    return amount > this.remaining() ? 'That is more than what is left in the deal' : null;
-  });
-
-  /** What the viewer receives (price part plus own deposit) if they accept the other side's offer. */
-  protected readonly splitYouGet = computed(() => {
-    const d = this.deal();
-    if (!d?.splitOffer) return 0n;
-    const toBuyer = BigInt(d.splitOffer.buyerAmount);
-    if (d.role === 'buyer') return toBuyer + this.buyerDeposit();
-    const toSeller = this.remaining() - toBuyer;
-    return toSeller - (toSeller * this.config.feeBps()) / 10_000n + this.sellerDeposit();
-  });
-
-  protected readonly feePercent = computed(() => Number(this.config.feeBps()) / 100);
-
-  /** How each way of ending the deal from its current state pays out (frontend.md, deal page §2). */
-  protected readonly outcomes = computed<Outcome[]>(() => {
-    const d = this.deal();
-    const money = (amount: bigint): string => `$${formatAmount(amount, this.config.decimals())}`;
-    const minusFee = (amount: bigint): bigint => amount - (amount * this.config.feeBps()) / 10_000n;
-    const remaining = this.remaining();
-    const buyerDeposit = this.buyerDeposit();
-    const sellerDeposit = this.sellerDeposit();
-    const rows: Outcome[] = [];
-
-    if (d?.status === 'AwaitingSeller') {
-      rows.push(
-        { label: 'The buyer cancels', buyer: money(remaining + buyerDeposit), seller: NOTHING },
-        { label: 'The seller declines', buyer: money(remaining + buyerDeposit), seller: NOTHING },
-      );
-    } else if (d && this.isLocked()) {
-      const partsLeft = d.milestones - d.milestonesReleased;
-      if (partsLeft > 1) {
-        rows.push({
-          label: `The buyer confirms 1 ${unitName(d.unit)}`,
-          buyer: NOTHING,
-          seller: money(minusFee(this.perPart())),
-        });
-      }
-      rows.push({
-        label: partsLeft > 1 ? `The buyer confirms all ${partsLeft} left` : 'The buyer confirms',
-        buyer: `${money(buyerDeposit)} (deposit back)`,
-        seller: money(minusFee(remaining) + sellerDeposit),
-      });
-      if (d.status === 'Active') {
-        rows.push({
-          label: 'The seller misses the deadline',
-          buyer: money(remaining + buyerDeposit + sellerDeposit),
-          seller: NOTHING,
-        });
-      }
-      if (d.splitOffer) {
-        const toBuyer = BigInt(d.splitOffer.buyerAmount);
-        rows.push({
-          label: 'The current split offer is accepted',
-          buyer: money(toBuyer + buyerDeposit),
-          seller: money(minusFee(remaining - toBuyer) + sellerDeposit),
-        });
-      } else if (d.status === 'Disputed') {
-        rows.push({
-          label: 'A split is agreed',
-          buyer: 'their share + deposit',
-          seller: 'the rest + deposit',
-        });
-      }
-      rows.push({
-        label: 'The seller refunds',
-        buyer: money(remaining + buyerDeposit),
-        seller: money(sellerDeposit),
-      });
-    }
-
-    return rows;
-  });
-
-  protected readonly finalLabel = computed(() => {
-    switch (this.deal()?.status) {
-      case 'Completed':
-        return 'Completed. Deposits returned.';
-      case 'Split':
-        return 'Closed with an agreed split';
-      case 'Undelivered':
-        return 'Closed: the seller missed the deadline';
-      case 'SellerRefunded':
-        return 'Refunded by the seller';
-      case 'Cancelled':
-        return 'Cancelled by the buyer';
-      default:
-        return 'Expired before it was funded';
-    }
+    const m = this.money();
+    const text = this.splitInput().trim();
+    if (!m || !text) return null;
+    const amount = parseAmount(text, this.config.decimals());
+    if (amount === null)
+      return `Use a plain amount with at most ${this.config.decimals()} decimal places.`;
+    return amount > m.remaining
+      ? `You can offer at most ${m.money(m.remaining)}, what's left in the deal.`
+      : null;
   });
 
   constructor() {
@@ -507,21 +517,25 @@ export class Deal {
 
     // Poll while the deal is open so the other side's actions show up.
     effect((onCleanup) => {
-      if (!this.isOpen()) return;
+      if (!this.deal() || this.money()?.isFinal) return;
       const timer = setInterval(() => {
         if (this.actions.phase() === 'idle') void this.refresh();
-      }, 12_000);
+      }, POLL_MS);
       onCleanup(() => clearInterval(timer));
     });
 
-    // RefundUndelivered only appears 15 s after the deadline: refetch right after.
     effect((onCleanup) => {
       const d = this.deal();
       if (d?.status !== 'Active' || !d.deliveryDeadline) return;
-      const wait = new Date(d.deliveryDeadline).getTime() + 16_000 - Date.now();
+      const wait = new Date(d.deliveryDeadline).getTime() + REFUND_DELAY_MS - Date.now();
       if (wait <= 0) return;
       const timer = setTimeout(() => void this.refresh(), wait);
       onCleanup(() => clearTimeout(timer));
+    });
+
+    effect(() => {
+      const wallet = this.otherWallet();
+      if (wallet) void this.loadOther(wallet);
     });
   }
 
@@ -529,38 +543,96 @@ export class Deal {
     return this.deal()?.allowedActions.includes(action) ?? false;
   }
 
-  protected width(part: bigint): number {
-    const total = this.locked();
-    return total === 0n ? 0 : Number((part * 10_000n) / total) / 100;
+  protected btnClass(action: DealAction): string {
+    if (action === 'RaiseDispute') return 'btn btn--danger';
+    if (action !== this.primary()) return 'btn btn--secondary';
+    return action === 'RefundUndelivered' ? 'btn btn--primary btn--lg' : 'btn btn--primary';
   }
 
-  protected async run(dto: DealActionDto): Promise<void> {
-    const d = this.deal();
-    if (!d) return;
-    const updated = await this.actions.act(d.id, dto);
-    if (updated) {
-      this.deal.set(updated);
-      this.parts.set(1);
-      this.splitInput.set('');
-    }
+  /** The stage while this action runs, else its normal label. */
+  protected label(action: DealAction, text: string): string {
+    if (this.running() !== action) return text;
+    return this.actions.phase() === 'confirming' ? 'Confirming on Solana…' : 'Approve in Phantom…';
+  }
+
+  protected actionText(action: DealAction, m: DealMoney): string {
+    return action === 'AcceptSplit'
+      ? `Accept their offer: you get ${m.money(m.splitYouGet)}`
+      : LABEL[action];
+  }
+
+  protected explorer(kind: 'address' | 'tx', value: string): string {
+    return `https://explorer.solana.com/${kind}/${value}?cluster=devnet`;
+  }
+
+  protected short(wallet: string): string {
+    return `${wallet.slice(0, 4)}…${wallet.slice(-4)}`;
+  }
+
+  /** Refund buyer asks once more; everything else runs straight away. */
+  protected press(action: DealAction): void {
+    if (action === 'SellerRefund') this.confirming.set(action);
+    else void this.run({ action });
+  }
+
+  protected pressPrimary(): void {
+    const primary = this.primary();
+    if (primary === 'Confirm') void this.run({ action: 'Confirm', parts: this.parts() });
+    else if (primary) this.press(primary);
   }
 
   protected proposeSplit(): Promise<void> {
     return this.run({ action: 'ProposeSplit', buyerAmount: (this.splitAmount() ?? 0n).toString() });
   }
 
+  protected async copy(text: string, what: string): Promise<void> {
+    await navigator.clipboard.writeText(text);
+    this.toast.show(`${what} copied`, 'success');
+  }
+
+  protected async run(dto: DealActionDto): Promise<void> {
+    const d = this.deal();
+    if (!d) return;
+    this.confirming.set(null);
+    this.running.set(dto.action);
+    const updated = await this.actions.act(d.id, dto);
+    this.running.set(null);
+    if (!updated) return;
+    this.deal.set(updated);
+    this.parts.set(1);
+    this.splitInput.set('');
+    this.toast.show(DONE[dto.action], 'success');
+  }
+
   private async load(id: string): Promise<void> {
     this.deal.set(null);
+    this.other.set(null);
     this.error.set(null);
+    this.notFound.set(false);
     await this.refresh(id);
   }
 
   private async refresh(id = this.id()): Promise<void> {
     try {
-      this.deal.set(await this.api.get<FullDealDto>(`/api/deals/${id}`));
+      const next = await this.api.get<FullDealDto>(`/api/deals/${id}`);
+      const prev = this.deal();
+      this.deal.set(next);
+      const m = this.money();
+      const notice = prev && m && prev.id === next.id ? changeNotice(prev, m) : null;
+      if (notice) this.toast.show(notice);
     } catch (error) {
       // A failed poll keeps what is on screen; only the first load shows an error.
-      if (!this.deal()) this.error.set(error instanceof Error ? error.message : 'Deal not found');
+      if (this.deal()) return;
+      if (error instanceof ApiError && error.status === 404) this.notFound.set(true);
+      else this.error.set(error instanceof Error ? error.message : 'Could not load this deal.');
+    }
+  }
+
+  private async loadOther(wallet: string): Promise<void> {
+    try {
+      this.other.set(await this.api.get<StandardUserDto>(`/api/users/${wallet}`));
+    } catch {
+      // The contact panel falls back to the short wallet address.
     }
   }
 }

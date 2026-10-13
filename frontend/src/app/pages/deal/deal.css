@@ -1,0 +1,305 @@
+:host {
+  display: block;
+}
+
+/* Title, status line and countdown: whose move it is comes first. */
+.head {
+  margin-bottom: var(--s-5);
+}
+.meta {
+  margin-bottom: var(--s-2);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+}
+.title-row h1 {
+  margin: 0;
+}
+.status-line {
+  max-width: 60ch;
+  margin: var(--s-3) 0 0;
+  font-size: var(--fs-lg);
+}
+.deadline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-1) var(--s-4);
+  margin-top: var(--s-3);
+  color: var(--text-muted);
+}
+.clock {
+  color: var(--text);
+  font-size: var(--fs-2xl);
+}
+.soon {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Phone: one column in reading order. Desktop: the vault and history left, "Your move" right. */
+.layout {
+  display: flex;
+  flex-direction: column;
+}
+.col-main,
+.col-side {
+  display: contents;
+}
+.area-vault {
+  order: 1;
+}
+.area-move {
+  order: 2;
+}
+.area-outcomes {
+  order: 3;
+}
+.area-progress {
+  order: 4;
+}
+.area-contact {
+  order: 5;
+}
+.area-solana {
+  order: 6;
+}
+.layout.with-bar {
+  padding-bottom: 88px;
+}
+@media (min-width: 960px) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: var(--s-5);
+    align-items: start;
+  }
+  .col-main,
+  .col-side {
+    display: block;
+  }
+  .col-side {
+    position: sticky;
+    top: calc(var(--header-h) + var(--s-4));
+  }
+}
+
+/* Inside the vault. */
+.vault-line {
+  margin: var(--s-4) 0 0;
+}
+.vault-line.strong {
+  font-weight: 600;
+}
+.no-key {
+  margin: var(--s-4) 0 0;
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--border);
+  font-weight: 600;
+}
+.keys {
+  margin-top: var(--s-2);
+}
+.keys summary,
+.outcomes summary {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 44px;
+  cursor: pointer;
+}
+.keys summary {
+  font: 600 var(--fs-lg) var(--font-display);
+}
+.chev {
+  margin-left: auto;
+  color: var(--text-muted);
+  transition: transform var(--dur-2) var(--ease-out);
+}
+details[open] > summary .chev {
+  transform: rotate(180deg);
+}
+summary::-webkit-details-marker {
+  display: none;
+}
+.keys ul {
+  display: grid;
+  gap: var(--s-3);
+  margin: var(--s-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.keys li {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: var(--s-3);
+  align-items: start;
+}
+.keys li app-icon {
+  margin-top: 3px;
+  color: var(--text-muted);
+}
+
+/* What happens if… */
+.outcomes summary h2 {
+  margin: 0;
+}
+.outcomes dl {
+  margin: var(--s-3) 0 0;
+}
+.outcome {
+  display: grid;
+  gap: var(--s-1) var(--s-4);
+  padding: var(--s-3) 0 var(--s-3) var(--s-3);
+  border-top: 1px solid var(--border);
+  border-left: 3px solid transparent;
+}
+.outcome.next {
+  border-left-color: var(--text);
+}
+.outcome dt {
+  font-weight: 500;
+}
+.outcome dd {
+  margin: 0;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.next-tag {
+  display: block;
+  color: var(--text);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+@media (min-width: 600px) {
+  .outcome {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  }
+  .outcome dd {
+    text-align: right;
+  }
+}
+.fine {
+  margin: var(--s-3) 0 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+/* Your move. */
+.move .btn {
+  width: 100%;
+}
+.action + .action {
+  margin-top: var(--s-5);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--border);
+}
+.prompt {
+  margin-bottom: var(--s-3);
+}
+.consequence {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  margin: var(--s-2) 0 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.consequence.error-text {
+  color: var(--danger);
+}
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-bottom: var(--s-3);
+}
+.move .stepper .step {
+  flex: none;
+  width: var(--tap);
+  padding: 0;
+}
+.count {
+  flex: 1;
+  font-size: var(--fs-lg);
+  text-align: center;
+}
+.split-label {
+  margin-bottom: var(--s-1);
+}
+.split-label + .hint {
+  margin: 0 0 var(--s-2);
+}
+.action .amount-input + .consequence {
+  margin-bottom: var(--s-3);
+}
+.confirm-box {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+}
+.confirm-box p {
+  margin: 0 0 var(--s-2);
+}
+
+/* Contact and On Solana. */
+.who {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0 var(--s-2);
+}
+.copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+.copy:hover {
+  text-decoration: underline;
+}
+.note {
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 599px) {
+  .who {
+    justify-content: flex-start;
+  }
+}
+
+/* Phone: the primary action stays in reach at the bottom of the screen. */
+.action-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  padding: var(--s-3) var(--gutter) calc(var(--s-3) + env(safe-area-inset-bottom));
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+.action-bar .btn {
+  width: 100%;
+}
+
+.missing {
+  max-width: var(--w-read);
+}
