@@ -85,8 +85,11 @@ export class DealTimeline {
     const d = this.deal();
     const isFinal = FINAL_STATUSES.includes(d.status);
     // The buyer can confirm straight from Active, so the seller may never mark delivered:
-    // released money means something arrived, so that step counts as done.
+    // released money means something arrived, so that step counts as done. While only some
+    // parts are confirmed on an open deal, delivery is still under way: that is the current step.
     const deliveredByBuyer = !d.deliveredAt && d.milestonesReleased > 0;
+    const partly = deliveredByBuyer && d.milestonesReleased < d.milestones;
+    const underWay = partly && !isFinal && d.status !== 'Disputed';
 
     const raw: Omit<Step, 'dashedAfter'>[] = [
       { label: 'Created', meta: WHEN.format(new Date(d.createdAt)), state: 'done' },
@@ -99,10 +102,14 @@ export class DealTimeline {
         label: 'Delivered',
         meta: d.deliveredAt
           ? WHEN.format(new Date(d.deliveredAt))
-          : deliveredByBuyer
-            ? 'confirmed by the buyer'
-            : '',
-        state: d.deliveredAt || deliveredByBuyer ? 'done' : 'upcoming',
+          : underWay
+            ? 'Now, part by part'
+            : partly
+              ? 'partly, confirmed by the buyer'
+              : deliveredByBuyer
+                ? 'confirmed by the buyer'
+                : '',
+        state: underWay ? 'current' : d.deliveredAt || deliveredByBuyer ? 'done' : 'upcoming',
       },
     ];
 
@@ -130,7 +137,9 @@ export class DealTimeline {
           tone: 'amber',
         });
       else steps.push({ label: 'Completed', meta: '', state: 'upcoming' });
-      const current = steps.find((s) => s.state === 'upcoming');
+      const current = steps.some((s) => s.state === 'current')
+        ? undefined
+        : steps.find((s) => s.state === 'upcoming');
       if (current) {
         current.state = 'current';
         current.meta ||= 'Now';
@@ -139,7 +148,9 @@ export class DealTimeline {
 
     return steps.map((step, i) => ({
       ...step,
-      dashedAfter: i < steps.length - 1 && steps[i + 1].state !== 'done',
+      // The final step (how it ended, or the disagreement) has happened, so its line is solid too.
+      dashedAfter:
+        i < steps.length - 1 && (steps[i + 1].state === 'current' || steps[i + 1].state === 'upcoming'),
     }));
   });
 }
