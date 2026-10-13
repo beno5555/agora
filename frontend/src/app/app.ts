@@ -2,7 +2,9 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/auth.service';
 import { NotificationService } from './core/notification.service';
+import { OFFLINE } from './core/error-text';
 import { ToastService } from './core/toast.service';
+import { PHANTOM_DOWNLOAD, WalletService } from './core/wallet.service';
 import { Icon } from './shared/icon';
 
 @Component({
@@ -22,8 +24,7 @@ import { Icon } from './shared/icon';
             My deals
             @if (notifications.unread() > 0) {
               <span class="count"
-                >{{ notifications.unread()
-                }}<span class="visually-hidden"> unread</span></span
+                >{{ notifications.unread() }}<span class="visually-hidden"> unread</span></span
               >
             }
           </a>
@@ -58,7 +59,12 @@ import { Icon } from './shared/icon';
                   (click)="menuOpen.set(false)"
                   >Public profile</a
                 >
-                <button type="button" role="menuitem" class="menu-item" (click)="copyAddress(user.wallet)">
+                <button
+                  type="button"
+                  role="menuitem"
+                  class="menu-item"
+                  (click)="copyAddress(user.wallet)"
+                >
                   <app-icon name="copy" />Copy address
                   <span class="addr muted small">{{ short(user.wallet) }}</span>
                 </button>
@@ -70,8 +76,12 @@ import { Icon } from './shared/icon';
           </div>
         } @else {
           <button type="button" class="btn btn--primary btn--sm" (click)="auth.requestSignIn()">
-            <span class="only-desk">Connect Phantom</span>
-            <span class="only-phone">Connect</span>
+            @if (wallet.publicKey()) {
+              Sign in
+            } @else {
+              <span class="only-desk">Connect Phantom</span>
+              <span class="only-phone">Connect</span>
+            }
           </button>
         }
       </nav>
@@ -84,34 +94,101 @@ import { Icon } from './shared/icon';
     <main><router-outlet /></main>
 
     @if (auth.dialogOpen()) {
-      <div class="backdrop">
-        <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="signin-title">
-          <h2 id="signin-title">Sign in with Phantom</h2>
-          <p class="muted">
-            Connect your wallet and sign a one-time message. This does not move any money.
-          </p>
-          <div class="actions">
-            <button
-              type="button"
-              class="btn btn--primary"
-              [class.is-loading]="auth.busy()"
-              [disabled]="auth.busy()"
-              (click)="auth.signIn()"
-            >
-              {{ auth.busy() ? 'Waiting for Phantom…' : 'Connect and sign in' }}
-            </button>
-            <button type="button" class="btn btn--ghost" (click)="auth.closeDialog()">Cancel</button>
-          </div>
+      <div class="backdrop" (click)="auth.closeDialog()">
+        <div
+          class="dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="signin-title"
+          (click)="$event.stopPropagation()"
+        >
+          @if (wallet.hasWallet) {
+            <h2 id="signin-title">Sign in with Phantom</h2>
+            <p class="muted">
+              Approve the sign-in message in Phantom. It's free and doesn't move any money.
+            </p>
+            <div class="stack">
+              <button
+                type="button"
+                class="btn btn--primary"
+                [class.is-loading]="auth.busy()"
+                [disabled]="auth.busy()"
+                (click)="auth.signIn()"
+              >
+                {{ auth.busy() ? 'Waiting for Phantom…' : 'Connect and sign in' }}
+              </button>
+              <button type="button" class="btn btn--ghost" (click)="auth.closeDialog()">
+                Cancel
+              </button>
+            </div>
+          } @else if (wallet.isMobile()) {
+            <h2 id="signin-title">Open Agora in Phantom</h2>
+            <p class="muted">
+              Phone browsers can't connect to a wallet. Phantom will open this same page in its own
+              browser, where you can connect.
+            </p>
+            <div class="stack">
+              <a class="btn btn--primary" [href]="wallet.handoffUrl()">Open in Phantom</a>
+              <button type="button" class="btn btn--secondary" (click)="copyPageLink()">
+                Copy page link
+              </button>
+            </div>
+            <p class="get">
+              No Phantom yet?
+              <a [href]="download" target="_blank" rel="noopener"
+                >Get Phantom<app-icon name="external-link"
+              /></a>
+            </p>
+            <p class="network-note">
+              Agora uses Solana's test network. In Phantom: Settings → Developer settings → Testnet
+              mode.
+            </p>
+          } @else {
+            <h2 id="signin-title">Install Phantom to continue</h2>
+            <p class="muted">
+              Agora works with the Phantom wallet extension. Install it, then reload this page.
+            </p>
+            <div class="stack">
+              <a class="btn btn--primary" [href]="download" target="_blank" rel="noopener"
+                >Get Phantom<app-icon name="external-link"
+              /></a>
+              <button type="button" class="btn btn--secondary" (click)="reload()">
+                I installed it, reload
+              </button>
+            </div>
+            <p class="network-note">
+              Agora uses Solana's test network. In Phantom: Settings → Developer settings → Testnet
+              mode.
+            </p>
+          }
         </div>
       </div>
     }
 
     <div class="toasts" role="status" aria-live="polite">
       @for (toast of toaster.toasts(); track toast.id) {
-        <div class="toast" [class]="'toast toast--' + toast.kind" [attr.role]="toast.kind === 'error' ? 'alert' : null">
-          <app-icon [name]="toast.kind === 'error' ? 'alert-triangle' : toast.kind === 'success' ? 'check' : 'info'" size="20" />
+        <div
+          class="toast"
+          [class]="'toast toast--' + toast.kind"
+          [attr.role]="toast.kind === 'error' ? 'alert' : null"
+        >
+          <app-icon
+            [name]="
+              toast.kind === 'error'
+                ? 'alert-triangle'
+                : toast.kind === 'success'
+                  ? 'check'
+                  : 'info'
+            "
+            size="20"
+          />
           <span class="toast-text">{{ toast.text }}</span>
-          <button type="button" class="toast-close" aria-label="Dismiss" (click)="toaster.dismiss(toast.id)">
+          <button
+            type="button"
+            class="toast-close"
+            aria-label="Dismiss"
+            (click)="toaster.dismiss(toast.id)"
+          >
             <app-icon name="x" size="18" />
           </button>
         </div>
@@ -123,7 +200,22 @@ export class App {
   protected readonly auth = inject(AuthService);
   protected readonly notifications = inject(NotificationService);
   protected readonly toaster = inject(ToastService);
+  protected readonly wallet = inject(WalletService);
   protected readonly menuOpen = signal(false);
+  protected readonly download = PHANTOM_DOWNLOAD;
+
+  constructor() {
+    window.addEventListener('offline', () => this.toaster.show(OFFLINE, 'error'));
+  }
+
+  protected async copyPageLink(): Promise<void> {
+    await navigator.clipboard.writeText(window.location.href);
+    this.toaster.show('Page link copied. Open it in the Phantom app’s browser.', 'success');
+  }
+
+  protected reload(): void {
+    window.location.reload();
+  }
 
   protected short(wallet: string): string {
     return `${wallet.slice(0, 4)}…${wallet.slice(-4)}`;

@@ -61,11 +61,11 @@ Status badges (icon + text, never colour alone): Draft "Not funded" and Awaiting
 
 ## Wallet and sign-in
 
-- **Phantom.** `WalletService` uses the injected `window.phantom.solana` provider (the browser extension); without it, Connect opens Phantom's download page on a computer, and on a phone (no extensions there) reopens the page in the Phantom app's built-in browser through `https://phantom.app/ul/browse/<page URL>`, where the same provider is injected. Connecting from the phone's own browser would need Phantom Connect or Phantom's deeplink protocol (backlog). Phantom Connect (email sign-in with an embedded wallet, https://docs.phantom.com/phantom-connect) can replace it later behind the same `WalletService` interface.
+- **Phantom.** `WalletService` uses the injected `window.phantom.solana` provider (the browser extension, or the Phantom app's own browser). Without it, Connect opens a sheet instead of a sign-in: on a phone (no extensions there) "Open Agora in Phantom" with a link that reopens the page in the Phantom app's browser (`https://phantom.app/ul/browse/<page URL>`) and a Copy page link fallback; on a computer "Install Phantom to continue" with a reload button. Connecting from the phone's own browser would need Phantom Connect or Phantom's deeplink protocol (backlog). Phantom Connect (email sign-in with an embedded wallet, https://docs.phantom.com/phantom-connect) can replace it later behind the same `WalletService` interface.
 - **Phantom must be set to devnet** (Settings → Developer settings → Testnet mode), or it simulates against mainnet and shows errors.
 - `WalletService`: `connect()`, `disconnect()`, `publicKey` (signal), `signMessage(bytes)`, `signAndSendTransaction(tx)`. If the wallet's account changes, log out: the session belongs to the old wallet.
 - `AuthService`: nonce → `signMessage(new TextEncoder().encode(message))` → `bs58.encode(signature)` → verify ([api.md](api.md#auth)). On app start, `GET /api/me` tells whether the cookie is still valid.
-- **Interceptor:** `withCredentials: true`. On 401 (except from `/api/me` and `/api/auth/*`), clear the user and open sign-in. On 429/503, toast the problem title.
+- **Interceptor:** `withCredentials: true`. On 401 (except from `/api/me` and `/api/auth/*`), clear the user and open sign-in. On 429/503, toast what to do. Wallet and Solana failures are turned into one line of what to do (no test money, Phantom on the main network, slow confirmation, offline) by `core/error-text.ts` (DESIGN.md §7).
 - The sign-in message names the domain `localhost:4200` in Development, matching `ng serve`, so Phantom shouldn't warn. If you serve on another port and it does, set the backend's `Auth:Domain` to the page host.
 
 ## Transactions

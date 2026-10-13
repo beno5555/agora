@@ -196,6 +196,29 @@ main {
     border-radius: var(--r-md) var(--r-md) 0 0;
   }
 }
+.dialog h2 {
+  margin-bottom: var(--s-2);
+}
+.dialog .stack {
+  display: grid;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+}
+.get {
+  margin: var(--s-4) 0 0;
+}
+.get a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+.network-note {
+  margin: var(--s-4) 0 0;
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
 @keyframes sheet-in {
   from {
     opacity: 0;

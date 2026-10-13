@@ -2,6 +2,7 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
+import { NO_SOLANA, SIGNED_OUT, TOO_MANY } from './error-text';
 import { ToastService } from './toast.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
@@ -13,12 +14,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       if (error instanceof HttpErrorResponse) {
         const path = req.url.split('?')[0];
         if (error.status === 401 && path !== '/api/me' && !path.startsWith('/api/auth/')) {
+          const wasSignedIn = !!auth.user();
           auth.user.set(null);
+          if (wasSignedIn) toast.show(SIGNED_OUT);
           void auth.requestSignIn();
         } else if (error.status === 429) {
-          toast.show('Too many requests. Wait a moment and try again.', 'error');
+          toast.show(TOO_MANY, 'error');
         } else if (error.status === 503) {
-          toast.show(error.error?.title ?? 'Solana is unreachable right now. Try again.', 'error');
+          toast.show(NO_SOLANA, 'error');
         }
       }
       return throwError(() => error);

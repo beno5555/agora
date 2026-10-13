@@ -2,7 +2,8 @@ import { Injectable, effect, inject, signal } from '@angular/core';
 import { ApiService } from './api.service';
 import { FullUserDto } from './models';
 import { ToastService } from './toast.service';
-import { WalletHandoffError, WalletRejectedError, WalletService } from './wallet.service';
+import { WALLET_SWITCHED } from './error-text';
+import { WalletMissingError, WalletRejectedError, WalletService } from './wallet.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -21,7 +22,10 @@ export class AuthService {
     effect(() => {
       const key = this.wallet.publicKey();
       const user = this.user();
-      if (user && key && key !== user.wallet) void this.logout();
+      if (user && key && key !== user.wallet) {
+        void this.logout();
+        this.toast.show(WALLET_SWITCHED);
+      }
     });
   }
 
@@ -40,6 +44,11 @@ export class AuthService {
     if (this.user()) return Promise.resolve(true);
     this.dialogOpen.set(true);
     return new Promise((resolve) => this.pending.push(resolve));
+  }
+
+  /** Shows the sheet that explains how to get Phantom (used when an action finds no wallet). */
+  showWalletHelp(): void {
+    this.dialogOpen.set(true);
   }
 
   closeDialog(): void {
@@ -64,8 +73,9 @@ export class AuthService {
       this.settle(true);
     } catch (error) {
       console.error('Sign-in failed:', error);
-      if (error instanceof WalletHandoffError) this.toast.show(error.message);
-      else if (!(error instanceof WalletRejectedError)) this.toast.fromError(error);
+      // A missing wallet is explained by the sheet itself; a rejection needs no message.
+      if (!(error instanceof WalletMissingError || error instanceof WalletRejectedError))
+        this.toast.fromError(error);
     } finally {
       this.busy.set(false);
     }

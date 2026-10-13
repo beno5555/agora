@@ -4,7 +4,8 @@ import { ApiError, ApiService } from './api.service';
 import { AuthService } from './auth.service';
 import { DealActionDto, DealTransactionDto, FullDealDto } from './models';
 import { ToastService } from './toast.service';
-import { WalletHandoffError, WalletRejectedError, WalletService } from './wallet.service';
+import { SLOW_SYNC, WALLET_SWITCHED } from './error-text';
+import { WalletMissingError, WalletRejectedError, WalletService } from './wallet.service';
 
 /** Where the current action is: asking the wallet, or waiting for Solana to confirm. */
 export type ActionPhase = 'idle' | 'wallet' | 'confirming';
@@ -52,7 +53,7 @@ export class DealActionService {
       this.phase.set('confirming');
       return await this.sync(deal.id, signature);
     } catch (error) {
-      if (error instanceof WalletHandoffError) this.toast.show(error.message);
+      if (error instanceof WalletMissingError) this.auth.showWalletHelp();
       else if (!(error instanceof WalletRejectedError)) this.toast.fromError(error);
       return null;
     } finally {
@@ -65,7 +66,7 @@ export class DealActionService {
     const key = this.wallet.publicKey() ?? (await this.wallet.connect());
     if (user && key !== user.wallet) {
       await this.auth.logout();
-      throw new Error('The wallet account changed. Sign in again with this account.');
+      throw new Error(WALLET_SWITCHED);
     }
   }
 
@@ -81,6 +82,7 @@ export class DealActionService {
     try {
       return await this.api.post<FullDealDto>(path, { signature });
     } catch {
+      this.toast.show(SLOW_SYNC);
       return this.api.get<FullDealDto>(`/api/deals/${dealId}`);
     }
   }

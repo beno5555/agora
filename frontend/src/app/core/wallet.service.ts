@@ -22,12 +22,14 @@ export class WalletRejectedError extends Error {
   }
 }
 
-/** Not a failure: on a phone, the page is reopening in the Phantom app. Callers show it as info. */
-export class WalletHandoffError extends Error {
+/** No Phantom in this browser: the sign-in sheet explains what to do (open in Phantom, or install it). */
+export class WalletMissingError extends Error {
   constructor() {
-    super('Opening this page in the Phantom app…');
+    super('Phantom is not available in this browser');
   }
 }
+
+export const PHANTOM_DOWNLOAD = 'https://phantom.app/download';
 
 /** Wraps Phantom. Swap the internals for Phantom Connect later without touching callers. */
 @Injectable({ providedIn: 'root' })
@@ -55,18 +57,7 @@ export class WalletService {
   }
 
   async connect(): Promise<string> {
-    if (!this.provider) {
-      if (this.isMobile()) {
-        // Phone browsers have no extensions: reopen this page in the Phantom app's own browser,
-        // which injects the same provider. Without the app installed, the link offers the download.
-        const page = encodeURIComponent(window.location.href);
-        const origin = encodeURIComponent(window.location.origin);
-        window.location.href = `https://phantom.app/ul/browse/${page}?ref=${origin}`;
-        throw new WalletHandoffError();
-      }
-      window.open('https://phantom.app/download', '_blank');
-      throw new Error('Install the Phantom wallet extension, then reload this page');
-    }
+    if (!this.provider) throw new WalletMissingError();
     try {
       const res = await this.provider.connect();
       const key = res.publicKey.toString();
@@ -104,8 +95,23 @@ export class WalletService {
     }
   }
 
+  /** True when Phantom is injected (the extension, or the Phantom app's own browser). */
+  get hasWallet(): boolean {
+    return this.provider !== null;
+  }
+
+  /**
+   * Phone browsers have no extensions: this link reopens the current page in the Phantom app's own
+   * browser, which injects the same provider. Without the app installed, Phantom offers the download.
+   */
+  handoffUrl(): string {
+    const page = encodeURIComponent(window.location.href);
+    const origin = encodeURIComponent(window.location.origin);
+    return `https://phantom.app/ul/browse/${page}?ref=${origin}`;
+  }
+
   /** iPadOS reports itself as a Mac, so a Mac with a touch screen counts too. */
-  private isMobile(): boolean {
+  isMobile(): boolean {
     const agent = navigator.userAgent;
     return (
       /Android|iPhone|iPad|iPod/i.test(agent) ||

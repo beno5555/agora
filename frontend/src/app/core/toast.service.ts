@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { ApiError } from './api.service';
+import { errorText } from './error-text';
 
 export interface Toast {
   id: number;
@@ -24,7 +25,7 @@ export class ToastService {
   /** Shows the message of a failed call. 401, 429 and 503 are already handled by the interceptor. */
   fromError(error: unknown): void {
     if (error instanceof ApiError && error.handled) return;
-    this.show(error instanceof Error ? error.message : 'Something went wrong', 'error');
+    this.show(errorText(error), 'error');
   }
 
   dismiss(id: number): void {
