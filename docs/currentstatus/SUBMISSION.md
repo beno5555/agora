@@ -6,7 +6,7 @@ The Colosseum form's missing fields, written by Claude on Oct 13 from the repo a
 |---|---|
 | Access instructions (`liveProductAccessInstructions`) | Final text below (297 of the field's 300 characters), with Sandro's Telegram (@sandrobenashvili) |
 | Important context about the repo | Final text below (468 of the field's 500 characters). It says Claude Code wrote the Solana program; delete those lines if the team decides otherwise |
-| Demo video | Not in the submission (Loom failed). Script rewritten as a natural workflow walkthrough ([below](#technical-demo-plan-rewritten-oct-13-after-the-deadline)) |
+| Demo video | Not in the Colosseum submission (Loom's desktop app failed to record by the deadline). Recorded afterwards with OBS on the hosted site (2:52), to upload on Loom. [Setup below](#technical-demo-setup) |
 | Repo `README.md` | Claude's older draft; rewrite it. Stale points listed at the bottom |
 
 ## Access instructions
@@ -25,9 +25,9 @@ The form asks: "Please share any important context about your repo. For example,
 The whole product, built during the hackathon (from Oct 11). program/: Anchor program that enforces every rule; a program-owned vault holds each payment and both deposits. backend/: .NET API that builds unsigned transactions and holds no keys. frontend/: Angular app with Phantom. deploy/, docs/: hosting and design. Not product code: .claude/skills/ (third-party dev tools) and CLAUDE.md; Claude Code wrote the Rust program. Devnet only, test stablecoin, not audited.
 ```
 
-## Technical demo plan (rewritten Oct 13, after the deadline)
+## Technical demo setup
 
-**What it is:** a walkthrough of one deal's workflow and what happens on Solana at each step. It explains how things work; benefits come up only in passing, since the pitch video covers them. About 2:15 of speech (322 words at a normal pace), leaving room for your own wording and the clicks. Recorded on https://46-101-154-81.sslip.io. The first version, recorded with Loom by the deadline, failed: Loom's desktop app wouldn't record.
+**What it shows:** one deal on https://46-101-154-81.sslip.io from buying to getting paid and what happens on Solana at each step, then the missed-deadline refund and how it is built. Under 3 minutes.
 
 **Setup:**
 1. **Hide test listings.** Signed in as Dealer1 (`CwjS…9HYJ`), pause "aa" and "service test 1" on `/me` if they are still public.
@@ -35,60 +35,13 @@ The whole product, built during the hackathon (from Oct 11). program/: Anchor pr
 3. Both Phantoms on **Devnet**, both signed in. Browser zoom 110–125%. Close other tabs and notifications.
 4. **Start the 2-minute deal a few minutes before recording:** buyer buys "Demo: 2-minute deadline (try the refund)" ($2), seller accepts.
 5. Buyer window on the home page; the listing "Ranked boost, Gold IV to Platinum IV" (Apex, NovaCarry, $24, 4 ranks of $6) one click away. A tab with the GitHub repo open at `program/programs/agora/src/lib.rs`.
-6. Recorder: the Loom website (full-screen mode) or OBS. Read the script from a phone. Camera bubble off or in a corner away from the buttons.
+6. Recorder: OBS (Display Capture of the whole screen, so the Phantom popups are in it; the microphone with a Noise Suppression filter). Pause the recording while a Phantom approval confirms.
 
-**Script** (plain text, to read from a phone; ⏸ = pause the recording after approving in Phantom, resume once the page has updated):
-
-```
-1. INTRO
-DO: Home page.
-SAY: Hi, this is Agora. I'll walk you through one deal, from buying to getting paid, and show what happens on Solana at each step. Buyer on the left, seller on the right.
-
-2. BUY
-DO: Buyer: open the Apex "Ranked boost" listing > Buy > approve in Phantom ⏸
-SAY: Here's a listing: an Apex Legends rank boost, 24 dollars, paid in four ranks. When I click Buy, our backend builds a transaction and I sign it in Phantom. That creates the deal on-chain and moves my payment, plus a deposit, into a vault the program controls. The deposit is worked out from my on-chain history, so nobody types it in.
-
-3. SELLER ACCEPTS
-DO: Seller: open the deal (notification or My deals) > Accept & lock deposit > Phantom ⏸
-SAY: Over on the seller's side, the deal shows up, and the seller accepts it. That locks the seller's deposit in the same vault and starts the delivery timer.
-
-4. PAY PART BY PART
-DO: Buyer: stepper to 2 > Confirm 2 ranks > Phantom ⏸
-SAY: Let's say two of the four ranks are done. I confirm two ranks, and the program releases those two parts to the seller, minus a 2 percent fee. The rest stays locked.
-
-5. ON SOLANA
-DO: "Last transaction" link in the On Solana panel > Solana Explorer.
-SAY: Each of these steps is a normal Solana transaction. This link opens it in the explorer, where you can see the tokens leaving the vault.
-
-6. DISAGREE AND SPLIT
-DO: Buyer: Disagree > Yes, disagree > Phantom ⏸
-DO: Seller: type 6 under "Offer a split" > Offer this split > Phantom ⏸
-DO: Buyer: Accept their offer > Phantom ⏸
-SAY: Now say we don't agree about the last two ranks. I press Disagree, and the remaining money just stays where it is. Either side can offer a split. The seller offers 6 dollars back, I accept, and the program pays both of us and closes the deal.
-
-7. MISSED DEADLINE
-DO: Buyer: open the 2-minute deal > Take refund + seller's deposit > Phantom ⏸
-SAY: One more case. I started this deal earlier, on a listing with a two-minute deadline. The seller accepted but never delivered. Once the deadline passed, a new button appeared for me: take the refund plus the seller's deposit.
-
-8. HOW IT'S BUILT
-DO: GitHub tab: program/programs/agora/src/lib.rs > then the backend folder.
-SAY: Quickly, how it's built. The rules live in this Anchor program: creating deals, deposits, part payments, splits and the deadline refund. The .NET backend stores listings and profiles, builds unsigned transactions for the wallet to sign, and reads the deal back from the chain after each step. It never holds any keys.
-
-9. CLOSE
-DO: Back to the live site.
-SAY: That's the whole flow. Thanks for watching.
-
-IF SOMETHING BREAKS
-- "Transaction Not Confirmed": stay paused, reload the deal page, resume.
-- Buy fails: check that Phantom is on Devnet.
-- Anything else: stay paused, fix it, resume.
-```
-
-**After recording:** trim the start and end, make the link viewable by anyone with it, check it plays in a private window.
+**After recording:** trim long pauses, upload to Loom, make the link viewable by anyone with it, check it plays in a private window.
 
 ## Demo: inputs for planning
 
-What the plan above was built from:
+What the setup above was built from:
 - **Live demo data:** 11 listings from three demo sellers across all six games, each seller funded with 100 test tokens + 0.05 SOL. Their keys are in `C:\Users\admin\.agora-demo\sellers.json` on Sandro's PC only (import a seller into Phantom: Add account → Import private key with `phantomPrivateKey`). A demo needs a buyer wallet and a seller wallet in Phantom, both funded.
 - **What shows the product best:** the vault locking both deposits after Buy and Accept (it animates), confirming part by part, a disagreement with a split offer, and the 2-minute missed-deadline refund. Each step links to the transaction on Solana Explorer.
 - **Not yet run end to end on the hosted site:** the full path (list → buy → accept → deliver → confirm) and the `2m` refund. Do it once before recording.

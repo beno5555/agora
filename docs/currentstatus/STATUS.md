@@ -23,7 +23,7 @@ Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro
 
 1. **Now, team leader:** message @mariamgoya: Agora is submitted on Colosseum in time, the Earn form closed minutes before we could submit, can they still accept it; we present at the offline Demo Day on Oct 14.
 2. **Team:** check whether the Colosseum project can still be edited. If yes, add the demo video there.
-3. **Sandro:** record the demo video anyway, with the script in [SUBMISSION.md](SUBMISSION.md#technical-demo-plan-rewritten-oct-13-after-the-deadline) (a natural walkthrough of one deal, about 2:30; Loom website in full-screen mode, script on a phone; or OBS). It is needed if Superteam accepts a late entry, and as a backup for Oct 14.
+3. **Sandro:** the demo video is recorded (OBS, 2:52, setup in [SUBMISSION.md](SUBMISSION.md#technical-demo-setup)); upload it on Loom. It is needed if Superteam accepts a late entry, and as a backup for Oct 14.
 4. **Team, for Oct 14:** prepare the presentation: the pitch plus a live deal on the hosted site, with the backup video ready if devnet is slow. Pre-stage a deal the day before like in the demo plan.
 5. **Sandro, ongoing:** `Admin fund <wallet>` for judges who send their address; accept the deals judges start on demo listings (import a demo seller into Phantom, see below); keep the droplet running.
 6. Rewrite `README.md` (stale points in SUBMISSION.md) before judges read the repo.
