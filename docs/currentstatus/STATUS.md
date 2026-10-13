@@ -11,17 +11,44 @@ A snapshot of where things stand, kept short; history is in `git log`. Plan: [`.
 | Solana program | **Deployed to devnet** (`J4fL4Q8nnndro2xmVdCayRt5apXhexkkVQoqqwf4AKi4`) and initialized. Test stablecoin `7FutDfvw3Whjv6PcwCYdYb3FV25EHc3TRiUA4zw8pj21`. 8 program tests pass. No security review yet: devnet only. |
 | Backend API | Complete for the alpha. **15 end-to-end tests pass on devnet** (through Helius): a full deal paid match by match, a dispute settled by a split, a missed 2-minute deadline refunded with the seller's deposit, my listings, access checks, validation, sign-in replay and impostor signatures. |
 | Admin tool | `init` done. `fund <wallet>` gives a demo wallet 100 test tokens + 0.05 devnet SOL. |
-| Frontend | **First version pushed Oct 12** (`c4a2126`, Angular 21): every page in [`frontend.md`](../architecture/frontend.md) (home, game, listing, deal, sell, `/me` with pause/resume and profile editing, the `/u/:wallet` profile); sign-in with the Phantom browser extension (not Phantom Connect yet); every deal action through the backend-built transaction, with polling, the deadline refetch and a "where the money goes" table. `ng build` passes (~0.7 MB). **Clicked through end to end on devnet (Oct 12)** by an automated browser run (Chrome driven by Playwright, with a stand-in for Phantom that signs with throwaway keys): a deal paid match by match, the `2m` missed-deadline refund, pause/resume, profile editing, the public profile. All passed. **Sandro then tried most of it by hand with the real Phantom extension (Oct 12–13): fine.** |
+| Frontend | **Redesign in progress (Oct 13), see [Frontend redesign](#frontend-redesign-in-progress).** **First version pushed Oct 12** (`c4a2126`, Angular 21): every page in [`frontend.md`](../architecture/frontend.md) (home, game, listing, deal, sell, `/me` with pause/resume and profile editing, the `/u/:wallet` profile); sign-in with the Phantom browser extension (not Phantom Connect yet); every deal action through the backend-built transaction, with polling, the deadline refetch and a "where the money goes" table. `ng build` passes (~0.7 MB). **Clicked through end to end on devnet (Oct 12)** by an automated browser run (Chrome driven by Playwright, with a stand-in for Phantom that signs with throwaway keys): a deal paid match by match, the `2m` missed-deadline refund, pause/resume, profile editing, the public profile. All passed. **Sandro then tried most of it by hand with the real Phantom extension (Oct 12–13): fine.** |
 | Demo, pitch, submission | **Colosseum form filled in except three fields** (Oct 13): important context about the repo, the demo video, and the access instructions. The live link is in. Those three come after the redesign. |
 
 Deploy wallet (`Hw4hT8bo2zsvsTm4W1PGTVmheBZgeGvBU5njNuSrf9a9`, keypair on Sandro's PC only): ~5.5 SOL (topped up Oct 12). A full test run uses ~0.3 SOL (the faucet at https://faucet.solana.com tops it up), and each funded demo wallet 0.05.
 
 ## Next steps
-0. **Now (Sandro's call, Oct 13): the frontend UI/UX redesign, before the remaining submission fields.** Visual only, nothing technical: the site must match the team's logo and background template. The brief is [`../design/DESIGN.md`](../design/DESIGN.md) (build order in its section 9); Claude does the work alone. **Each step is committed and pushed, then deployed only after Sandro has looked at it and approved**, so judges never see a half-finished design.
+0. **Now (Sandro's call, Oct 13): the frontend UI/UX redesign, before the remaining submission fields.** Visual only, nothing technical: the site must match the team's logo and background template. The brief is [`../design/DESIGN.md`](../design/DESIGN.md) (build order in its section 9); Claude does the work alone. **Each step is committed and pushed, then deployed only after Sandro has looked at it and approved**, so judges never see a half-finished design. Progress and how to continue: [Frontend redesign](#frontend-redesign-in-progress).
 1. **Sandro:** the app is live at **https://46-101-154-81.sslip.io** (see [Hosting](#hosting-backend-required)). Sign-in and a few deal actions already work there on PC and phone. Still to do once: the full demo path on the hosted site (list → buy → accept → deliver → confirm, and the `2m` missed-deadline refund). Claude redeploys after each feature or fix commit (`deploy/deploy.ps1`, from Sandro's PC), except that redesign steps wait for Sandro's approval (step 0).
 2. **Sandro:** `Admin fund` demo and judges' wallets on request. **Decided (Oct 13): a judge sends their wallet address to Sandro, who funds it** (the backend holds no keys, so judges can't fund themselves). The form's access instructions need Sandro's contact (Discord or Telegram).
 3. **Mate and Dato:** the demo script (a listing with the `2m` deadline shows the missed-deadline refund live), the pitch, the video, test carriers and coaches.
 4. **Everyone, after the redesign:** the form's three missing fields (repo context, demo video, access instructions) and the repo README (Claude's draft is in `README.md`; rewrite it), in the team's own words.
+
+## Frontend redesign (in progress)
+
+The brief is [`../design/DESIGN.md`](../design/DESIGN.md): tokens, components, page layouts, motion, copy. It is followed as written, with the decisions at its top: the CSS split, its wording wins over `frontend.md` (which is updated in the same commit), and data the API lacks is derived in the frontend or added to the backend in the same commit. The `frontend-design` skill (`.claude/skills/`) guides it. The source logo and background are in `docs/design/assets/`; `docs/design/assets/issues/` is Sandro's scratch folder, never commit it.
+
+| Step (DESIGN.md §9) | State |
+|---|---|
+| 1–3 Tokens, base, header, brand assets, buttons, inputs, badges | Done, **deployed** (`fea18ca`, `6d2b67a`) |
+| 4 Deal page | Done, **deployed** (`110638d`) |
+| Fixes from Sandro's review: compact phone header buttons, inset select arrows | Done, pushed (`3afe672`), **not deployed** |
+| 5 Listing page | Done, pushed (`3a837c1`), **not deployed**, waiting for Sandro's review |
+| 6 Phone hand-off sheet and error copy | Done, pushed (`f8e9fba`), **not deployed**, waiting for Sandro's review |
+| 7 Motion: funds-lock and deal-complete | Next |
+| 8 Home hero with the example vault, games as a text index | To do |
+| 9 /sell, /me, /u restyle (+ "Your move" flag on deal rows, empty states from §7) | To do |
+| 10 Light theme pass (`index.html` forces `data-theme="dark"` for now) | To do |
+
+**Where things are:**
+- **Global CSS** (`frontend/src/styles/`, listed in `angular.json`): `tokens.css` (from DESIGN.md §3, plus `--lock-amount` and `--vault-border`; links are plain text with an underline, the gold rule wins over the brief's gold link token), `base.css`, `utilities.css`, `controls.css` (`.btn` variants, inputs, `.amount-input`), `surfaces.css` (`.panel`, `.tabs`, `dl.facts`, `.badge`, `.notice`).
+- **`frontend/src/styles.css`** only holds leftover rules for pages not restyled yet (home, game, sell, me, profile keep an 880px width there; `main` is 1120px). Each block goes when its page is restyled; delete the file when it's empty.
+- **Component CSS** sits next to each component (`styleUrl`): `app.css` (header, test-network band, sign-in/hand-off sheets, toasts), `shared/vault.css`, `listing-card.css`, `wallet-address.css`, `pages/deal/deal.css`, `deal-timeline.css`, `pages/listing/listing.css`.
+- **New shared pieces:** `shared/vault.ts` (the gold vault; deal page, listing preview, and the home hero in step 8), `icon.ts` (Lucide icons as inline SVG), `media.ts` (`mediaQuery()` signal), `tab-keys.ts` (arrow keys in tablists), `status-badge.ts` exports `statusLook()`. `pages/deal/deal-money.ts` holds every amount and sentence of the deal page. `core/error-text.ts` holds the error copy.
+- **Brand files** cut with ImageMagick into `frontend/public/brand/` (lockup, mark, icons, `og-image.jpg`) plus `public/favicon.ico`.
+
+**How each step was checked:** `npx ng build`, then a throwaway Playwright script (not committed) that serves fixture API data and screenshots every page and deal state on desktop (1280px) and an iPhone viewport (390px), signed in and out, and drives the stepper, the Disagree confirmation and the split validation. Playwright's Chromium is installed at `%LOCALAPPDATA%\ms-playwright\chromium-1248`; `playwright-core` was installed into a scratch folder. Real Phantom and on-chain actions were not part of these checks: Sandro tries them on the live host after each deploy.
+
+**Known gaps:** listing rows can't show "12 deals done" (`MinimalListingDto` has no reputation); signed out, the listing page can't show the buyer's deposit (it depends on the buyer's record), so it explains it in words. The per-component style budget warning is 6 kB.
 
 ## Hosting (backend, required)
 
