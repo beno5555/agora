@@ -84,3 +84,5 @@ Solana program (run from `program/`, native Windows, no WSL): `cargo build-sbf -
 ## Claude tooling
 
 The `colosseum-copilot` skill is installed in `.claude/skills/` so teammates get it through git. Each person signs in to Colosseum once on their own machine (`npx @colosseum-org/copilot-connect login`). Use it to check ideas against past Colosseum projects and to find event sponsors and tools.
+
+The `frontend-design` skill (Anthropic's, from `anthropics/skills`) is installed the same way and guides the frontend redesign: pick a design direction first, review the plan against the brief, then build. The design brief for the redesign lives in `docs/design/`.
