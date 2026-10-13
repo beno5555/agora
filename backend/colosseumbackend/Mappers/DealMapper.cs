@@ -9,10 +9,10 @@ public static class DealMapper
     public const string BuyerRole  = "buyer";
     public const string SellerRole = "seller";
 
-    public static MinimalDealDto ToMinimal(Deal deal, string callerWallet)
+    public static MinimalDealDto ToMinimal(Deal deal, string callerWallet, List<DealAction> allowedActions)
     {
         var dto = new MinimalDealDto();
-        FillMinimal(dto, deal, callerWallet);
+        FillMinimal(dto, deal, callerWallet, allowedActions);
         return dto;
     }
 
@@ -40,9 +40,8 @@ public static class DealMapper
                 ? null
                 : new SplitOfferDto { By = deal.SplitOfferBy, BuyerAmount = AmountMapper.ToDto(deal.SplitOfferBuyerAmount ?? 0) },
             LastSignature         = deal.LastSignature,
-            AllowedActions        = allowedActions,
         };
-        FillMinimal(dto, deal, callerWallet);
+        FillMinimal(dto, deal, callerWallet, allowedActions);
         return dto;
     }
 
@@ -63,7 +62,7 @@ public static class DealMapper
         };
     }
 
-    private static void FillMinimal(MinimalDealDto dto, Deal deal, string callerWallet)
+    private static void FillMinimal(MinimalDealDto dto, Deal deal, string callerWallet, List<DealAction> allowedActions)
     {
         dto.Id        = deal.Id;
         dto.Title     = deal.Listing?.Title ?? string.Empty;
@@ -71,5 +70,6 @@ public static class DealMapper
         dto.Price     = AmountMapper.ToDto(deal.Price);
         dto.Role      = deal.BuyerWallet == callerWallet ? BuyerRole : SellerRole;
         dto.CreatedAt = deal.CreatedAt;
+        dto.AllowedActions = allowedActions;
     }
 }

@@ -136,6 +136,8 @@ export interface MinimalDealDto {
   price: string;
   role: 'buyer' | 'seller';
   createdAt: string;
+  /** What the caller can do right now; the deal list flags "Your move" from it. */
+  allowedActions: DealAction[];
 }
 
 export interface FullDealDto extends MinimalDealDto {
@@ -157,7 +159,6 @@ export interface FullDealDto extends MinimalDealDto {
   deliveryDeadline: string | null;
   splitOffer: { by: string; buyerAmount: string } | null;
   lastSignature: string | null;
-  allowedActions: DealAction[];
 }
 
 export interface DealActionDto {

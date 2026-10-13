@@ -1,0 +1,28 @@
+:host {
+  display: block;
+  max-width: var(--w-read);
+}
+
+.who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--s-4);
+  margin-bottom: var(--s-5);
+  color: var(--text-muted);
+}
+.who a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+}
+
+.listings-title {
+  margin-top: var(--s-6);
+  margin-bottom: var(--s-3);
+}
+
+.missing {
+  max-width: var(--w-read);
+}

@@ -1,0 +1,11 @@
+:host {
+  display: block;
+  max-width: var(--w-read);
+}
+
+h1 {
+  margin-bottom: var(--s-1);
+}
+.count {
+  color: var(--text-muted);
+}

@@ -1,0 +1,154 @@
+:host {
+  display: block;
+}
+
+h2 {
+  margin-bottom: var(--s-3);
+}
+
+/* Deal rows: "Your move" is the dashboard's one emphasis. */
+.deals {
+  display: grid;
+  gap: var(--s-2);
+  margin-bottom: var(--s-7);
+}
+.deal-row {
+  display: grid;
+  grid-template-areas:
+    'title price'
+    'status status'
+    'move move';
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--s-2) var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  text-decoration: none;
+}
+.deal-row:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+}
+.title {
+  grid-area: title;
+  min-width: 0;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+}
+.status {
+  grid-area: status;
+  justify-self: start;
+}
+.move {
+  grid-area: move;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.price {
+  grid-area: price;
+  font-size: var(--fs-xl);
+  font-weight: 500;
+  white-space: nowrap;
+}
+@media (min-width: 600px) {
+  .deal-row {
+    grid-template-areas: 'title status move price';
+    grid-template-columns: 1fr auto auto minmax(6.5ch, auto);
+  }
+  .price {
+    text-align: right;
+  }
+}
+
+/* Notifications and my listings side by side on a wide screen. */
+.columns {
+  display: grid;
+  gap: var(--s-7);
+  margin-bottom: var(--s-7);
+}
+@media (min-width: 960px) {
+  .columns {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-6);
+  }
+}
+#my-listings:focus {
+  outline: none;
+}
+
+.note-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  margin-bottom: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.note-row:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+}
+.note-row.unread {
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--text);
+}
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+.when {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+/* A listing row with Pause/Resume: under the row on a phone, in a fixed column beside it otherwise. */
+.listing {
+  display: grid;
+  gap: var(--s-2);
+  margin-bottom: var(--s-3);
+}
+.listing app-listing-card {
+  min-width: 0;
+  margin-bottom: 0;
+}
+.listing-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-2);
+}
+@media (min-width: 600px) {
+  .listing {
+    grid-template-columns: 1fr 6.5rem;
+    align-items: center;
+    margin-bottom: var(--s-2);
+  }
+  .listing-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .listing-actions .badge {
+    justify-content: center;
+  }
+}
+
+.profile {
+  max-width: var(--w-read);
+}
+.profile label .hint {
+  display: block;
+  margin-top: var(--s-1);
+}

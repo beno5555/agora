@@ -173,7 +173,10 @@ type DealAction =
   | 'Accept' | 'Cancel' | 'MarkDelivered' | 'Confirm' | 'RefundUndelivered'
   | 'RaiseDispute' | 'ProposeSplit' | 'AcceptSplit' | 'SellerRefund';
 
-interface MinimalDealDto { id: string; title: string; status: DealStatus; price: string; role: 'buyer' | 'seller'; createdAt: string }
+interface MinimalDealDto {
+  id: string; title: string; status: DealStatus; price: string; role: 'buyer' | 'seller'; createdAt: string;
+  allowedActions: DealAction[];     // what the CALLER can do right now (lists show "Your move" from it)
+}
 
 interface FullDealDto extends MinimalDealDto {
   dealPda: string;                // the on-chain Deal account (link it on Solana Explorer)
@@ -194,7 +197,6 @@ interface FullDealDto extends MinimalDealDto {
   deliveryDeadline: string | null;  // acceptedAt + window; null before Accept
   splitOffer: { by: string; buyerAmount: string } | null;   // by = wallet that offered
   lastSignature: string | null;     // last transaction seen for this deal
-  allowedActions: DealAction[];     // what the CALLER can do right now
 }
 
 interface DealActionDto { action: DealAction; parts?: number; buyerAmount?: string }

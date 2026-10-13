@@ -1,0 +1,30 @@
+:host {
+  display: block;
+}
+
+.counts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-4);
+  margin: 0 0 var(--s-4);
+}
+/* Number on top, label under it; the dt comes second visually but first for screen readers. */
+.counts div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+.counts dd {
+  margin: 0;
+  font-size: var(--fs-2xl);
+  font-weight: 500;
+  line-height: var(--lh-tight);
+}
+.counts dt {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.note {
+  margin: 0;
+  color: var(--text-muted);
+}

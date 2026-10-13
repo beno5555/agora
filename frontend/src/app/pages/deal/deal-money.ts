@@ -46,6 +46,11 @@ export interface KeyLine {
   what: string;
 }
 
+/** The page's one primary action, or null when nothing is waiting on the viewer (their move). */
+export function primaryAction(actions: DealAction[]): DealAction | null {
+  return PRIMARY_ORDER.find((a) => actions.includes(a)) ?? null;
+}
+
 /** The money event between two versions of a deal, for the vault to animate; null if none. */
 export function moneyMoment(prev: FullDealDto, next: FullDealDto): MoneyMoment | null {
   if (prev.status === next.status) return null;
@@ -202,7 +207,7 @@ export class DealMoney {
 
   /** The action that gets the one primary button, if any. */
   primaryOf(actions: DealAction[]): DealAction | null {
-    return PRIMARY_ORDER.find((a) => actions.includes(a)) ?? null;
+    return primaryAction(actions);
   }
 
   /** The line under the title: what state the deal is in and whose move it is (DESIGN.md §7). */

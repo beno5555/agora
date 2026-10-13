@@ -102,7 +102,8 @@ public class DealService : BaseService
         };
 
         var deals = await _dealRepository.GetForUserAsync(wallet, asBuyer, dealQuery.Status, dealQuery.PageNumber, dealQuery.PageSize);
-        response.Ok(deals.Select(deal => DealMapper.ToMinimal(deal, wallet)).ToList(), ResponseMessages.DealsRetrieved);
+        var now   = DateTime.UtcNow;
+        response.Ok(deals.Select(deal => DealMapper.ToMinimal(deal, wallet, DealRules.AllowedActions(deal, wallet, now))).ToList(), ResponseMessages.DealsRetrieved);
         return response;
     }
 

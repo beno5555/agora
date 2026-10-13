@@ -1,0 +1,81 @@
+:host {
+  display: block;
+  max-width: var(--w-read);
+}
+
+h1 {
+  margin-bottom: var(--s-5);
+}
+
+/* A hint or an error under a control that isn't wrapped in its label. */
+.field-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: var(--s-1) 0 var(--s-4);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.field-note.error-text {
+  color: var(--danger);
+}
+.field-note app-icon {
+  margin-top: 2px;
+}
+label[for='price'] {
+  margin-bottom: var(--s-1);
+}
+
+.type {
+  margin: 0 0 var(--s-4);
+  padding: 0;
+  border: 0;
+}
+.type legend {
+  margin-bottom: var(--s-1);
+  padding: 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 44px;
+  margin: 0;
+  font-size: var(--fs-base);
+  font-weight: 500;
+}
+.choice input {
+  width: 20px;
+  min-height: 0;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--text);
+}
+
+.parts {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: var(--s-3);
+}
+.parts label {
+  margin-bottom: 0;
+}
+
+.summary {
+  margin: var(--s-2) 0 var(--s-5);
+  padding: var(--s-4);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.summary p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 599px) {
+  .publish {
+    width: 100%;
+  }
+}

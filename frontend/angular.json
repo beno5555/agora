@@ -55,8 +55,7 @@
               "src/styles/base.css",
               "src/styles/utilities.css",
               "src/styles/controls.css",
-              "src/styles/surfaces.css",
-              "src/styles.css"
+              "src/styles/surfaces.css"
             ]
           },
           "configurations": {

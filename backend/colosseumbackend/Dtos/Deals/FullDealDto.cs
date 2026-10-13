@@ -22,5 +22,4 @@ public class FullDealDto : MinimalDealDto
     public DateTime?          DeliveryDeadline   { get; set; }
     public SplitOfferDto?     SplitOffer         { get; set; }
     public string?            LastSignature      { get; set; }
-    public List<DealAction>   AllowedActions     { get; set; } = [];
 }

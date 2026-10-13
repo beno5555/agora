@@ -10,4 +10,6 @@ public class MinimalDealDto
     public string     Price     { get; set; } = "0";
     public string     Role      { get; set; } = string.Empty;
     public DateTime   CreatedAt { get; set; }
+    /// <summary>What the caller can do right now (DealRules); lets a list show whose move it is.</summary>
+    public List<DealAction> AllowedActions { get; set; } = [];
 }
