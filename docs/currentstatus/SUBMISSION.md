@@ -52,7 +52,8 @@ Drafts for the Colosseum form's three missing fields, written by Claude on Oct 1
 2. **Two browser windows side by side:** left = buyer (Dealer1: 99.3 test USDC, 0.046 SOL), right = seller **NovaCarry** (100 test USDC, 0.05 SOL; key in `sellers.json`). Easiest: a second Chrome profile with Phantom and only NovaCarry imported. Fallback: one Phantom, switch account and Connect again (slower on video).
 3. Both Phantoms on **Devnet**, both signed in to the site. Browser zoom 110–125% so text reads on video. Close other tabs and notifications.
 4. **Start the 2-minute deal now, before recording:** buyer buys "Demo: 2-minute deadline (try the refund)" ($2), seller accepts. Its deadline will have passed by the time you reach that part of the video.
-5. Recorder: OBS if installed, else Windows Snipping Tool (Win+Shift+R, with the microphone on). Trim waits in Clipchamp (built into Windows).
+5. Recorder: **Loom** (Sandro's choice), **full screen** mode so the Phantom popups and both windows are captured; camera bubble off or in a corner away from the buttons. The free plan stops at 5 minutes.
+6. Both windows on exactly `https://46-101-154-81.sslip.io`: a localhost tab makes Phantom refuse sign-in ("domain in the sign-in message does not match").
 
 **Script** (the main deal is "Ranked boost, Gold IV to Platinum IV": Apex, NovaCarry, $24, paid in 4 ranks of $6):
 
@@ -68,7 +69,9 @@ Drafts for the Colosseum form's three missing fields, written by Claude on Oct 1
 | 2:25–2:55 | GitHub repo: `program/programs/agora/src/lib.rs`, then `backend/` | "The rules live in an Anchor program: deals, deposits from on-chain reputation, part payments, splits, deadline refunds. The .NET backend only builds unsigned transactions and holds no keys, so Agora never touches user funds. 8 program tests and 15 end-to-end tests on devnet." |
 | 2:55–3:00 | Live link | "Try it at 46-101-154-81.sslip.io: steps are in our submission." |
 
-**Waits:** each action is a Phantom approval plus up to ~30 s for confirmation. Keep talking through them, or cut them out afterwards.
+**Waits:** each action is a Phantom approval plus up to ~30 s for confirmation. Pause Loom after approving in Phantom and resume once the page has updated.
+
+**After recording:** trim the start and end in Loom, set it to "Anyone with the link can view", check the link plays in a private window, paste it into the form.
 
 **If something breaks while recording:** a 400 "Transaction Not Confirmed" usually means slow devnet: wait, reload the deal page and carry on. If Buy fails, check that Phantom is on Devnet. Don't debug on camera: stop, fix, re-record that part.
 
