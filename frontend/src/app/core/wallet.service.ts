@@ -22,6 +22,13 @@ export class WalletRejectedError extends Error {
   }
 }
 
+/** Not a failure: on a phone, the page is reopening in the Phantom app. Callers show it as info. */
+export class WalletHandoffError extends Error {
+  constructor() {
+    super('Opening this page in the Phantom app…');
+  }
+}
+
 /** Wraps Phantom. Swap the internals for Phantom Connect later without touching callers. */
 @Injectable({ providedIn: 'root' })
 export class WalletService {
@@ -55,7 +62,7 @@ export class WalletService {
         const page = encodeURIComponent(window.location.href);
         const origin = encodeURIComponent(window.location.origin);
         window.location.href = `https://phantom.app/ul/browse/${page}?ref=${origin}`;
-        throw new Error('Opening this page in the Phantom app');
+        throw new WalletHandoffError();
       }
       window.open('https://phantom.app/download', '_blank');
       throw new Error('Install the Phantom wallet extension, then reload this page');
