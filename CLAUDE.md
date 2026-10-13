@@ -44,7 +44,7 @@ agora/
 ├── deploy/                   hosting: deploy.ps1 (build + upload to the DigitalOcean droplet), server setup, Caddy, systemd; README.md is the guide
 ├── docs/PLAN.md              detailed product plan
 ├── docs/architecture/        technical design: program, auth, API, data model, frontend
-├── docs/currentstatus/       STATUS.md (current state, next steps), ISSUES.md (known issues left for later), BACKLOG.md (planned work, not urgent)
+├── docs/currentstatus/       STATUS.md (current state, next steps), ISSUES.md (known issues left for later), BACKLOG.md (planned work, not urgent), SUBMISSION.md (drafts for the Colosseum form)
 ├── README.md                 public project overview (draft, for the submission)
 ├── LICENSE                   MIT
 ├── .claude/skills/colosseum-copilot/   project-scoped Claude skill
