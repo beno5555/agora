@@ -23,6 +23,7 @@ const MOVE: Partial<Record<DealAction, string>> = {
   MarkDelivered: 'mark delivered',
   AcceptSplit: 'answer their offer',
   RefundUndelivered: 'take your refund',
+  ClaimPayment: 'claim your payment',
 };
 
 const PAGE_SIZE = 10;

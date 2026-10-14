@@ -11,4 +11,6 @@ public enum NotificationKind
     DealClosed,
     DeadlineSoon,
     RefundAvailable,
+    ReviewEndingSoon,
+    PaymentClaimable,
 }

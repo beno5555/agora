@@ -126,6 +126,36 @@ public class DealFlowTests
         Assert.Equal(buyerBefore + 3 * Token, await _fixture.TokenBalanceAsync(buyer.PublicKey));
     }
 
+    // ---------- silent buyer after delivery (demo listings get a 2-minute review window) ----------
+
+    [Fact]
+    public async Task SilentBuyer_AfterReviewWindow_SellerClaimsPayment()
+    {
+        var (seller, sellerClient) = await NewSignedInUserAsync();
+        var (buyer,  buyerClient)  = await NewSignedInUserAsync();
+        var listing = await CreateCarryListingAsync(sellerClient, deliveryWindow: "2m");
+        ulong sellerBefore = await _fixture.TokenBalanceAsync(seller.PublicKey);
+
+        var deal = await CreateAndFundDealAsync(buyerClient, buyer, listing.Id);
+        deal     = await ActAsync(sellerClient, seller, deal.Id, new DealActionDto { Action = DealAction.Accept });
+        deal     = await ActAsync(sellerClient, seller, deal.Id, new DealActionDto { Action = DealAction.MarkDelivered });
+
+        Assert.Equal("2m", listing.ReviewWindow);
+        Assert.DoesNotContain(DealAction.ClaimPayment, deal.AllowedActions);
+
+        // The buyer neither confirms nor disputes. Wait out the review window plus the clock grace.
+        var wait = deal.ReviewDeadline!.Value + Constants.ChainClockGrace + TimeSpan.FromSeconds(5) - DateTime.UtcNow;
+        await Task.Delay(wait > TimeSpan.Zero ? wait : TimeSpan.Zero);
+        var sellerView = await sellerClient.GetFromJsonAsync<ApplicationResponse<FullDealDto>>($"api/deals/{deal.Id}", TestJson.Options);
+        Assert.Contains(DealAction.ClaimPayment, sellerView!.Data!.AllowedActions);
+
+        deal = await ActAsync(sellerClient, seller, deal.Id, new DealActionDto { Action = DealAction.ClaimPayment });
+
+        Assert.Equal(DealStatus.Completed, deal.Status);
+        // The 15-token price minus the 2% fee; the seller's deposit came back.
+        Assert.Equal(sellerBefore + 147 * Token / 10, await _fixture.TokenBalanceAsync(seller.PublicKey));
+    }
+
     // ---------- access and validation ----------
 
     [Fact]

@@ -69,6 +69,10 @@ const NOTE_KEY = 'agora:note:';
                 If the seller doesn't deliver within {{ window() }}, you take your refund plus their
                 deposit.
               </p>
+              <p>
+                After delivery you have {{ reviewWindow() }} to confirm or disagree. If you do
+                neither, the seller can claim the payment.
+              </p>
               <p class="strong">Nobody else can move the money.</p>
             </section>
           }
@@ -252,6 +256,9 @@ export class Listing {
   /** "24 hours"; the demo window drops its "(demo)" tag inside a sentence. */
   protected readonly window = computed(() =>
     windowLabel(this.listing()?.deliveryWindow ?? '').replace(' (demo)', ''),
+  );
+  protected readonly reviewWindow = computed(() =>
+    windowLabel(this.listing()?.reviewWindow ?? '').replace(' (demo)', ''),
   );
   protected readonly lockNow = computed(() => {
     const l = this.listing();

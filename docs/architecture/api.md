@@ -134,6 +134,7 @@ interface MinimalListingDto {
 interface StandardListingDto extends MinimalListingDto {
   description: string;
   deliveryWindow: string;            // a deliveryWindows key, e.g. '24h'
+  reviewWindow: string;              // the buyer's time to check after delivery: '3d', or '2m' on devnet demo listings
   isActive: boolean;
   createdAt: string;
   sellerReputation: ReputationDto;   // the seller's record as seller, from the chain
@@ -173,7 +174,7 @@ type DealStatus =
 
 type DealAction =
   | 'Accept' | 'Cancel' | 'MarkDelivered' | 'Confirm' | 'RefundUndelivered'
-  | 'RaiseDispute' | 'ProposeSplit' | 'AcceptSplit' | 'SellerRefund';
+  | 'RaiseDispute' | 'ProposeSplit' | 'AcceptSplit' | 'SellerRefund' | 'ClaimPayment';
 
 interface MinimalDealDto {
   id: string; title: string; status: DealStatus; price: string; role: 'buyer' | 'seller'; createdAt: string;
@@ -197,6 +198,8 @@ interface FullDealDto extends MinimalDealDto {
   acceptedAt: string | null;
   deliveredAt: string | null;
   deliveryDeadline: string | null;  // acceptedAt + window; null before Accept
+  reviewWindowSeconds: number;
+  reviewDeadline: string | null;    // deliveredAt + review window; null before MarkDelivered
   splitOffer: { by: string; buyerAmount: string } | null;   // by = wallet that offered
   lastSignature: string | null;     // last transaction seen for this deal
 }
@@ -213,7 +216,7 @@ The backend works this out for the caller from status, role and the clock; **ren
 |---|---|---|
 | AwaitingSeller | `Cancel` (full refund) | `Accept`, `SellerRefund` (decline) |
 | Active | `Confirm`, `RaiseDispute`, + `RefundUndelivered` from 15 s after the deadline (margin for Solana's clock) | `MarkDelivered` (before the deadline only), `RaiseDispute`, `SellerRefund` |
-| Delivered | `Confirm`, `RaiseDispute` | `RaiseDispute`, `SellerRefund` |
+| Delivered | `Confirm`, `RaiseDispute` | `RaiseDispute`, `SellerRefund`, + `ClaimPayment` from 15 s after the review deadline |
 | Disputed | `ProposeSplit`, `AcceptSplit` (only if the *seller* made the current offer), `Confirm` | `ProposeSplit`, `AcceptSplit` (only if the *buyer* made the current offer), `SellerRefund` |
 | Draft and final states | n/a | n/a |
 
@@ -230,7 +233,7 @@ Action inputs:
 2. Base64-decode it and have the wallet **sign and send** it. It's a **legacy** (not versioned) transaction with the caller as the only signer and fee payer; its signature slot is zero-filled. Its blockhash expires after about a minute, so request it right before opening the wallet. If the user takes longer, request a new one.
 3. `POST /api/deals/{id}/sync` with the transaction signature (base58). The backend waits up to 30 s for confirmation, then copies the on-chain state and creates notifications. If it answers `400 "Transaction Not Confirmed"`, the transaction failed or is slow: retry sync once, then refetch the deal.
 
-If the buyer rejects the `create_deal` signature, the draft simply expires; the next Buy creates a new one. Settlement actions (`Confirm`, `Cancel`, `RefundUndelivered`, `AcceptSplit`, `SellerRefund`) may also create a missing token account first, which costs the caller a little devnet SOL. Wallets need test tokens and devnet SOL to act at all (see [frontend.md](frontend.md#dev-setup)).
+If the buyer rejects the `create_deal` signature, the draft simply expires; the next Buy creates a new one. Settlement actions (`Confirm`, `Cancel`, `RefundUndelivered`, `AcceptSplit`, `SellerRefund`, `ClaimPayment`) may also create a missing token account first, which costs the caller a little devnet SOL. Wallets need test tokens and devnet SOL to act at all (see [frontend.md](frontend.md#dev-setup)).
 
 ## Notifications
 
@@ -249,7 +252,9 @@ type NotificationKind =
   | 'SplitProposed'    // the other side
   | 'DealClosed'       // both, any final outcome
   | 'DeadlineSoon'     // seller: delivery deadline within 1 hour
-  | 'RefundAvailable'; // buyer: the deadline passed without delivery
+  | 'RefundAvailable'  // buyer: the deadline passed without delivery
+  | 'ReviewEndingSoon' // buyer: the review time after delivery ends within 12 hours
+  | 'PaymentClaimable'; // seller: the review time is over, you can claim
 
 interface NotificationDto { id: number; dealId: string | null; kind: NotificationKind; createdAt: string; isRead: boolean }
 ```

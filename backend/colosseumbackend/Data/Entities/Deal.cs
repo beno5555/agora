@@ -21,6 +21,7 @@ public class Deal
     public long       BuyerDeposit          { get; set; }
     public long       SellerDeposit         { get; set; }
     public long       DeliveryWindowSeconds { get; set; }
+    public long       ReviewWindowSeconds   { get; set; }
     public DateTime?  AcceptedAt            { get; set; }
     public DateTime?  DeliveredAt           { get; set; }
     public string?    SplitOfferBy          { get; set; }
@@ -31,10 +32,16 @@ public class Deal
     public bool       DeadlineReminderSent  { get; set; }
     /// <summary>Set once the buyer was told a refund is available, so it's sent only once.</summary>
     public bool       RefundNoticeSent      { get; set; }
+    /// <summary>Set once the buyer was reminded their review time is ending.</summary>
+    public bool       ReviewReminderSent    { get; set; }
+    /// <summary>Set once the seller was told they can claim payment.</summary>
+    public bool       ClaimNoticeSent       { get; set; }
     public DateTime   CreatedAt             { get; set; } = DateTime.UtcNow;
     public DateTime?  SyncedAt              { get; set; }
 
     public Listing? Listing { get; set; }
 
     public DateTime? DeliveryDeadline => AcceptedAt?.AddSeconds(DeliveryWindowSeconds);
+    /// <summary>After this, a delivered deal the buyer didn't confirm or dispute can be claimed by the seller.</summary>
+    public DateTime? ReviewDeadline   => DeliveredAt?.AddSeconds(ReviewWindowSeconds);
 }

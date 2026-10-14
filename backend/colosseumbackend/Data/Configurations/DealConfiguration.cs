@@ -17,6 +17,7 @@ public class DealConfiguration : IEntityTypeConfiguration<Deal>
         builder.Property(deal => deal.LastSignature).HasMaxLength(Constants.SignatureMaxLength);
         builder.Property(deal => deal.Status).HasMaxLength(Constants.EnumColumnMaxLength).HasConversion<string>();
         builder.Ignore(deal => deal.DeliveryDeadline);
+        builder.Ignore(deal => deal.ReviewDeadline);
 
         builder.HasIndex(deal => deal.DealPda).IsUnique();
         builder.HasIndex(deal => deal.BuyerWallet);

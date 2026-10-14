@@ -95,6 +95,9 @@ namespace colosseumbackend.Data.Migrations
                         .HasMaxLength(44)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("ClaimNoticeSent")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -132,6 +135,12 @@ namespace colosseumbackend.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("RefundNoticeSent")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("ReviewReminderSent")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("ReviewWindowSeconds")
                         .HasColumnType("INTEGER");
 
                     b.Property<long>("SellerDeposit")

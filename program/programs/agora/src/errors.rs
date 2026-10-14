@@ -10,6 +10,8 @@ pub enum AgoraError {
     InvalidPrice,
     #[msg("Delivery window must be between 1 minute and 30 days")]
     InvalidDeliveryWindow,
+    #[msg("Review window must be between 1 minute and 30 days")]
+    InvalidReviewWindow,
     #[msg("Only the buyer can do this")]
     NotBuyer,
     #[msg("Only the seller can do this")]
@@ -24,6 +26,8 @@ pub enum AgoraError {
     DeliveryDeadlinePassed,
     #[msg("The delivery deadline has not passed yet")]
     DeliveryDeadlineNotPassed,
+    #[msg("The buyer's review time is not over yet")]
+    ReviewNotOver,
     #[msg("Split amount exceeds what remains")]
     InvalidSplit,
     #[msg("There is no split offer to accept")]

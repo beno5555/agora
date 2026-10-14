@@ -53,6 +53,15 @@ public static class Constants
     public static readonly TimeSpan DeadlineReminderLead = TimeSpan.FromHours(1);
 
     /// <summary>
+    /// How long the buyer has after delivery to confirm or raise a disagreement. After that the
+    /// seller can claim the remaining price, so a silent buyer can't keep it locked.
+    /// </summary>
+    public static readonly TimeSpan ReviewWindow = TimeSpan.FromDays(3);
+
+    /// <summary>The buyer is reminded this long before their review time ends.</summary>
+    public static readonly TimeSpan ReviewReminderLead = TimeSpan.FromHours(12);
+
+    /// <summary>
     /// The program checks the deadline against the cluster's clock, which can trail real time.
     /// The refund is offered only this long after the deadline, so the button never fails.
     /// </summary>

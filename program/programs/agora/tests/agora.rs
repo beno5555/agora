@@ -60,9 +60,10 @@ fn rep_pda(wallet: &Pubkey) -> Pubkey {
     pda(&[REPUTATION_SEED, wallet.as_ref()])
 }
 
-/// 3 matches at 5 tokens each. Deposits for new wallets: 20% = 3 tokens each.
+/// 3 matches at 5 tokens each, an hour to deliver and a day to review.
+/// Deposits for new wallets: 20% = 3 tokens each.
 fn terms(seller: Pubkey) -> DealTerms {
-    DealTerms { seller, price: 15 * TOKEN, milestones: 3, delivery_window: 3600 }
+    DealTerms { seller, price: 15 * TOKEN, milestones: 3, delivery_window: 3600, review_window: 86_400 }
 }
 
 impl Env {
@@ -434,6 +435,34 @@ fn missed_deadline_refunds_buyer_plus_sellers_deposit() {
     // Price and own deposit back, plus the seller's 3-token deposit.
     assert_eq!(env.balance(&env.buyer_token), buyer_before + 3 * TOKEN);
     assert_eq!(env.reputation(&seller.pubkey()).as_seller.undelivered, 1);
+}
+
+#[test]
+fn seller_claims_payment_when_the_buyer_stays_silent_after_delivery() {
+    let mut env = Env::new();
+    let seller = env.seller.insecure_clone();
+    let seller_before = env.balance(&env.seller_token);
+    let deal = env.open_deal(terms(seller.pubkey()));
+    env.action(agora::instruction::MarkDelivered {}.data(), deal, &seller).unwrap();
+
+    assert_err(env.settle(agora::instruction::ClaimPayment {}.data(), deal, &seller), "ReviewNotOver");
+    env.advance_clock(86_401);
+    env.settle(agora::instruction::ClaimPayment {}.data(), deal, &seller).unwrap();
+
+    // The whole price minus the 2% fee, and the seller's deposit back.
+    assert_eq!(env.balance(&env.seller_token), seller_before + 147 * TOKEN / 10);
+    assert_eq!(env.reputation(&seller.pubkey()).as_seller.completed, 1);
+}
+
+#[test]
+fn a_disagreement_stops_the_review_clock() {
+    let mut env = Env::new();
+    let (buyer, seller) = (env.buyer.insecure_clone(), env.seller.insecure_clone());
+    let deal = env.open_deal(terms(seller.pubkey()));
+    env.action(agora::instruction::MarkDelivered {}.data(), deal, &seller).unwrap();
+    env.raise_dispute(deal, &buyer).unwrap();
+    env.advance_clock(86_401);
+    assert_err(env.settle(agora::instruction::ClaimPayment {}.data(), deal, &seller), "InvalidState");
 }
 
 #[test]

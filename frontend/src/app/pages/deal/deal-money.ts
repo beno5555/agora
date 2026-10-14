@@ -20,6 +20,7 @@ const PRIMARY_ORDER: DealAction[] = [
   'MarkDelivered',
   'AcceptSplit',
   'RefundUndelivered',
+  'ClaimPayment',
 ];
 
 export type OutcomeKind =
@@ -28,6 +29,7 @@ export type OutcomeKind =
   | 'confirm-one'
   | 'confirm-all'
   | 'deadline'
+  | 'claim'
   | 'dispute'
   | 'split'
   | 'refund';
@@ -47,6 +49,17 @@ export interface KeyLine {
 }
 
 /** The page's one primary action, or null when nothing is waiting on the viewer (their move). */
+/** "18:30" today, "Oct 14, 18:30" on another day. */
+function timeText(iso: string | null): string {
+  if (!iso) return '';
+  const date = new Date(iso);
+  const sameDay = date.toDateString() === new Date().toDateString();
+  return new Intl.DateTimeFormat(
+    undefined,
+    sameDay ? { timeStyle: 'short' } : { dateStyle: 'medium', timeStyle: 'short' },
+  ).format(date);
+}
+
 export function primaryAction(actions: DealAction[]): DealAction | null {
   return PRIMARY_ORDER.find((a) => actions.includes(a)) ?? null;
 }
@@ -193,16 +206,12 @@ export class DealMoney {
     if (s % 3_600 === 0) return `${s / 3_600}-hour`;
     return `${Math.round(s / 60)}-minute`;
   }
-  /** "18:30" today, "Oct 14, 18:30" on another day. */
   get deadlineText(): string {
-    const iso = this.deal.deliveryDeadline;
-    if (!iso) return '';
-    const date = new Date(iso);
-    const sameDay = date.toDateString() === new Date().toDateString();
-    return new Intl.DateTimeFormat(
-      undefined,
-      sameDay ? { timeStyle: 'short' } : { dateStyle: 'medium', timeStyle: 'short' },
-    ).format(date);
+    return timeText(this.deal.deliveryDeadline);
+  }
+  /** When the buyer's time to check a delivery ends. */
+  get reviewDeadlineText(): string {
+    return timeText(this.deal.reviewDeadline);
   }
 
   /** The action that gets the one primary button, if any. */
@@ -234,8 +243,8 @@ export class DealMoney {
           : `Deliver by ${this.deadlineText}, then mark it delivered.`;
       case 'Delivered':
         return b
-          ? "The seller says it's delivered. Check, then confirm."
-          : 'Waiting for the buyer to confirm.';
+          ? `The seller says it's delivered. Check, then confirm or disagree by ${this.reviewDeadlineText}.`
+          : `Waiting for the buyer to confirm. If they don't answer by ${this.reviewDeadlineText}, you can claim your payment.`;
       case 'Disputed':
         return 'You disagree. The money stays locked until you both accept the same split.';
       case 'Completed':
@@ -312,6 +321,14 @@ export class DealMoney {
           ? 'if nothing is delivered, you can take your refund plus their deposit'
           : "if you haven't delivered, the buyer can take a refund plus your deposit",
       });
+    if (d.status === 'Delivered' && d.reviewDeadline)
+      lines.push({
+        icon: 'clock',
+        who: `The review time, until ${this.reviewDeadlineText}`,
+        what: b
+          ? 'if you neither confirm nor disagree by then, the seller can claim the payment'
+          : 'if the buyer neither confirms nor disagrees by then, you can claim the payment',
+      });
     return lines;
   }
 
@@ -321,6 +338,7 @@ export class DealMoney {
       Cancel: `cancel and take your ${this.money(this.remaining + this.buyerDeposit)} back`,
       Confirm: `confirm ${this.unitPlural}`,
       RefundUndelivered: 'take your refund plus their deposit',
+      ClaimPayment: 'claim the payment',
       AcceptSplit: 'accept their offer',
       ProposeSplit: 'offer a split',
       SellerRefund: 'refund the buyer',
@@ -356,6 +374,8 @@ export class DealMoney {
           : `The buyer gets ${this.money(this.remaining + this.buyerDeposit)} back. Nothing of yours was locked.`;
       case 'RaiseDispute':
         return 'Locks everything until you both accept the same split.';
+      case 'ClaimPayment':
+        return `The buyer didn't answer in time. You get ${this.money(this.minusFee(this.remaining))} (after the ${fee}% fee) and your ${this.money(this.sellerDeposit)} deposit back; the buyer's deposit goes back to them.`;
       default:
         return '';
     }
@@ -438,6 +458,17 @@ export class DealMoney {
           nothing,
         ),
       );
+    if (d.status === 'Delivered' && d.reviewDeadline)
+      rows.push(
+        row(
+          'claim',
+          b
+            ? `You don't answer by ${this.reviewDeadlineText}`
+            : `The buyer doesn't answer by ${this.reviewDeadlineText}`,
+          `${this.money(this.buyerDeposit)} deposit back`,
+          `${this.money(this.minusFee(this.remaining))} + ${this.money(this.sellerDeposit)} deposit back`,
+        ),
+      );
     if (d.allowedActions.includes('RaiseDispute'))
       rows.push({
         kind: 'dispute',
@@ -479,6 +510,8 @@ export class DealMoney {
         return parts >= this.partsLeft ? 'confirm-all' : 'confirm-one';
       case 'RefundUndelivered':
         return 'deadline';
+      case 'ClaimPayment':
+        return 'claim';
       case 'AcceptSplit':
         return 'split';
       default:

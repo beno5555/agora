@@ -106,6 +106,7 @@ public class DealSyncService : BaseService
         deal.BuyerDeposit          = (long)account.BuyerDeposit;
         deal.SellerDeposit         = (long)account.SellerDeposit;
         deal.DeliveryWindowSeconds = account.DeliveryWindow;
+        deal.ReviewWindowSeconds   = account.ReviewWindow;
         deal.AcceptedAt            = FromUnix(account.AcceptedAt);
         deal.DeliveredAt           = FromUnix(account.DeliveredAt);
         deal.SplitOfferBy          = account.SplitOffer?.By.Key;
@@ -148,6 +149,24 @@ public class DealSyncService : BaseService
             {
                 notifications.Add(NewNotification(deal.BuyerWallet, deal, NotificationKind.RefundAvailable));
                 deal.RefundNoticeSent = true;
+            }
+        }
+
+        foreach (var deal in deals.Where(deal => deal.Status == DealStatus.Delivered && deal.ReviewDeadline is not null))
+        {
+            bool reviewEndingSoon = now >= deal.ReviewDeadline!.Value - Constants.ReviewReminderLead && now <= deal.ReviewDeadline;
+            bool reviewOver       = now > deal.ReviewDeadline;
+
+            if (reviewEndingSoon && !deal.ReviewReminderSent)
+            {
+                notifications.Add(NewNotification(deal.BuyerWallet, deal, NotificationKind.ReviewEndingSoon));
+                deal.ReviewReminderSent = true;
+            }
+
+            if (reviewOver && !deal.ClaimNoticeSent)
+            {
+                notifications.Add(NewNotification(deal.SellerWallet, deal, NotificationKind.PaymentClaimable));
+                deal.ClaimNoticeSent = true;
             }
         }
 

@@ -79,7 +79,7 @@ public class AgoraProgram
             AccountMeta.ReadOnly(SystemProgramId, false));
     }
 
-    public TransactionInstruction CreateDeal(PublicKey buyer, ulong dealId, PublicKey seller, ulong price, ushort milestones, long deliveryWindowSeconds)
+    public TransactionInstruction CreateDeal(PublicKey buyer, ulong dealId, PublicKey seller, ulong price, ushort milestones, long deliveryWindowSeconds, long reviewWindowSeconds)
     {
         var deal = DealAddress(buyer, dealId);
         var data = new BorshWriter()
@@ -89,6 +89,7 @@ public class AgoraProgram
             .U64(price)
             .U16(milestones)
             .I64(deliveryWindowSeconds)
+            .I64(reviewWindowSeconds)
             .ToArray();
 
         return Instruction(data,

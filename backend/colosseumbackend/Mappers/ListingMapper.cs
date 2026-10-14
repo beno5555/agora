@@ -36,6 +36,7 @@ public static class ListingMapper
         {
             Description      = listing.Description,
             DeliveryWindow   = DeliveryWindows.KeyFor(listing.DeliveryWindowSeconds),
+            ReviewWindow     = DeliveryWindows.KeyFor((long)DeliveryWindows.ReviewWindowFor(listing.DeliveryWindowSeconds).TotalSeconds),
             IsActive         = listing.IsActive,
             CreatedAt        = listing.CreatedAt,
             SellerReputation = UserMapper.ToReputation(sellerRecord),

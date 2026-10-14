@@ -4,6 +4,8 @@ public class StandardListingDto : MinimalListingDto
 {
     public string             Description      { get; set; } = string.Empty;
     public string             DeliveryWindow   { get; set; } = string.Empty;
+    /// <summary>The buyer's time to confirm or dispute after delivery, as a window key, e.g. "3d".</summary>
+    public string             ReviewWindow     { get; set; } = string.Empty;
     public bool               IsActive         { get; set; }
     public DateTime           CreatedAt        { get; set; }
     public ReputationDto      SellerReputation { get; set; } = new();

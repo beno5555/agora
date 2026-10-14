@@ -29,7 +29,7 @@ Team decisions (2026-10-11):
 - If the seller accepts but misses the delivery deadline, the buyer gets the refund **plus the seller's deposit**.
 - If buyer and seller never agree, the funds stay locked forever (alpha).
 - Deposits are dynamic (reputation + price); sellers don't enter them. More variables can be added later.
-- No review time limit for now: after delivery, the seller is paid only when the buyer confirms. Dispute resolution will be designed later.
+- ~~No review time limit for now.~~ Replaced on 2026-10-14 (Sandro): after delivery, the buyer has a review time (3 days) to confirm or raise a disagreement; if they do neither, the seller can claim the payment. A disagreement stops the clock. Dispute resolution will be designed later.
 
 Team decision (2026-10-13, Sandro): **Steam items (CS2 skins) are in scope.** The alpha settles them like any other item: the buyer confirms. The 7-day trade-reversal rule proposed above is not built yet.
 

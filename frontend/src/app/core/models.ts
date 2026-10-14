@@ -96,6 +96,8 @@ export interface MinimalListingDto {
 export interface StandardListingDto extends MinimalListingDto {
   description: string;
   deliveryWindow: string;
+  /** The buyer's time to confirm or disagree after delivery, e.g. '3d'. */
+  reviewWindow: string;
   isActive: boolean;
   createdAt: string;
   sellerReputation: ReputationDto;
@@ -133,7 +135,8 @@ export type DealAction =
   | 'RaiseDispute'
   | 'ProposeSplit'
   | 'AcceptSplit'
-  | 'SellerRefund';
+  | 'SellerRefund'
+  | 'ClaimPayment';
 
 export interface MinimalDealDto {
   id: string;
@@ -163,6 +166,9 @@ export interface FullDealDto extends MinimalDealDto {
   acceptedAt: string | null;
   deliveredAt: string | null;
   deliveryDeadline: string | null;
+  reviewWindowSeconds: number;
+  /** After this, the seller can claim payment if the buyer neither confirmed nor disagreed. */
+  reviewDeadline: string | null;
   splitOffer: { by: string; buyerAmount: string } | null;
   lastSignature: string | null;
 }
@@ -186,7 +192,9 @@ export type NotificationKind =
   | 'SplitProposed'
   | 'DealClosed'
   | 'DeadlineSoon'
-  | 'RefundAvailable';
+  | 'RefundAvailable'
+  | 'ReviewEndingSoon'
+  | 'PaymentClaimable';
 
 export interface NotificationDto {
   id: number;

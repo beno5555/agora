@@ -27,6 +27,7 @@ The buyer is part of the `Deal` seed so that nobody else can claim a `deal_id` f
 | `milestones_released` | u16 | parts already paid to the seller |
 | `buyer_deposit`, `seller_deposit` | u64 | worked out by the program at creation (see Deposits) |
 | `delivery_window` | i64 | seconds the seller has after accepting to mark it delivered; 60 s to 30 days |
+| `review_window` | i64 | seconds the buyer has after delivery to confirm or raise a disagreement; then the seller can `claim_payment`; 60 s to 30 days |
 | `accepted_at`, `delivered_at` | i64 | timestamps (0 = not yet) |
 | `status` | enum | see below |
 | `disputed` | bool | a disagreement was opened at some point |
@@ -63,7 +64,6 @@ Examples for a $15 deal: new wallet $3.00; after $15 completed $2.78; after $150
 - **New wallet = fresh start.** A seller with penalties can abandon the wallet and start again at the base rate. Penalties only bite while the wallet's discount is worth keeping. Fixing this needs identity, which is out of scope.
 - **Volume can be farmed** by trading with yourself. It costs the 2% fee on the farmed volume, and the impact is small: deposits only cover non-delivery and wasted time, because the price itself is always locked in the vault and can't be taken.
 - **Finished disputes aren't penalised,** because the program can't tell who was right. Only *open* ones count (against both sides). Revisit once dispute resolution exists.
-- **A buyer who never confirms** after delivery isn't penalised: the deal is just locked. That needs a review time limit (see PLAN.md).
 
 ## Deal states
 
@@ -78,6 +78,7 @@ Examples for a $15 deal: new wallet $3.00; after $15 completed $2.78; after $150
                 │    │ mark_delivered (seller, before the deadline)
                 │    ▼
                 │  Delivered ── confirm (all parts) ──▶ Completed
+                │    │ └─ review window over, buyer silent ──▶ claim_payment (seller) ──▶ Completed
                 │    │
                 │    │ raise_dispute (either party)
                 ▼    ▼
@@ -85,7 +86,7 @@ Examples for a $15 deal: new wallet $3.00; after $15 completed $2.78; after $150
                 (stays locked until the two agree)
 ```
 
-There's no review time limit. After delivery, the money moves only when the buyer confirms, a split is accepted, or the seller refunds. A silent buyer leaves it locked. Dispute handling will be designed later.
+**Review time:** after `mark_delivered`, the buyer has `review_window` to confirm or raise a disagreement. If they do neither, the seller can call `claim_payment` and is paid the remaining price, so a silent buyer can't keep the money locked. A disagreement stops the clock: a `Disputed` deal stays locked until the two agree. Dispute handling will be designed later.
 
 `seller_refund` (seller gives everything back) is allowed from any open state. Finished deals close their `Deal` and vault accounts (rent goes back to the buyer). Only open states exist on-chain; the outcome (`Completed`, `Split`, `Undelivered`, `SellerRefunded`, `Cancelled`) is reported in the `DealClosed` event.
 
@@ -101,6 +102,7 @@ There's no review time limit. After delivery, the money moves only when the buye
 | `mark_delivered` | seller | `Active`, before the deadline | sets `delivered_at`; → `Delivered` |
 | `confirm(parts)` | buyer | `Active`, `Delivered` or `Disputed` | pays the seller `parts × price/milestones` minus the fee; after the last part → `Completed` |
 | `refund_undelivered` | buyer | `Active`, `now > accepted_at + delivery_window` | buyer gets the remaining price, their deposit **and the seller's deposit**; → `Undelivered` |
+| `claim_payment` | seller | `Delivered`, `now > delivered_at + review_window` | seller gets the remaining price minus the fee; both deposits returned; → `Completed` |
 | `raise_dispute` | buyer or seller | `Active` or `Delivered` | → `Disputed`; adds an open disagreement to both parties' records (created if missing; the caller pays the rent) |
 | `propose_split(buyer_amount)` | buyer or seller | `Disputed` | stores/replaces `split_offer` |
 | `accept_split` | the other party | `Disputed` with an offer | buyer gets `buyer_amount`; seller gets the rest minus the fee; → `Split` |
@@ -121,7 +123,7 @@ The program accepts any `delivery_window` from 60 seconds to 30 days. The backen
 - **Disputes that never end:** a `Disputed` deal stays locked forever (team decision for the alpha).
 - **Seller's deposit on non-delivery:** goes to the buyer as compensation (team decision).
 - **Deposits are dynamic** (team decision): set by the program from reputation and price; never entered by users.
-- **No review time** for now (team decision).
+- **Review time** (Sandro, Oct 14; replaces "no review time limit"): the buyer has `review_window` after delivery, then the seller can claim. The backend sets 3 days (2 minutes for the devnet-only 2-minute demo listings).
 
 ## Build and test
 Code is in `program/`. Setup and commands: [program/README.md](../../program/README.md).

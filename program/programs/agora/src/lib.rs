@@ -54,8 +54,12 @@ pub mod agora {
             AgoraError::InvalidPrice
         );
         require!(
-            (MIN_DELIVERY_WINDOW..=MAX_DELIVERY_WINDOW).contains(&terms.delivery_window),
+            (MIN_WINDOW..=MAX_WINDOW).contains(&terms.delivery_window),
             AgoraError::InvalidDeliveryWindow
+        );
+        require!(
+            (MIN_WINDOW..=MAX_WINDOW).contains(&terms.review_window),
+            AgoraError::InvalidReviewWindow
         );
         // Each party's deposit depends on their own record, in the role they have here.
         // A wallet with no history yet has an empty record.
@@ -98,6 +102,7 @@ pub mod agora {
             buyer_deposit,
             seller_deposit,
             delivery_window: terms.delivery_window,
+            review_window: terms.review_window,
             accepted_at: 0,
             delivered_at: 0,
             status: DealStatus::AwaitingSeller,
@@ -148,10 +153,7 @@ pub mod agora {
         require_keys_eq!(ctx.accounts.actor.key(), deal.seller, AgoraError::NotSeller);
         require!(deal.status == DealStatus::Active, AgoraError::InvalidState);
         let now = Clock::get()?.unix_timestamp;
-        require!(
-            now <= deal.accepted_at + deal.delivery_window,
-            AgoraError::DeliveryDeadlinePassed
-        );
+        require!(now <= deal.delivery_deadline(), AgoraError::DeliveryDeadlinePassed);
         deal.delivered_at = now;
         deal.status = DealStatus::Delivered;
         emit!(DealDelivered { deal: deal.key() });
@@ -232,12 +234,21 @@ pub mod agora {
         s.require_buyer()?;
         require!(s.deal.status == DealStatus::Active, AgoraError::InvalidState);
         let now = Clock::get()?.unix_timestamp;
-        require!(
-            now > s.deal.accepted_at + s.deal.delivery_window,
-            AgoraError::DeliveryDeadlineNotPassed
-        );
+        require!(now > s.deal.delivery_deadline(), AgoraError::DeliveryDeadlineNotPassed);
         s.vault_transfer(s.buyer_token.to_account_info(), s.deal.remaining())?;
         s.finalize(Outcome::Undelivered)
+    }
+
+    /// Seller takes the remaining price once the buyer's review time after delivery
+    /// is over and the buyer neither confirmed nor raised a disagreement.
+    pub fn claim_payment(ctx: Context<Settle>) -> Result<()> {
+        let s = ctx.accounts;
+        s.require_seller()?;
+        require!(s.deal.status == DealStatus::Delivered, AgoraError::InvalidState);
+        let now = Clock::get()?.unix_timestamp;
+        require!(now > s.deal.review_deadline(), AgoraError::ReviewNotOver);
+        s.pay_seller(s.deal.remaining())?;
+        s.finalize(Outcome::Completed)
     }
 
     /// The party who didn't make the current split offer accepts it.

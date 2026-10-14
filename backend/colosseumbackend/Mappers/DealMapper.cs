@@ -1,6 +1,7 @@
 using colosseumbackend.Common;
 using colosseumbackend.Data.Entities;
 using colosseumbackend.Dtos;
+using colosseumbackend.Services;
 
 namespace colosseumbackend.Mappers;
 
@@ -36,6 +37,8 @@ public static class DealMapper
             AcceptedAt            = deal.AcceptedAt,
             DeliveredAt           = deal.DeliveredAt,
             DeliveryDeadline      = deal.DeliveryDeadline,
+            ReviewWindowSeconds   = deal.ReviewWindowSeconds,
+            ReviewDeadline        = deal.ReviewDeadline,
             SplitOffer            = deal.SplitOfferBy is null
                 ? null
                 : new SplitOfferDto { By = deal.SplitOfferBy, BuyerAmount = AmountMapper.ToDto(deal.SplitOfferBuyerAmount ?? 0) },
@@ -59,6 +62,7 @@ public static class DealMapper
             Price                 = listing.Price,
             Milestones            = listing.Milestones,
             DeliveryWindowSeconds = listing.DeliveryWindowSeconds,
+            ReviewWindowSeconds   = (long)DeliveryWindows.ReviewWindowFor(listing.DeliveryWindowSeconds).TotalSeconds,
         };
     }
 

@@ -24,6 +24,17 @@ public static class DeliveryWindows
         return match.Key is not null;
     }
 
+    /// <summary>
+    /// The buyer's review time after delivery for a listing with this delivery window:
+    /// <see cref="Constants.ReviewWindow"/>, except that devnet demo listings (2 minutes)
+    /// get the same short window, so a claim can be shown live.
+    /// </summary>
+    public static TimeSpan ReviewWindowFor(long deliveryWindowSeconds)
+    {
+        bool isDemo = Constants.DemoDeliveryWindowPresets.Values.Any(preset => (long)preset.TotalSeconds == deliveryWindowSeconds);
+        return isDemo ? TimeSpan.FromSeconds(deliveryWindowSeconds) : Constants.ReviewWindow;
+    }
+
     /// <summary>The preset key for a stored window, e.g. "24h"; any other length reads as "{seconds}s".</summary>
     public static string KeyFor(long seconds)
     {

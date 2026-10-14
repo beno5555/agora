@@ -13,6 +13,8 @@ const TEXT: Record<NotificationKind, string> = {
   DealClosed: 'Your deal is closed',
   DeadlineSoon: 'Your delivery deadline is within an hour',
   RefundAvailable: 'The deadline passed without delivery. You can take your refund.',
+  ReviewEndingSoon: 'Your time to check a delivery ends soon. Confirm it or disagree.',
+  PaymentClaimable: "The buyer's time to check is over. You can claim your payment.",
 };
 
 export const notificationText = (kind: NotificationKind): string => TEXT[kind];

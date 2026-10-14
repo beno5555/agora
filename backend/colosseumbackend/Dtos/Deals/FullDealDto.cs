@@ -20,6 +20,8 @@ public class FullDealDto : MinimalDealDto
     public DateTime?          AcceptedAt         { get; set; }
     public DateTime?          DeliveredAt        { get; set; }
     public DateTime?          DeliveryDeadline   { get; set; }
+    public long               ReviewWindowSeconds { get; set; }
+    public DateTime?          ReviewDeadline     { get; set; }
     public SplitOfferDto?     SplitOffer         { get; set; }
     public string?            LastSignature      { get; set; }
 }

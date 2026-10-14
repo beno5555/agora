@@ -2,9 +2,9 @@ use anchor_lang::prelude::*;
 
 pub const MAX_BPS: u16 = 10_000;
 
-/// Shortest and longest delivery window a deal may have.
-pub const MIN_DELIVERY_WINDOW: i64 = 60;
-pub const MAX_DELIVERY_WINDOW: i64 = 30 * 24 * 3600;
+/// Shortest and longest delivery or review window a deal may have.
+pub const MIN_WINDOW: i64 = 60;
+pub const MAX_WINDOW: i64 = 30 * 24 * 3600;
 
 #[account]
 #[derive(InitSpace)]
@@ -81,6 +81,9 @@ pub struct Deal {
     pub buyer_deposit: u64,
     pub seller_deposit: u64,
     pub delivery_window: i64,
+    /// Seconds the buyer has after delivery to confirm or raise a disagreement.
+    /// After that, the seller can claim the remaining price.
+    pub review_window: i64,
     pub accepted_at: i64,
     pub delivered_at: i64,
     pub status: DealStatus,
@@ -99,6 +102,14 @@ impl Deal {
     /// Part of the price still in the vault.
     pub fn remaining(&self) -> u64 {
         self.price - self.unit_price() * self.milestones_released as u64
+    }
+
+    pub fn delivery_deadline(&self) -> i64 {
+        self.accepted_at + self.delivery_window
+    }
+
+    pub fn review_deadline(&self) -> i64 {
+        self.delivered_at + self.review_window
     }
 }
 
@@ -121,7 +132,7 @@ pub struct SplitOffer {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Outcome {
-    /// Buyer confirmed every part.
+    /// Buyer confirmed every part, or the seller claimed payment after the review window.
     Completed,
     /// Disagreement settled by an accepted split offer.
     Split,
@@ -204,4 +215,5 @@ pub struct DealTerms {
     pub price: u64,
     pub milestones: u16,
     pub delivery_window: i64,
+    pub review_window: i64,
 }

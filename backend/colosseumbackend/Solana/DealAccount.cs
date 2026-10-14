@@ -14,6 +14,7 @@ public record DealAccount(
     ulong              BuyerDeposit,
     ulong              SellerDeposit,
     long               DeliveryWindow,
+    long               ReviewWindow,
     long               AcceptedAt,
     long               DeliveredAt,
     OnchainDealStatus  Status,
@@ -34,6 +35,7 @@ public record DealAccount(
         ulong     buyerDeposit       = reader.U64();
         ulong     sellerDeposit      = reader.U64();
         long      deliveryWindow     = reader.I64();
+        long      reviewWindow       = reader.I64();
         long      acceptedAt         = reader.I64();
         long      deliveredAt        = reader.I64();
         var       status             = (OnchainDealStatus)reader.U8();
@@ -42,6 +44,6 @@ public record DealAccount(
         SplitOfferAccount? splitOffer = hasSplitOffer ? new SplitOfferAccount(reader.Key(), reader.U64()) : null;
 
         return new DealAccount(dealId, buyer, seller, mint, price, milestones, milestonesReleased, buyerDeposit,
-            sellerDeposit, deliveryWindow, acceptedAt, deliveredAt, status, disputed, splitOffer);
+            sellerDeposit, deliveryWindow, reviewWindow, acceptedAt, deliveredAt, status, disputed, splitOffer);
     }
 }

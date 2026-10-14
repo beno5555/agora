@@ -20,7 +20,7 @@ import { DealMoney, changeNotice, moneyMoment } from './deal-money';
 import { DealTimeline } from './deal-timeline';
 
 const POLL_MS = 12_000;
-/** RefundUndelivered only appears 15 s after the deadline, so the page refetches right after. */
+/** RefundUndelivered and ClaimPayment only appear 15 s after their deadline, so the page refetches right after. */
 const REFUND_DELAY_MS = 16_000;
 const TEN_MINUTES = 600;
 /** Long enough for the longest vault animation (the lock's light sweep) to finish. */
@@ -37,6 +37,7 @@ const LABEL: Record<DealAction, string> = {
   ProposeSplit: 'Offer this split',
   AcceptSplit: 'Accept their offer',
   SellerRefund: 'Refund buyer',
+  ClaimPayment: 'Claim payment',
 };
 const DONE: Record<DealAction, string> = {
   Accept: 'Accepted. Your deposit is locked and the clock has started.',
@@ -48,6 +49,7 @@ const DONE: Record<DealAction, string> = {
   ProposeSplit: 'Offer sent.',
   AcceptSplit: 'Split accepted. The deal is closed.',
   SellerRefund: 'Buyer refunded.',
+  ClaimPayment: 'Payment claimed. The deal is closed.',
 };
 
 @Component({
@@ -89,6 +91,19 @@ const DONE: Record<DealAction, string> = {
               }
             } @else if (m.isBuyer && !can('RefundUndelivered')) {
               <span class="soon"><app-icon name="clock" />Refund available in a few seconds…</span>
+            }
+          </div>
+        }
+        @if (d.status === 'Delivered' && d.reviewDeadline) {
+          <div class="deadline">
+            @if (!pastReview()) {
+              <span
+                >{{ m.isBuyer ? 'Confirm or disagree by' : 'The buyer has until' }}
+                {{ m.reviewDeadlineText }}</span
+              >
+              <app-countdown class="clock" [deadline]="d.reviewDeadline" />
+            } @else if (!m.isBuyer && !can('ClaimPayment')) {
+              <span class="soon"><app-icon name="clock" />Claim available in a few seconds…</span>
             }
           </div>
         }
@@ -459,6 +474,10 @@ export class Deal {
     return Math.floor((new Date(deadline).getTime() - this.clock.now()) / 1000);
   });
   protected readonly pastDeadline = computed(() => this.secondsLeft() <= 0);
+  protected readonly pastReview = computed(() => {
+    const deadline = this.deal()?.reviewDeadline;
+    return !!deadline && new Date(deadline).getTime() <= this.clock.now();
+  });
 
   protected readonly money = computed(() => {
     const d = this.deal();
@@ -486,6 +505,7 @@ export class Deal {
       'MarkDelivered',
       'AcceptSplit',
       'RefundUndelivered',
+      'ClaimPayment',
       'Cancel',
       'SellerRefund',
     ];
@@ -546,10 +566,17 @@ export class Deal {
       onCleanup(() => clearInterval(timer));
     });
 
+    // Refetch right after the delivery or review deadline, when Refund or Claim becomes possible.
     effect((onCleanup) => {
       const d = this.deal();
-      if (d?.status !== 'Active' || !d.deliveryDeadline) return;
-      const wait = new Date(d.deliveryDeadline).getTime() + REFUND_DELAY_MS - Date.now();
+      const deadline =
+        d?.status === 'Active'
+          ? d.deliveryDeadline
+          : d?.status === 'Delivered'
+            ? d.reviewDeadline
+            : null;
+      if (!deadline) return;
+      const wait = new Date(deadline).getTime() + REFUND_DELAY_MS - Date.now();
       if (wait <= 0) return;
       const timer = setTimeout(() => void this.refresh(), wait);
       onCleanup(() => clearTimeout(timer));
@@ -568,7 +595,9 @@ export class Deal {
   protected btnClass(action: DealAction): string {
     if (action === 'RaiseDispute') return 'btn btn--danger';
     if (action !== this.primary()) return 'btn btn--secondary';
-    return action === 'RefundUndelivered' ? 'btn btn--primary btn--lg' : 'btn btn--primary';
+    return action === 'RefundUndelivered' || action === 'ClaimPayment'
+      ? 'btn btn--primary btn--lg'
+      : 'btn btn--primary';
   }
 
   /** The stage while this action runs, else its normal label. */
@@ -645,11 +674,7 @@ export class Deal {
       const notice = prev && m && prev.id === next.id ? changeNotice(prev, m) : null;
       if (notice) this.toast.show(notice);
       const moment =
-        prev?.id === next.id
-          ? moneyMoment(prev, next)
-          : m?.isLocked
-            ? this.arrivalMoment
-            : null;
+        prev?.id === next.id ? moneyMoment(prev, next) : m?.isLocked ? this.arrivalMoment : null;
       this.arrivalMoment = null;
       if (moment) this.play(moment);
     } catch (error) {

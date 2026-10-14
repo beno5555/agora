@@ -12,4 +12,5 @@ public enum DealAction
     ProposeSplit,
     AcceptSplit,
     SellerRefund,
+    ClaimPayment,
 }

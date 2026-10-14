@@ -54,7 +54,7 @@ public class DealService : BaseService
             await _dealRepository.AddAsync(deal);
 
             var instruction = _solana.Program.CreateDeal(buyer, dealId, new PublicKey(listing!.SellerWallet),
-                (ulong)listing.Price, (ushort)listing.Milestones, listing.DeliveryWindowSeconds);
+                (ulong)listing.Price, (ushort)listing.Milestones, deal.DeliveryWindowSeconds, deal.ReviewWindowSeconds);
             string transaction = await _solana.BuildUnsignedTransactionAsync(buyer, [instruction]);
 
             deal.Listing = listing;
@@ -245,6 +245,10 @@ public class DealService : BaseService
 
             case DealAction.SellerRefund:
                 response = await SettleInstructionsAsync(deal, actor, "seller_refund", null);
+                break;
+
+            case DealAction.ClaimPayment:
+                response = await SettleInstructionsAsync(deal, actor, "claim_payment", null);
                 break;
         }
 
