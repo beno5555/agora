@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import '@angular/compiler';
 import { createEnvironmentInjector, runInInjectionContext } from '@angular/core';
+import { DefaultUrlSerializer, Router } from '@angular/router';
 import { Keypair, SystemProgram, Transaction } from '@solana/web3.js';
 
 // Compile the real Angular services with the build tool already supplied by @angular/build.
@@ -17,6 +18,7 @@ await build({
       export { WalletService, WalletRejectedError } from './src/app/core/wallet.service';
       export { DealActionService } from './src/app/core/deal-action.service';
       export { AuthService } from './src/app/core/auth.service';
+      export { authGuard } from './src/app/core/auth.guard';
       export { ToastService } from './src/app/core/toast.service';
     `,
     resolveDir: frontend,
@@ -37,8 +39,41 @@ const {
   WalletRejectedError,
   DealActionService,
   AuthService,
+  authGuard,
   ToastService,
 } = await import(compiled.href);
+
+for (const signedIn of [true, false]) {
+  test(`authGuard: deferred sign-in ${signedIn ? 'allows navigation' : 'redirects home without NG0203'}`, async () => {
+    const signIn = Promise.withResolvers();
+    const home = new DefaultUrlSerializer().parse('/');
+    let redirects = 0;
+    const injector = createEnvironmentInjector([
+      { provide: AuthService, useValue: { requestSignIn: () => signIn.promise } },
+      {
+        provide: Router,
+        useValue: {
+          createUrlTree(commands) {
+            assert.deepEqual(commands, ['/']);
+            redirects++;
+            return home;
+          },
+        },
+      },
+    ]);
+
+    try {
+      const result = runInInjectionContext(injector, () => authGuard());
+      // Resolve after Angular has left the synchronous injection context.
+      signIn.resolve(signedIn);
+
+      assert.equal(await result, signedIn ? true : home);
+      assert.equal(redirects, signedIn ? 0 : 1);
+    } finally {
+      injector.destroy();
+    }
+  });
+}
 
 for (const message of [
   'Unexpected error',

@@ -34,6 +34,8 @@ frontend/src/app/
 
 `/d/:id`, `/sell` and `/me` need a session; their guard asks the user to connect and sign in. Everything else works signed out.
 
+If sign-in is declined, the guard redirects home. Its dependencies are injected before awaiting sign-in, while Angular's injection context is still available; both outcomes are covered by `npm run test:wallet`.
+
 ## The deal page (the heart of the demo)
 
 Make "the money is locked, and nobody outside decides" visible. The layout, the status line under the title (whose move it is), the vault with "who can move this money" and the copy are in [DESIGN.md](../design/DESIGN.md) §4, §5.4 and §7; the amounts and sentences are worked out in `pages/deal/deal-money.ts`.
