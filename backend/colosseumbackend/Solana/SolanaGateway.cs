@@ -19,7 +19,6 @@ public class SolanaGateway
     private const string FinalizedStatus      = "finalized";
     private const int    SignatureLength      = 64;
 
-    private static readonly byte[] DealDiscriminator       = AgoraProgram.AccountDiscriminator("Deal");
     private static readonly byte[] ReputationDiscriminator = AgoraProgram.AccountDiscriminator("Reputation");
     private static readonly byte[] ConfigDiscriminator     = AgoraProgram.AccountDiscriminator("Config");
     private static readonly byte[] DealClosedDiscriminator = AgoraProgram.EventDiscriminator("DealClosed");
@@ -50,21 +49,21 @@ public class SolanaGateway
         return HasDiscriminator(data, ReputationDiscriminator) ? ReputationAccount.Decode(data) : ReputationAccount.Empty;
     }
 
-    /// <summary>Returns null when the deal account doesn't exist (not created yet, or closed).</summary>
-    public async Task<DealAccount?> GetDealAsync(PublicKey deal)
+    /// <summary>A missing account is distinct from an incompatible account left by a program upgrade.</summary>
+    public async Task<DealAccountReadResult> GetDealAsync(PublicKey deal)
     {
         var data = await GetAccountDataAsync(deal);
-        return HasDiscriminator(data, DealDiscriminator) ? DealAccount.Decode(data) : null;
+        return DealAccountReadResult.FromData(data);
     }
 
-    /// <summary>Reads many deals in one call (at most 100). Missing accounts come back as null, in order.</summary>
-    public async Task<List<DealAccount?>> GetDealsAsync(IList<string> dealAddresses)
+    /// <summary>Reads many deals in one call (at most 100), preserving missing and incompatible results in order.</summary>
+    public async Task<List<DealAccountReadResult>> GetDealsAsync(IList<string> dealAddresses)
     {
         var result = await _rpc.GetMultipleAccountsAsync(dealAddresses, Commitment.Confirmed);
         EnsureSuccess(result.WasSuccessful, result.Reason);
 
         return result.Result.Value
-            .Select(account => DecodeData(account) is { } data && HasDiscriminator(data, DealDiscriminator) ? DealAccount.Decode(data) : null)
+            .Select(account => DealAccountReadResult.FromData(DecodeData(account)))
             .ToList();
     }
     #endregion

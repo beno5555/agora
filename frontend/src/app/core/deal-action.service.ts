@@ -7,8 +7,8 @@ import { ToastService } from './toast.service';
 import { SLOW_SYNC, WALLET_SWITCHED } from './error-text';
 import { WalletMissingError, WalletRejectedError, WalletService } from './wallet.service';
 
-/** Where the current action is: asking the wallet, or waiting for Solana to confirm. */
-export type ActionPhase = 'idle' | 'wallet' | 'confirming';
+/** Keep backend preparation distinct from the wallet approval prompt. */
+export type ActionPhase = 'idle' | 'preparing' | 'wallet' | 'confirming';
 
 /**
  * Runs every on-chain action: get the unsigned transaction from the backend,
@@ -42,19 +42,23 @@ export class DealActionService {
     getTransaction: () => Promise<DealTransactionDto>,
   ): Promise<FullDealDto | null> {
     if (this.phase() !== 'idle') return null;
-    this.phase.set('wallet');
+    this.phase.set('preparing');
     try {
       await this.ensureWallet();
       // Requested right before the wallet opens: the blockhash expires in about a minute.
       const { deal, transaction } = await getTransaction();
       const tx = Transaction.from(Uint8Array.from(atob(transaction), (c) => c.charCodeAt(0)));
+      this.phase.set('wallet');
       const signature = await this.wallet.signAndSendTransaction(tx);
 
       this.phase.set('confirming');
       return await this.sync(deal.id, signature);
     } catch (error) {
       if (error instanceof WalletMissingError) this.auth.showWalletHelp();
-      else if (!(error instanceof WalletRejectedError)) this.toast.fromError(error);
+      else if (!(error instanceof WalletRejectedError)) {
+        console.error('Deal action failed:', error);
+        this.toast.fromError(error);
+      }
       return null;
     } finally {
       this.phase.set('idle');

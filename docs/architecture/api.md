@@ -230,10 +230,12 @@ Action inputs:
 ### The transaction flow (every on-chain action)
 
 1. `POST /api/deals` (buy) or `POST /api/deals/{id}/tx` (any other action) → `transaction`.
-2. Base64-decode it and have the wallet **sign and send** it. It's a **legacy** (not versioned) transaction with the caller as the only signer and fee payer; its signature slot is zero-filled. Its blockhash expires after about a minute, so request it right before opening the wallet. If the user takes longer, request a new one.
+2. Base64-decode it and have the wallet **sign and send** it with `preflightCommitment: 'confirmed'`, matching the backend's blockhash request. It's a **legacy** (not versioned) transaction with the caller as the only signer and fee payer; its signature slot is zero-filled. Its blockhash expires after about a minute, so request it right before opening the wallet. If the user takes longer, check whether the previous transaction landed before requesting another.
 3. `POST /api/deals/{id}/sync` with the transaction signature (base58). The backend waits up to 30 s for confirmation, then copies the on-chain state and creates notifications. If it answers `400 "Transaction Not Confirmed"`, the transaction failed or is slow: retry sync once, then refetch the deal.
 
 If the buyer rejects the `create_deal` signature, the draft simply expires; the next Buy creates a new one. Settlement actions (`Confirm`, `Cancel`, `RefundUndelivered`, `AcceptSplit`, `SellerRefund`, `ClaimPayment`) may also create a missing token account first, which costs the caller a little devnet SOL. Wallets need test tokens and devnet SOL to act at all (see [frontend.md](frontend.md#dev-setup)).
+
+The review-window upgrade changed the allocated Deal account size from 209 to 217 bytes. Background sync skips incompatible accounts, updates their polling timestamp so they cannot monopolize a batch, and continues syncing supported deals and expiring drafts. It does not mark incompatible deals closed or refunded. Explicit sync of an incompatible account returns `400 "This Deal Uses An Older Program Version And Cannot Be Synced"` after confirmation.
 
 ## Notifications
 

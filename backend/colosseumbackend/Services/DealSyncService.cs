@@ -19,24 +19,32 @@ public class DealSyncService : BaseService
     private readonly DealRepository         _dealRepository;
     private readonly NotificationRepository _notificationRepository;
     private readonly SolanaGateway          _solana;
+    private readonly ILogger<DealSyncService> _logger;
 
     public DealSyncService(
         DealRepository         dealRepository,
         NotificationRepository notificationRepository,
         SolanaGateway          solana,
-        DatabaseLogger         dbLogger
+        DatabaseLogger         dbLogger,
+        ILogger<DealSyncService> logger
         ) : base(dbLogger)
     {
         _dealRepository         = dealRepository;
         _notificationRepository = notificationRepository;
         _solana                 = solana;
+        _logger                 = logger;
     }
 
     /// <summary>Re-reads one deal from the chain. `signature` (if known) is the transaction that just touched it.</summary>
-    public async Task SyncAsync(Deal deal, string? signature)
+    public async Task<bool> SyncAsync(Deal deal, string? signature)
     {
-        var account = await _solana.GetDealAsync(new PublicKey(deal.DealPda));
-        await ApplyAsync(deal, account, signature);
+        var result = await _solana.GetDealAsync(new PublicKey(deal.DealPda));
+        if (result.IsCompatible)
+        {
+            await ApplyAsync(deal, result.Account, signature);
+        }
+
+        return result.IsCompatible;
     }
 
     /// <summary>Background pass: syncs up to `batchSize` open deals with one RPC call, then sends deadline reminders.</summary>
@@ -46,12 +54,30 @@ public class DealSyncService : BaseService
         if (deals.Count > 0)
         {
             var accounts = await _solana.GetDealsAsync(deals.Select(deal => deal.DealPda).ToList());
+            var compatibleDeals = new List<Deal>();
             for (int index = 0; index < deals.Count; index++)
             {
-                await ApplyAsync(deals[index], accounts[index], null);
+                var result = accounts[index];
+                if (result.IsCompatible)
+                {
+                    await ApplyAsync(deals[index], result.Account, null);
+                    compatibleDeals.Add(deals[index]);
+                }
+                else
+                {
+                    // Rotate incompatible accounts out of the oldest-synced batch without inventing
+                    // a close/refund outcome or letting them block unrelated deals and draft expiry.
+                    deals[index].SyncedAt = DateTime.UtcNow;
+                }
             }
 
-            await SendDeadlineNoticesAsync(deals);
+            await _dealRepository.SaveChangesAsync();
+            await SendDeadlineNoticesAsync(compatibleDeals);
+            int incompatibleCount = deals.Count - compatibleDeals.Count;
+            if (incompatibleCount > 0)
+            {
+                _logger.LogWarning("Skipped {Count} incompatible on-chain deal accounts; other deals were synced", incompatibleCount);
+            }
         }
     }
 

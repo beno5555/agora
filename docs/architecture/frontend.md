@@ -66,7 +66,7 @@ Status badges (icon + text, never colour alone): Draft "Not funded" and Awaiting
 - **Phantom must be set to devnet** (Settings → Developer settings → Testnet mode), or it simulates against mainnet and shows errors.
 - `WalletService`: `connect()`, `disconnect()`, `publicKey` (signal), `signMessage(bytes)`, `signAndSendTransaction(tx)`. If the wallet's account changes, log out: the session belongs to the old wallet.
 - `AuthService`: nonce → `signMessage(new TextEncoder().encode(message))` → `bs58.encode(signature)` → verify ([api.md](api.md#auth)). On app start, `GET /api/me` tells whether the cookie is still valid.
-- **Interceptor:** `withCredentials: true`. On 401 (except from `/api/me` and `/api/auth/*`), clear the user and open sign-in. On 429/503, toast what to do. Wallet and Solana failures are turned into one line of what to do (no test money, Phantom on the main network, slow confirmation, offline) by `core/error-text.ts` (DESIGN.md §7).
+- **Interceptor:** `withCredentials: true`. On 401 (except from `/api/me` and `/api/auth/*`), clear the user and open sign-in. On 429/503, toast what to do. `core/error-text.ts` distinguishes insufficient funds, blockhash failures, simulation failures, slow confirmation and offline errors. Generic wallet errors do **not** identify the selected network; preserve the original error in the browser console for diagnosis.
 - The sign-in message names the domain `localhost:4200` in Development, matching `ng serve`, so Phantom shouldn't warn. If you serve on another port and it does, set the backend's `Auth:Domain` to the page host.
 
 ## Transactions
@@ -79,6 +79,9 @@ const signature = await this.wallet.signAndSendTransaction(tx);                 
 ```
 The injected Phantom provider takes the `Transaction` object; `WalletService.signAndSendTransaction` is the only place that changes if a different wallet SDK wants raw bytes. Decoding with `atob` avoids needing a `Buffer` polyfill.
 
+The provider receives `preflightCommitment: 'confirmed'`, matching the backend's blockhash commitment. Preflight remains enabled. A wallet using a different RPC can still be slow or unavailable; a successful server-side simulation does not prove Phantom's own simulation service is healthy.
+
+- Show "Preparing transaction…" while connecting/building, then "Approve in Phantom…" when calling the wallet.
 - Show "Confirming on Solana…" while sync runs (up to 30 s), then replace the page state with the returned deal.
 - If the user rejects in the wallet, do nothing.
 - Buy: `/l/:id` → Buy → (sign in if needed) → `POST /api/deals` → wallet → sync → navigate to `/d/{deal.id}`.
@@ -100,6 +103,10 @@ The injected Phantom provider takes the `Transaction` object; `WalletService.sig
 3. Develop in Chrome, Edge or Firefox: they accept the `Secure` session cookie on `http://localhost`; Safari doesn't.
 4. **Two wallets per deal** (buyer ≠ seller): two Phantom accounts or two browser profiles. Each needs test tokens and devnet SOL: send the addresses to Sandro, who runs `Admin fund <wallet>` (100 tokens + 0.05 SOL).
 5. **Demo:** a listing with the `2m` deadline lets you show buy → accept → missed deadline → refund plus the seller's deposit live (covered by an end-to-end test).
+
+## Verification
+
+Wallet-flow regression tests: run `npm run test:wallet` from `frontend/`. These exercise the real services with a stub provider; they do not replace a check with the actual Phantom extension. `npm run build` checks Angular templates and production compilation. The older `npm test` script has no configured Angular test target.
 
 ## Out of scope for the alpha
 

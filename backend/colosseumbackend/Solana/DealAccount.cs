@@ -21,6 +21,10 @@ public record DealAccount(
     bool               Disputed,
     SplitOfferAccount? SplitOffer)
 {
+    // Anchor allocates the maximum Option<SplitOffer> space, even when no offer exists.
+    // The pre-review-window layout was 209 bytes and cannot be decoded as this version.
+    public const int AccountSize = 217;
+
     public static DealAccount Decode(ReadOnlySpan<byte> data)
     {
         var reader = new BorshReader(data, AgoraProgram.DiscriminatorLength);

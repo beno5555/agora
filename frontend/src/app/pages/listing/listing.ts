@@ -271,6 +271,7 @@ export class Listing {
 
   protected readonly buyLabel = computed(() => {
     const phase = this.actions.phase();
+    if (phase === 'preparing') return 'Preparing transaction…';
     if (phase === 'wallet') return 'Approve in Phantom…';
     if (phase === 'confirming') return 'Confirming on Solana…';
     if (!this.auth.user()) return 'Connect Phantom to buy';

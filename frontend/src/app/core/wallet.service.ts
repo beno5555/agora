@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Transaction } from '@solana/web3.js';
+import { Transaction, type SendOptions } from '@solana/web3.js';
 import bs58 from 'bs58';
 
 /** The slice of Phantom's injected provider (window.phantom.solana) that we use. */
@@ -9,7 +9,7 @@ interface PhantomProvider {
   connect(options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: { toString(): string } }>;
   disconnect(): Promise<void>;
   signMessage(message: Uint8Array, display?: 'utf8' | 'hex'): Promise<{ signature: Uint8Array }>;
-  signAndSendTransaction(tx: Transaction): Promise<{ signature: string }>;
+  signAndSendTransaction(tx: Transaction, options?: SendOptions): Promise<{ signature: string }>;
   on(
     event: 'accountChanged' | 'disconnect',
     handler: (key: { toString(): string } | null) => void,
@@ -88,7 +88,10 @@ export class WalletService {
   async signAndSendTransaction(tx: Transaction): Promise<string> {
     if (!this.provider) throw new Error('Wallet not connected');
     try {
-      const { signature } = await this.provider.signAndSendTransaction(tx);
+      // Match SolanaGateway's blockhash commitment; a finalized preflight can reject a newer hash.
+      const { signature } = await this.provider.signAndSendTransaction(tx, {
+        preflightCommitment: 'confirmed',
+      });
       return signature;
     } catch (error) {
       throw this.rejected(error) ? new WalletRejectedError() : error;

@@ -167,8 +167,15 @@ public class DealService : BaseService
             bool isConfirmed = await _solana.WaitForConfirmationAsync(syncDealDto.Signature);
             if (isConfirmed)
             {
-                await _dealSyncService.SyncAsync(deal, syncDealDto.Signature);
-                response.Ok(DealMapper.ToFull(deal, wallet, DealRules.AllowedActions(deal, wallet, DateTime.UtcNow)), ResponseMessages.DealSynced);
+                bool isCompatible = await _dealSyncService.SyncAsync(deal, syncDealDto.Signature);
+                if (isCompatible)
+                {
+                    response.Ok(DealMapper.ToFull(deal, wallet, DealRules.AllowedActions(deal, wallet, DateTime.UtcNow)), ResponseMessages.DealSynced);
+                }
+                else
+                {
+                    response.Fail(ResponseMessages.IncompatibleDeal);
+                }
             }
             else
             {

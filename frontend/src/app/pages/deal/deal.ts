@@ -603,6 +603,7 @@ export class Deal {
   /** The stage while this action runs, else its normal label. */
   protected label(action: DealAction, text: string): string {
     if (this.running() !== action) return text;
+    if (this.actions.phase() === 'preparing') return 'Preparing transaction…';
     return this.actions.phase() === 'confirming' ? 'Confirming on Solana…' : 'Approve in Phantom…';
   }
 

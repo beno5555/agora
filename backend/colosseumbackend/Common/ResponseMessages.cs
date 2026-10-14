@@ -46,6 +46,7 @@ public static class ResponseMessages
     public const string DealSynced           = $"Deal Synced {Successfully}";
     public const string TransactionNotFound  = "Transaction Not Confirmed";
     public const string ChainUnavailable     = "Solana Is Unreachable Right Now; Try Again";
+    public const string IncompatibleDeal     = "This Deal Uses An Older Program Version And Cannot Be Synced";
     #endregion
 
     #region Notifications

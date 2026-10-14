@@ -3,8 +3,9 @@ import { ApiError } from './api.service';
 /** Wallet failures that mean "this wallet has no test money" (Solana's own wording varies). */
 const NO_FUNDS =
   /insufficient (funds|lamports)|custom program error: 0x1\b|attempt to debit an account but found no record/i;
-/** What Phantom says when it simulates against the main network, or the simulation fails. */
-const WRONG_NETWORK = /simulat|unexpected error|blockhash not found|failed to send transaction/i;
+const BLOCKHASH_FAILURE = /blockhash not found|block height exceeded|transaction expired/i;
+const SIMULATION_FAILURE = /simulat/i;
+const WALLET_FAILURE = /unexpected error|failed to send transaction/i;
 
 export const OFFLINE = "You're offline. Changes will show when you reconnect.";
 export const SLOW_SYNC =
@@ -23,10 +24,21 @@ export function errorText(error: unknown): string {
       return navigator.onLine ? "Can't reach Agora right now. Try again in a minute." : OFFLINE;
     return error.message;
   }
-  const message = error instanceof Error ? error.message : String(error ?? '');
+  const message =
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof error.message === 'string'
+      ? error.message
+      : String(error ?? '');
   if (NO_FUNDS.test(message))
     return 'Not enough test money in this wallet. You need USDC (test) and a little test SOL for the network fee. Ask the Agora team to fund your wallet.';
-  if (WRONG_NETWORK.test(message))
-    return 'Phantom is on the main network. Agora runs on the test network. In Phantom: Settings → Developer settings → Testnet mode, then try again.';
+  // Neither simulation errors nor missing blockhashes identify the wallet's network.
+  if (BLOCKHASH_FAILURE.test(message))
+    return "Solana couldn't use this transaction's blockhash. Close the wallet request and check Phantom's activity before trying again.";
+  if (SIMULATION_FAILURE.test(message))
+    return "Phantom couldn't preview this transaction. Check the details in Phantom and make sure Solana Devnet is selected. This can also happen when its network connection is unavailable.";
+  if (WALLET_FAILURE.test(message))
+    return "Phantom couldn't complete the transaction. Check its activity before trying again. If Solana Devnet is already selected, you don't need to switch networks.";
   return message || 'Something went wrong. Try again.';
 }
