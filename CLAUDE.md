@@ -71,7 +71,9 @@ dotnet run --project colosseumbackend.Admin -- status        # or: init | fund <
 dotnet test                                                  # end-to-end on devnet; needs the program deployed + initialized
 ```
 
-**RPC:** the API, the Admin tool and the tests use the `Solana__RpcUrl` environment variable when it's set (a private devnet RPC such as Helius), else the public devnet RPC. It contains an API key: keep it in the environment, never in a committed file, and never return or log it.
+**RPC:** the API, the Admin tool and the tests use the `Solana__RpcUrl` environment variable when it's set (a private devnet RPC such as Helius), else the public devnet RPC. It contains an API key: keep it in the environment, never in a committed file, and never return or log it. Always pass `-u "$Solana__RpcUrl"` to the `solana` CLI: its configured public devnet RPC rate-limits (HTTP 429).
+
+**Scripting:** Python isn't installed on the dev machine; use Node or PowerShell for one-off scripts.
 
 The end-to-end tests run against devnet, not a local validator: `solana-test-validator` (Agave 4.3) can't start on Windows. They fund throwaway wallets from the deploy wallet (~0.02 SOL each).
 
