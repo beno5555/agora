@@ -47,7 +47,7 @@ public class AgoraProgram
 
     public PublicKey ReputationAddress(PublicKey wallet)
     {
-        return FindAddress(ProgramId, Encoding.UTF8.GetBytes("rep"), wallet.KeyBytes);
+        return FindAddress(ProgramId, Encoding.UTF8.GetBytes("reputation"), wallet.KeyBytes);
     }
 
     public PublicKey TokenAccountAddress(PublicKey owner)
@@ -68,7 +68,7 @@ public class AgoraProgram
             .U16(deposit.CapBps)
             .U16(deposit.DiscountPerVolumeBps)
             .U16(deposit.MaxDiscountBps)
-            .U16(deposit.UndeliveredPenaltyBps)
+            .U16(deposit.PenaltyBps)
             .ToArray();
 
         return Instruction(data,
@@ -115,7 +115,18 @@ public class AgoraProgram
             AccountMeta.ReadOnly(TokenProgramId, false));
     }
 
-    /// <summary>mark_delivered, raise_dispute and propose_split share the DealAction accounts.</summary>
+    /// <summary>Also counts the open disagreement in both parties' reputation (created if missing).</summary>
+    public TransactionInstruction RaiseDispute(PublicKey actor, PublicKey deal, PublicKey buyer, PublicKey seller)
+    {
+        return Instruction(InstructionDiscriminator("raise_dispute"),
+            AccountMeta.Writable(actor, true),
+            AccountMeta.Writable(deal, false),
+            AccountMeta.Writable(ReputationAddress(buyer), false),
+            AccountMeta.Writable(ReputationAddress(seller), false),
+            AccountMeta.ReadOnly(SystemProgramId, false));
+    }
+
+    /// <summary>mark_delivered and propose_split share the DealAction accounts.</summary>
     public TransactionInstruction DealAction(string instructionName, PublicKey actor, PublicKey deal, byte[]? args = null)
     {
         var data = new BorshWriter().Bytes(InstructionDiscriminator(instructionName)).Bytes(args ?? []).ToArray();

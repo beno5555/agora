@@ -26,17 +26,23 @@ export interface FullUserDto {
   discord: string | null;
   createdAt: string;
 }
+/** One wallet's record in one role, read from the chain. */
 export interface ReputationDto {
   dealsCompleted: number;
   dealsDisputed: number;
   dealsUndelivered: number;
+  openDisputes: number;
   volume: string;
+}
+export interface WalletReputationDto {
+  asSeller: ReputationDto;
+  asBuyer: ReputationDto;
 }
 export interface StandardUserDto {
   wallet: string;
   displayName: string | null;
   discord: string | null;
-  reputation: ReputationDto;
+  reputation: WalletReputationDto;
   activeListings: MinimalListingDto[];
 }
 

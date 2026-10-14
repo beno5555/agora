@@ -203,7 +203,7 @@ public class DealService : BaseService
                 break;
 
             case DealAction.RaiseDispute:
-                response.Ok([program.DealAction("raise_dispute", actor, dealKey)]);
+                response.Ok([program.RaiseDispute(actor, dealKey, new PublicKey(deal.BuyerWallet), new PublicKey(deal.SellerWallet))]);
                 break;
 
             case DealAction.ProposeSplit:

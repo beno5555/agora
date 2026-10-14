@@ -77,8 +77,10 @@ Current devnet values: cluster `devnet`, program `J4fL4Q8nnndro2xmVdCayRt5apXhex
 ```ts
 interface MinimalUserDto  { wallet: string; displayName: string | null }
 interface FullUserDto     { wallet: string; displayName: string | null; discord: string | null; createdAt: string }
-interface ReputationDto   { dealsCompleted: number; dealsDisputed: number; dealsUndelivered: number; volume: string }  // read from the chain
-interface StandardUserDto { wallet: string; displayName: string | null; discord: string | null; reputation: ReputationDto; activeListings: MinimalListingDto[] }
+// One wallet's record in one role, read from the chain. dealsUndelivered is always 0 as buyer.
+interface ReputationDto       { dealsCompleted: number; dealsDisputed: number; dealsUndelivered: number; openDisputes: number; volume: string }
+interface WalletReputationDto { asSeller: ReputationDto; asBuyer: ReputationDto }
+interface StandardUserDto     { wallet: string; displayName: string | null; discord: string | null; reputation: WalletReputationDto; activeListings: MinimalListingDto[] }
 ```
 
 ## Games
@@ -134,7 +136,7 @@ interface StandardListingDto extends MinimalListingDto {
   deliveryWindow: string;            // a deliveryWindows key, e.g. '24h'
   isActive: boolean;
   createdAt: string;
-  sellerReputation: ReputationDto;   // from the chain
+  sellerReputation: ReputationDto;   // the seller's record as seller, from the chain
   depositPreview: { buyerDeposit: string; sellerDeposit: string } | null;
 }
 

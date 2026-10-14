@@ -30,7 +30,7 @@ public static class ListingMapper
         return dto;
     }
 
-    public static StandardListingDto ToStandard(Listing listing, ReputationAccount sellerRecord, DepositPreviewDto? depositPreview)
+    public static StandardListingDto ToStandard(Listing listing, RoleRecord sellerRecord, DepositPreviewDto? depositPreview)
     {
         var dto = new StandardListingDto
         {

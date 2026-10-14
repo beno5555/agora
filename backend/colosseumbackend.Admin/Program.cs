@@ -17,7 +17,7 @@ const double DefaultFundTokens  = 100;
 const double DefaultFundSol     = 0.05;
 
 // Devnet values from docs/architecture/program.md#deposits.
-var deposit = new DepositParams(BaseBps: 2000, FloorBps: 500, CapBps: 5000, DiscountPerVolumeBps: 150, MaxDiscountBps: 1500, UndeliveredPenaltyBps: 1000);
+var deposit = new DepositParams(BaseBps: 2000, FloorBps: 500, CapBps: 5000, DiscountPerVolumeBps: 150, MaxDiscountBps: 1500, PenaltyBps: 1000);
 
 string command   = args.Length > 0 ? args[0] : "status";
 string programId = new SolanaOptions().ProgramId;

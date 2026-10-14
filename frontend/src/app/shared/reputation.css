@@ -28,3 +28,7 @@
   margin: 0;
   color: var(--text-muted);
 }
+.note.open {
+  margin-bottom: var(--s-2);
+  color: var(--text);
+}

@@ -1,7 +1,7 @@
 //! Runs the compiled program (target/deploy/agora.so) in LiteSVM, an in-process
 //! Solana runtime. Build first with `cargo build-sbf`, then `cargo test`.
 
-use agora::state::{DealTerms, DepositParams, Reputation};
+use agora::state::{DealTerms, DepositParams, Reputation, RoleRecord, REPUTATION_SEED};
 use anchor_lang::{AccountDeserialize, InstructionData, ToAccountMetas};
 use anchor_spl::associated_token::{
     get_associated_token_address, spl_associated_token_account::instruction::create_associated_token_account,
@@ -22,14 +22,14 @@ const FEE_BPS: u16 = 200; // 2%
 const TOKEN: u64 = 1_000_000; // 6 decimals
 
 /// New wallets pay 20%; each 1× the price of completed volume takes 1.5% off,
-/// down to 5%; each undelivered deal adds 10%.
+/// down to 5%; each bad mark (undelivered deal, open disagreement) adds 10%.
 const DEPOSIT: DepositParams = DepositParams {
     base_bps: 2000,
     floor_bps: 500,
     cap_bps: 5000,
     discount_per_volume_bps: 150,
     max_discount_bps: 1500,
-    undelivered_penalty_bps: 1000,
+    penalty_bps: 1000,
 };
 
 struct Env {
@@ -57,7 +57,7 @@ fn vault_pda(deal: &Pubkey) -> Pubkey {
 }
 
 fn rep_pda(wallet: &Pubkey) -> Pubkey {
-    pda(&[b"rep", wallet.as_ref()])
+    pda(&[REPUTATION_SEED, wallet.as_ref()])
 }
 
 /// 3 matches at 5 tokens each. Deposits for new wallets: 20% = 3 tokens each.
@@ -214,6 +214,22 @@ impl Env {
         self.send(vec![ix], &[actor])
     }
 
+    fn raise_dispute(&mut self, deal: Pubkey, actor: &Keypair) -> Result<(), String> {
+        let ix = Instruction {
+            program_id: agora::ID,
+            accounts: agora::accounts::RaiseDispute {
+                actor: actor.pubkey(),
+                deal,
+                buyer_rep: rep_pda(&self.buyer.pubkey()),
+                seller_rep: rep_pda(&self.seller.pubkey()),
+                system_program: system_program::ID,
+            }
+            .to_account_metas(None),
+            data: agora::instruction::RaiseDispute {}.data(),
+        };
+        self.send(vec![ix], &[actor])
+    }
+
     fn settle(&mut self, data: Vec<u8>, deal: Pubkey, actor: &Keypair) -> Result<(), String> {
         let ix = Instruction {
             program_id: agora::ID,
@@ -263,7 +279,7 @@ fn pays_per_match_and_completes_after_the_last_one() {
     assert_eq!(env.balance(&env.seller_token), seller_before + 147 * TOKEN / 10);
     assert_eq!(env.balance(&env.buyer_token), buyer_before - 15 * TOKEN);
     assert_eq!(env.balance(&env.treasury), 3 * TOKEN / 10);
-    assert_eq!(env.reputation(&seller.pubkey()).deals_completed, 1);
+    assert_eq!(env.reputation(&seller.pubkey()).as_seller.completed, 1);
 }
 
 #[test]
@@ -284,6 +300,52 @@ fn deposits_shrink_with_completed_volume_relative_to_price() {
     // Same record on a deal 10× bigger: 0.1× → 0.15% off → 19.85% = 29.775 tokens each.
     let deal = env.open_deal(DealTerms { price: 150 * TOKEN, ..terms(seller) });
     assert_eq!(env.balance(&vault_pda(&deal)), 150 * TOKEN + 2 * 29_775_000);
+}
+
+#[test]
+fn records_are_kept_per_role() {
+    let mut env = Env::new();
+    let (buyer, seller) = (env.buyer.insecure_clone(), env.seller.pubkey());
+    let deal = env.open_deal(terms(seller));
+    env.settle(agora::instruction::Confirm { parts: 3 }.data(), deal, &buyer).unwrap();
+
+    // Buying only builds a buyer record, selling only a seller record.
+    let buyer_rep = env.reputation(&buyer.pubkey());
+    assert_eq!(buyer_rep.as_buyer.volume, 15 * TOKEN);
+    assert_eq!(buyer_rep.as_seller, RoleRecord::default());
+    let seller_rep = env.reputation(&seller);
+    assert_eq!(seller_rep.as_seller.volume, 15 * TOKEN);
+    assert_eq!(seller_rep.as_buyer, RoleRecord::default());
+}
+
+#[test]
+fn the_same_volume_counts_only_for_its_role() {
+    // 15 tokens bought, nothing sold: the discount applies as buyer only.
+    let record = RoleRecord { completed: 1, volume: 15 * TOKEN, ..RoleRecord::default() };
+    assert_eq!(DEPOSIT.rate_bps(&record, 15 * TOKEN), 1850);
+    assert_eq!(DEPOSIT.rate_bps(&RoleRecord::default(), 15 * TOKEN), 2000);
+}
+
+#[test]
+fn an_open_disagreement_raises_both_deposits_until_it_is_settled() {
+    let mut env = Env::new();
+    let buyer = env.buyer.insecure_clone();
+    let seller = env.seller.pubkey();
+    let disputed = env.open_deal(terms(seller));
+    env.raise_dispute(disputed, &buyer).unwrap();
+    assert_eq!(env.reputation(&buyer.pubkey()).as_buyer.open_disputes, 1);
+    assert_eq!(env.reputation(&seller).as_seller.open_disputes, 1);
+
+    // Both: 20% + 10% for the open disagreement = 4.5 tokens each.
+    let deal = env.open_deal(terms(seller));
+    assert_eq!(env.balance(&vault_pda(&deal)), 15 * TOKEN + 2 * 45 * TOKEN / 10);
+
+    // Settled: the mark is gone and the finished deal earns the volume discount (18.5%).
+    env.settle(agora::instruction::Confirm { parts: 3 }.data(), disputed, &buyer).unwrap();
+    assert_eq!(env.reputation(&buyer.pubkey()).as_buyer.open_disputes, 0);
+    assert_eq!(env.reputation(&seller).as_seller.open_disputes, 0);
+    let deal = env.open_deal(terms(seller));
+    assert_eq!(env.balance(&vault_pda(&deal)), 15 * TOKEN + 2 * 2_775_000);
 }
 
 #[test]
@@ -337,7 +399,7 @@ fn disagreement_keeps_funds_locked_until_a_split_is_accepted() {
     let deal = env.open_deal(terms(seller.pubkey()));
 
     env.action(agora::instruction::MarkDelivered {}.data(), deal, &seller).unwrap();
-    env.action(agora::instruction::RaiseDispute {}.data(), deal, &buyer).unwrap();
+    env.raise_dispute(deal, &buyer).unwrap();
 
     assert_err(env.action(agora::instruction::MarkDelivered {}.data(), deal, &seller), "InvalidState");
 
@@ -351,7 +413,8 @@ fn disagreement_keeps_funds_locked_until_a_split_is_accepted() {
 
     // Buyer paid 15 and got 10 back; both deposits returned.
     assert_eq!(env.balance(&env.buyer_token), buyer_before - 5 * TOKEN);
-    assert_eq!(env.reputation(&buyer.pubkey()).deals_disputed, 1);
+    assert_eq!(env.reputation(&buyer.pubkey()).as_buyer.disputed, 1);
+    assert_eq!(env.reputation(&buyer.pubkey()).as_buyer.open_disputes, 0);
 }
 
 #[test]
@@ -370,7 +433,7 @@ fn missed_deadline_refunds_buyer_plus_sellers_deposit() {
 
     // Price and own deposit back, plus the seller's 3-token deposit.
     assert_eq!(env.balance(&env.buyer_token), buyer_before + 3 * TOKEN);
-    assert_eq!(env.reputation(&seller.pubkey()).deals_undelivered, 1);
+    assert_eq!(env.reputation(&seller.pubkey()).as_seller.undelivered, 1);
 }
 
 #[test]

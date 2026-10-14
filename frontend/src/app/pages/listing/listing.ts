@@ -87,6 +87,9 @@ const NOTE_KEY = 'agora:note:';
                 <span class="num">{{ l.sellerReputation.dealsUndelivered }}</span> not delivered ·
                 <span class="num">{{ l.sellerReputation.dealsDisputed }}</span>
                 {{ l.sellerReputation.dealsDisputed === 1 ? 'disagreement' : 'disagreements' }}
+                @if (l.sellerReputation.openDisputes > 0) {
+                  · <span class="num">{{ l.sellerReputation.openDisputes }}</span> still open
+                }
               </p>
             } @else {
               <p class="record">
@@ -256,7 +259,7 @@ export class Listing {
   });
   protected readonly hasRecord = computed(() => {
     const r = this.listing()?.sellerReputation;
-    return !!r && r.dealsCompleted + r.dealsDisputed + r.dealsUndelivered > 0;
+    return !!r && r.dealsCompleted + r.dealsDisputed + r.dealsUndelivered + r.openDisputes > 0;
   });
 
   protected readonly buyLabel = computed(() => {

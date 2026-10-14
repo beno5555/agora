@@ -76,6 +76,10 @@ public class DealFlowTests
         var sellerView = await sellerClient.GetFromJsonAsync<ApplicationResponse<FullDealDto>>($"api/deals/{deal.Id}", TestJson.Options);
         Assert.DoesNotContain(DealAction.AcceptSplit, sellerView!.Data!.AllowedActions); // can't accept own offer
 
+        // The open disagreement counts against both parties, each in their role on this deal.
+        Assert.Equal(1u, (await ReputationAsync(buyerClient, buyer)).AsBuyer.OpenDisputes);
+        Assert.Equal(1u, (await ReputationAsync(buyerClient, seller)).AsSeller.OpenDisputes);
+
         // Times read back from the database must carry the UTC marker, or browsers parse them as local time.
         string sellerJson = await sellerClient.GetStringAsync($"api/deals/{deal.Id}");
         Assert.Matches("\"acceptedAt\":\"[^\"]+Z\"", sellerJson);
@@ -84,6 +88,11 @@ public class DealFlowTests
 
         Assert.Equal(DealStatus.Split, deal.Status);
         Assert.Equal(buyerBefore - 5 * Token, await _fixture.TokenBalanceAsync(buyer.PublicKey));
+
+        var buyerRecord = await ReputationAsync(buyerClient, buyer);
+        Assert.Equal(0u, buyerRecord.AsBuyer.OpenDisputes);
+        Assert.Equal(1u, buyerRecord.AsBuyer.DealsDisputed);
+        Assert.Equal(0u, buyerRecord.AsSeller.DealsCompleted); // buying doesn't build a seller record
     }
 
     // ---------- missed delivery deadline (the demo flow, with the devnet-only 2-minute window) ----------
@@ -306,6 +315,12 @@ public class DealFlowTests
         var created = (await response.Content.ReadFromJsonAsync<ApplicationResponse<DealTransactionDto>>(TestJson.Options))!.Data!;
 
         return await SendAndSyncAsync(buyerClient, buyer, created.Deal.Id, created.Transaction);
+    }
+
+    private static async Task<WalletReputationDto> ReputationAsync(HttpClient client, Account wallet)
+    {
+        var profile = await client.GetFromJsonAsync<ApplicationResponse<StandardUserDto>>($"api/users/{wallet.PublicKey}", TestJson.Options);
+        return profile!.Data!.Reputation;
     }
 
     private async Task<FullDealDto> ActAsync(HttpClient client, Account wallet, Guid dealId, DealActionDto action)

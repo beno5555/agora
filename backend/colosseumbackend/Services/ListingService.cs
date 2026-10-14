@@ -67,7 +67,7 @@ public class ListingService : BaseService
 
         if (listing is not null)
         {
-            var sellerRecord = await _solana.GetReputationAsync(new PublicKey(listing.SellerWallet));
+            var sellerRecord = (await _solana.GetReputationAsync(new PublicKey(listing.SellerWallet))).AsSeller;
             bool isOtherBuyer = callerWallet is not null && callerWallet != listing.SellerWallet;
             var preview      = isOtherBuyer ? await PreviewDepositsAsync(listing, callerWallet!, sellerRecord) : null;
 
@@ -92,7 +92,7 @@ public class ListingService : BaseService
             await _listingRepository.AddAsync(listingToAdd);
 
             var listing      = (await _listingRepository.GetByIdAsync(listingToAdd.Id))!;
-            var sellerRecord = await _solana.GetReputationAsync(new PublicKey(sellerWallet));
+            var sellerRecord = (await _solana.GetReputationAsync(new PublicKey(sellerWallet))).AsSeller;
             response.Ok(ListingMapper.ToStandard(listing, sellerRecord, null), ResponseMessages.ListingCreated);
             await LogResultAsync(response.Succeeded, nameof(CreateAsync), nameof(Listing), null, listing.Id.ToString(), sellerWallet);
         }
@@ -127,7 +127,7 @@ public class ListingService : BaseService
                 await _listingRepository.SaveChangesAsync();
 
                 var reloaded     = (await _listingRepository.GetByIdAsync(id))!;
-                var sellerRecord = await _solana.GetReputationAsync(new PublicKey(sellerWallet));
+                var sellerRecord = (await _solana.GetReputationAsync(new PublicKey(sellerWallet))).AsSeller;
                 response.Ok(ListingMapper.ToStandard(reloaded, sellerRecord, null), ResponseMessages.ListingUpdated);
             }
             else
@@ -164,14 +164,14 @@ public class ListingService : BaseService
         return response;
     }
 
-    private async Task<DepositPreviewDto?> PreviewDepositsAsync(Listing listing, string buyerWallet, ReputationAccount sellerRecord)
+    private async Task<DepositPreviewDto?> PreviewDepositsAsync(Listing listing, string buyerWallet, RoleRecord sellerRecord)
     {
         DepositPreviewDto? preview = null;
         var config = await _solana.GetConfigAsync();
 
         if (config is not null)
         {
-            var   buyerRecord = await _solana.GetReputationAsync(new PublicKey(buyerWallet));
+            var   buyerRecord = (await _solana.GetReputationAsync(new PublicKey(buyerWallet))).AsBuyer;
             ulong price       = (ulong)listing.Price;
             preview = new DepositPreviewDto
             {

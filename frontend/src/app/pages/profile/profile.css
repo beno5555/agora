@@ -18,6 +18,13 @@
   min-height: 44px;
 }
 
+.role {
+  margin: var(--s-5) 0 var(--s-3);
+}
+.role:first-of-type {
+  margin-top: var(--s-3);
+}
+
 .listings-title {
   margin-top: var(--s-6);
   margin-bottom: var(--s-3);

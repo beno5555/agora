@@ -29,7 +29,13 @@ import { WalletAddress } from '../../shared/wallet-address';
 
       <section class="panel" aria-labelledby="record-title">
         <h2 id="record-title">Record on Solana</h2>
-        <app-reputation [reputation]="u.reputation" />
+        <h3 class="role">As seller</h3>
+        <app-reputation [reputation]="u.reputation.asSeller" role="seller" />
+        <!-- Buyer records only matter to sellers deciding on a buyer; skip an empty one. -->
+        @if (u.reputation.asBuyer.dealsCompleted + u.reputation.asBuyer.openDisputes > 0) {
+          <h3 class="role">As buyer</h3>
+          <app-reputation [reputation]="u.reputation.asBuyer" role="buyer" />
+        }
       </section>
 
       <h2 class="listings-title">Active listings</h2>

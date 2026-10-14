@@ -20,25 +20,19 @@ pub struct Config {
     pub bump: u8,
 }
 
-/// How each party's deposit is worked out from their on-chain record and the price.
-/// All values are basis points of the price.
-///
-/// rate = base - min(max_discount, discount_per_volume × completed_volume / price)
-///             + undelivered_penalty × deals_undelivered, clamped to [floor, cap]
-///
-/// A new wallet pays `base`. The discount grows with completed volume *relative
-/// to this deal's price*, so a record built on small deals barely helps on a
-/// large one.
+/// How each party's deposit is worked out from their record and the price.
+/// All values are basis points of the price. See `rate_bps`.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace, Debug)]
 pub struct DepositParams {
+    /// Rate for a wallet with no history.
     pub base_bps: u16,
     pub floor_bps: u16,
     pub cap_bps: u16,
-    /// Discount per 1× this price of completed volume.
+    /// Discount per 1× this deal's price of completed volume.
     pub discount_per_volume_bps: u16,
     pub max_discount_bps: u16,
-    /// Added per deal the wallet accepted as seller and never delivered.
-    pub undelivered_penalty_bps: u16,
+    /// Added per bad mark (see `RoleRecord::bad_marks`).
+    pub penalty_bps: u16,
 }
 
 impl DepositParams {
@@ -49,17 +43,26 @@ impl DepositParams {
             && self.max_discount_bps <= MAX_BPS
     }
 
-    pub fn rate_bps(&self, record: Option<&Reputation>, price: u64) -> u64 {
-        let (volume, undelivered) = record.map_or((0, 0), |r| (r.volume, r.deals_undelivered));
-        let discount = (volume as u128 * self.discount_per_volume_bps as u128 / price as u128)
-            .min(self.max_discount_bps as u128) as u64;
-        let penalty = undelivered as u64 * self.undelivered_penalty_bps as u64;
+    /// Deposit rate for a party with this record in their role on the deal:
+    ///
+    /// rate = base − discount + penalty, kept within [floor, cap]
+    ///
+    /// - discount: completed volume measured in multiples of *this* price, so a
+    ///   record built on small deals barely helps on a large one. Capped at
+    ///   `max_discount`.
+    /// - penalty: `penalty_bps` per bad mark.
+    pub fn rate_bps(&self, record: &RoleRecord, price: u64) -> u64 {
+        let volume_in_prices =
+            record.volume as u128 * self.discount_per_volume_bps as u128 / price as u128;
+        let discount = volume_in_prices.min(self.max_discount_bps as u128) as u64;
+        let penalty = record.bad_marks() * self.penalty_bps as u64;
+
         (self.base_bps as u64 + penalty)
             .saturating_sub(discount)
             .clamp(self.floor_bps as u64, self.cap_bps as u64)
     }
 
-    pub fn amount(&self, record: Option<&Reputation>, price: u64) -> u64 {
+    pub fn amount(&self, record: &RoleRecord, price: u64) -> u64 {
         (price as u128 * self.rate_bps(record, price) as u128 / MAX_BPS as u128) as u64
     }
 }
@@ -81,7 +84,7 @@ pub struct Deal {
     pub accepted_at: i64,
     pub delivered_at: i64,
     pub status: DealStatus,
-    /// True once either party has opened a disagreement; counted in both parties' reputation.
+    /// True once either party has opened a disagreement.
     pub disputed: bool,
     pub split_offer: Option<SplitOffer>,
     pub bump: u8,
@@ -130,16 +133,18 @@ pub enum Outcome {
     Cancelled,
 }
 
+/// Seed of the `Reputation` account. The first version lived at `b"rep"`, with
+/// one record for buying and selling together; those accounts are no longer read.
+pub const REPUTATION_SEED: &[u8] = b"reputation";
+
+/// A wallet's on-chain record, kept separately for each role, so buying a lot
+/// doesn't lower a wallet's deposit as a seller (and the other way round).
 #[account]
 #[derive(InitSpace)]
 pub struct Reputation {
     pub wallet: Pubkey,
-    pub deals_completed: u32,
-    pub deals_disputed: u32,
-    /// Deals this wallet accepted as seller but never delivered.
-    pub deals_undelivered: u32,
-    /// Total price of completed deals, in token base units.
-    pub volume: u64,
+    pub as_buyer: RoleRecord,
+    pub as_seller: RoleRecord,
 }
 
 impl Reputation {
@@ -150,6 +155,46 @@ impl Reputation {
             return None;
         }
         Reputation::try_deserialize(&mut &info.data.borrow()[..]).ok()
+    }
+}
+
+/// One wallet's history in one role.
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, PartialEq, Eq, InitSpace, Debug)]
+pub struct RoleRecord {
+    /// Deals finished by full confirmation or an accepted split.
+    pub completed: u32,
+    /// How many of those had a disagreement along the way.
+    pub disputed: u32,
+    /// As seller only: deals accepted but not delivered by the deadline.
+    pub undelivered: u32,
+    /// Disagreements opened and not settled yet. Nobody can tell who is at
+    /// fault, so each one counts against both parties until the deal closes.
+    pub open_disputes: u32,
+    /// Total price of completed deals, in token base units.
+    pub volume: u64,
+}
+
+impl RoleRecord {
+    /// Things that make this wallet riskier in this role. Each one raises its
+    /// deposit by `DepositParams::penalty_bps`.
+    pub fn bad_marks(&self) -> u64 {
+        self.undelivered as u64 + self.open_disputes as u64
+    }
+
+    pub fn add_finished(&mut self, price: u64, disputed: bool) {
+        self.completed = self.completed.saturating_add(1);
+        self.volume = self.volume.saturating_add(price);
+        if disputed {
+            self.disputed = self.disputed.saturating_add(1);
+        }
+    }
+
+    pub fn open_dispute(&mut self) {
+        self.open_disputes = self.open_disputes.saturating_add(1);
+    }
+
+    pub fn close_dispute(&mut self) {
+        self.open_disputes = self.open_disputes.saturating_sub(1);
     }
 }
 

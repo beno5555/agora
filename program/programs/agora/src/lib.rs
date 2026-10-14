@@ -57,11 +57,17 @@ pub mod agora {
             (MIN_DELIVERY_WINDOW..=MAX_DELIVERY_WINDOW).contains(&terms.delivery_window),
             AgoraError::InvalidDeliveryWindow
         );
+        // Each party's deposit depends on their own record, in the role they have here.
+        // A wallet with no history yet has an empty record.
+        let buyer_record = Reputation::load(&ctx.accounts.buyer_rep)
+            .map(|r| r.as_buyer)
+            .unwrap_or_default();
+        let seller_record = Reputation::load(&ctx.accounts.seller_rep)
+            .map(|r| r.as_seller)
+            .unwrap_or_default();
         let params = ctx.accounts.config.deposit;
-        let buyer_deposit =
-            params.amount(Reputation::load(&ctx.accounts.buyer_rep).as_ref(), terms.price);
-        let seller_deposit =
-            params.amount(Reputation::load(&ctx.accounts.seller_rep).as_ref(), terms.price);
+        let buyer_deposit = params.amount(&buyer_record, terms.price);
+        let seller_deposit = params.amount(&seller_record, terms.price);
 
         let amount = terms
             .price
@@ -153,8 +159,9 @@ pub mod agora {
     }
 
     /// Either party opens a disagreement once the deal is under way. Everything
-    /// stays locked until they agree (confirm, split, or seller refund).
-    pub fn raise_dispute(ctx: Context<DealAction>) -> Result<()> {
+    /// stays locked until they agree (confirm, split, or seller refund), and the
+    /// open disagreement counts against both parties' records until then.
+    pub fn raise_dispute(ctx: Context<RaiseDispute>) -> Result<()> {
         let actor = ctx.accounts.actor.key();
         let deal = &mut ctx.accounts.deal;
         require!(actor == deal.buyer || actor == deal.seller, AgoraError::NotParty);
@@ -164,6 +171,11 @@ pub mod agora {
         );
         deal.status = DealStatus::Disputed;
         deal.disputed = true;
+
+        ctx.accounts.buyer_rep.wallet = deal.buyer;
+        ctx.accounts.buyer_rep.as_buyer.open_dispute();
+        ctx.accounts.seller_rep.wallet = deal.seller;
+        ctx.accounts.seller_rep.as_seller.open_dispute();
         emit!(DealDisputed { deal: deal.key() });
         Ok(())
     }
@@ -320,10 +332,10 @@ pub struct CreateDeal<'info> {
     )]
     pub buyer_token: InterfaceAccount<'info, TokenAccount>,
     /// CHECK: address fixed by the seeds; empty for a wallet with no history.
-    #[account(seeds = [b"rep", buyer.key().as_ref()], bump)]
+    #[account(seeds = [REPUTATION_SEED, buyer.key().as_ref()], bump)]
     pub buyer_rep: UncheckedAccount<'info>,
     /// CHECK: address fixed by the seeds; empty for a wallet with no history.
-    #[account(seeds = [b"rep", terms.seller.as_ref()], bump)]
+    #[account(seeds = [REPUTATION_SEED, terms.seller.as_ref()], bump)]
     pub seller_rep: UncheckedAccount<'info>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
@@ -352,7 +364,8 @@ pub struct AcceptDeal<'info> {
     pub token_program: Interface<'info, TokenInterface>,
 }
 
-/// State changes that move no tokens. The handler checks who `actor` must be.
+/// State changes that move no tokens and touch no records (mark_delivered,
+/// propose_split). The handler checks who `actor` must be.
 #[derive(Accounts)]
 pub struct DealAction<'info> {
     pub actor: Signer<'info>,
@@ -362,6 +375,36 @@ pub struct DealAction<'info> {
         bump = deal.bump
     )]
     pub deal: Account<'info, Deal>,
+}
+
+/// Opens a disagreement and records it in both parties' reputation.
+#[derive(Accounts)]
+pub struct RaiseDispute<'info> {
+    #[account(mut)]
+    pub actor: Signer<'info>,
+    #[account(
+        mut,
+        seeds = [b"deal", deal.buyer.as_ref(), &deal.deal_id.to_le_bytes()],
+        bump = deal.bump
+    )]
+    pub deal: Account<'info, Deal>,
+    #[account(
+        init_if_needed,
+        payer = actor,
+        space = 8 + Reputation::INIT_SPACE,
+        seeds = [REPUTATION_SEED, deal.buyer.as_ref()],
+        bump
+    )]
+    pub buyer_rep: Account<'info, Reputation>,
+    #[account(
+        init_if_needed,
+        payer = actor,
+        space = 8 + Reputation::INIT_SPACE,
+        seeds = [REPUTATION_SEED, deal.seller.as_ref()],
+        bump
+    )]
+    pub seller_rep: Account<'info, Reputation>,
+    pub system_program: Program<'info, System>,
 }
 
 /// Every instruction that pays out of the vault. The handler checks who `actor`
@@ -404,7 +447,7 @@ pub struct Settle<'info> {
         init_if_needed,
         payer = actor,
         space = 8 + Reputation::INIT_SPACE,
-        seeds = [b"rep", deal.buyer.as_ref()],
+        seeds = [REPUTATION_SEED, deal.buyer.as_ref()],
         bump
     )]
     pub buyer_rep: Account<'info, Reputation>,
@@ -412,7 +455,7 @@ pub struct Settle<'info> {
         init_if_needed,
         payer = actor,
         space = 8 + Reputation::INIT_SPACE,
-        seeds = [b"rep", deal.seller.as_ref()],
+        seeds = [REPUTATION_SEED, deal.seller.as_ref()],
         bump
     )]
     pub seller_rep: Account<'info, Reputation>,
@@ -506,25 +549,25 @@ impl<'info> Settle<'info> {
         self.deal.close(self.buyer.to_account_info())
     }
 
+    /// Records the outcome in the buyer's record as buyer and the seller's record as seller.
     fn update_reputation(&mut self, outcome: Outcome) {
-        let (buyer, seller, price, disputed) =
-            (self.deal.buyer, self.deal.seller, self.deal.price, self.deal.disputed);
-        self.buyer_rep.wallet = buyer;
-        self.seller_rep.wallet = seller;
+        let (price, disputed) = (self.deal.price, self.deal.disputed);
+        self.buyer_rep.wallet = self.deal.buyer;
+        self.seller_rep.wallet = self.deal.seller;
+        let buyer = &mut self.buyer_rep.as_buyer;
+        let seller = &mut self.seller_rep.as_seller;
+
+        // The deal is closing, so its disagreement (if any) is no longer open.
+        if disputed {
+            buyer.close_dispute();
+            seller.close_dispute();
+        }
         match outcome {
             Outcome::Completed | Outcome::Split => {
-                for rep in [&mut self.buyer_rep, &mut self.seller_rep] {
-                    rep.deals_completed = rep.deals_completed.saturating_add(1);
-                    rep.volume = rep.volume.saturating_add(price);
-                    if disputed {
-                        rep.deals_disputed = rep.deals_disputed.saturating_add(1);
-                    }
-                }
+                buyer.add_finished(price, disputed);
+                seller.add_finished(price, disputed);
             }
-            Outcome::Undelivered => {
-                self.seller_rep.deals_undelivered =
-                    self.seller_rep.deals_undelivered.saturating_add(1);
-            }
+            Outcome::Undelivered => seller.undelivered = seller.undelivered.saturating_add(1),
             Outcome::SellerRefunded | Outcome::Cancelled => {}
         }
     }

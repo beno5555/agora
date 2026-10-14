@@ -7,19 +7,21 @@ public record DepositParams(
     ushort CapBps,
     ushort DiscountPerVolumeBps,
     ushort MaxDiscountBps,
-    ushort UndeliveredPenaltyBps)
+    ushort PenaltyBps)
 {
     private const ulong MaxBps = 10_000;
 
-    /// <summary>Same arithmetic as the program's DepositParams::amount, so previews match exactly.</summary>
-    public ulong Amount(ReputationAccount record, ulong price)
+    /// <summary>
+    /// Same arithmetic as the program's DepositParams::amount, so previews match exactly:
+    /// rate = base − discount + penalty, kept within [floor, cap].
+    /// </summary>
+    public ulong Amount(RoleRecord record, ulong price)
     {
-        ulong discount = Math.Min(
-            (ulong)((UInt128)record.Volume * DiscountPerVolumeBps / price),
-            MaxDiscountBps);
-        ulong penalty  = (ulong)record.DealsUndelivered * UndeliveredPenaltyBps;
-        ulong raw      = BaseBps + penalty;
-        ulong rate     = Math.Clamp(raw > discount ? raw - discount : 0, FloorBps, CapBps);
+        ulong volumeInPrices = (ulong)((UInt128)record.Volume * DiscountPerVolumeBps / price);
+        ulong discount       = Math.Min(volumeInPrices, MaxDiscountBps);
+        ulong penalty        = record.BadMarks * PenaltyBps;
+        ulong raw            = BaseBps + penalty;
+        ulong rate           = Math.Clamp(raw > discount ? raw - discount : 0, FloorBps, CapBps);
 
         return (ulong)((UInt128)price * rate / MaxBps);
     }

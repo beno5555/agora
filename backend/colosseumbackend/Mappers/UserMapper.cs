@@ -22,13 +22,14 @@ public static class UserMapper
         };
     }
 
-    public static ReputationDto ToReputation(ReputationAccount record)
+    public static ReputationDto ToReputation(RoleRecord record)
     {
         return new ReputationDto
         {
-            DealsCompleted   = record.DealsCompleted,
-            DealsDisputed    = record.DealsDisputed,
-            DealsUndelivered = record.DealsUndelivered,
+            DealsCompleted   = record.Completed,
+            DealsDisputed    = record.Disputed,
+            DealsUndelivered = record.Undelivered,
+            OpenDisputes     = record.OpenDisputes,
             Volume           = AmountMapper.ToDto(record.Volume),
         };
     }
@@ -40,7 +41,7 @@ public static class UserMapper
             Wallet         = user.Wallet,
             DisplayName    = user.DisplayName,
             Discord        = user.Discord,
-            Reputation     = ToReputation(record),
+            Reputation     = new WalletReputationDto { AsSeller = ToReputation(record.AsSeller), AsBuyer = ToReputation(record.AsBuyer) },
             ActiveListings = activeListings.Select(ListingMapper.ToMinimal).ToList(),
         };
     }

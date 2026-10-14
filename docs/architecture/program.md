@@ -9,7 +9,11 @@ Anchor program, written in Rust, deployed to devnet. It holds each deal's paymen
 | `Config` | `["config"]` | `admin`, `mint`, `treasury` (token account for fees), `fee_bps` (200 = 2%), `deposit` (formula parameters, see below), `bump` |
 | `Deal` | `["deal", buyer, deal_id: u64 LE]` | see below |
 | Vault | `["vault", deal]` | token account for `mint`, authority = `Deal` PDA |
-| `Reputation` | `["rep", wallet]` | `wallet`, `deals_completed`, `deals_disputed`, `deals_undelivered`, `volume` |
+| `Reputation` | `["reputation", wallet]` | `wallet`, `as_buyer`, `as_seller`: one `RoleRecord` per role (below) |
+
+**`RoleRecord`**, kept separately for buying and selling, so buying a lot doesn't lower a wallet's deposit as a seller: `completed` (deals finished by full confirmation or an accepted split), `disputed` (how many of those had a disagreement), `undelivered` (as seller: deals accepted but not delivered in time), `open_disputes` (disagreements not settled yet), `volume` (total price of completed deals).
+
+The first version kept one combined record at `["rep", wallet]`. Those accounts are no longer read, so every wallet's record restarted from zero with the per-role version (Oct 14).
 
 The buyer is part of the `Deal` seed so that nobody else can claim a `deal_id` first and block a buyer's deal. The backend picks `deal_id` (a random u64).
 
@@ -31,12 +35,14 @@ The buyer is part of the `Deal` seed so that nobody else can claim a `deal_id` f
 
 ## Deposits
 
-Nobody enters deposits. `create_deal` works out both from each party's on-chain `Reputation` and the deal's price, using the parameters in `Config.deposit` (all basis points of the price):
+Nobody enters deposits. `create_deal` works out each party's deposit from **their own** record **in their role on this deal** (the buyer's `as_buyer`, the seller's `as_seller`) and the price, using the parameters in `Config.deposit` (all basis points of the price). The code is `DepositParams::rate_bps` in `state.rs`:
 
 ```
-rate = base − min(max_discount, discount_per_volume × completed_volume ÷ price)
-            + undelivered_penalty × deals_undelivered
-rate is clamped to [floor, cap]; deposit = price × rate
+rate = base − discount + penalty, kept within [floor, cap]
+  discount = min(max_discount, discount_per_volume × completed volume ÷ price)
+  penalty  = penalty × bad marks
+  bad marks = undelivered deals + disagreements still open
+deposit = price × rate
 ```
 
 | Parameter | Devnet value | Meaning |
@@ -44,18 +50,20 @@ rate is clamped to [floor, cap]; deposit = price × rate
 | `base_bps` | 2000 (20%) | a wallet with no history |
 | `discount_per_volume_bps` | 150 (1.5%) | per 1× *this deal's price* of completed volume |
 | `max_discount_bps` | 1500 (15%) | |
-| `undelivered_penalty_bps` | 1000 (10%) | per deal the wallet accepted as seller and never delivered |
+| `penalty_bps` | 1000 (10%) | per bad mark |
 | `floor_bps` / `cap_bps` | 500 (5%) / 5000 (50%) | |
 
 Examples for a $15 deal: new wallet $3.00; after $15 completed $2.78; after $150 completed $0.75 (floor). The same $150 record on a $1,500 deal only takes 1.5% off. Since the discount is measured against the price, a record built on small deals barely helps on a big one.
 
-Both parties use the same formula with their own record. `update_config` (admin only) can retune the numbers. That affects only deals created afterwards; existing deals keep their deposits.
+**Open disagreements count against both sides.** Nobody can tell who is at fault, so `raise_dispute` adds an open mark to the buyer's `as_buyer` and the seller's `as_seller`, and closing the deal (confirm, split or seller refund) removes it. Until then both pay 10% more on their next deals in that role, so leaving a disagreement unsettled costs both sides. This is also the only buyer-side penalty: `undelivered` can only happen to sellers.
+
+`update_config` (admin only) can retune the numbers. That affects only deals created afterwards; existing deals keep their deposits.
 
 **Known limits (alpha):**
 - **New wallet = fresh start.** A seller with penalties can abandon the wallet and start again at the base rate. Penalties only bite while the wallet's discount is worth keeping. Fixing this needs identity, which is out of scope.
 - **Volume can be farmed** by trading with yourself. It costs the 2% fee on the farmed volume, and the impact is small: deposits only cover non-delivery and wasted time, because the price itself is always locked in the vault and can't be taken.
-- **Disputes aren't in the formula** (only `deals_undelivered` is), because either side can open one. Revisit once dispute resolution exists.
-- **Shared record:** buying and selling both count toward `volume`.
+- **Finished disputes aren't penalised,** because the program can't tell who was right. Only *open* ones count (against both sides). Revisit once dispute resolution exists.
+- **A buyer who never confirms** after delivery isn't penalised: the deal is just locked. That needs a review time limit (see PLAN.md).
 
 ## Deal states
 
@@ -93,14 +101,14 @@ There's no review time limit. After delivery, the money moves only when the buye
 | `mark_delivered` | seller | `Active`, before the deadline | sets `delivered_at`; → `Delivered` |
 | `confirm(parts)` | buyer | `Active`, `Delivered` or `Disputed` | pays the seller `parts × price/milestones` minus the fee; after the last part → `Completed` |
 | `refund_undelivered` | buyer | `Active`, `now > accepted_at + delivery_window` | buyer gets the remaining price, their deposit **and the seller's deposit**; → `Undelivered` |
-| `raise_dispute` | buyer or seller | `Active` or `Delivered` | → `Disputed` |
+| `raise_dispute` | buyer or seller | `Active` or `Delivered` | → `Disputed`; adds an open disagreement to both parties' records (created if missing; the caller pays the rent) |
 | `propose_split(buyer_amount)` | buyer or seller | `Disputed` | stores/replaces `split_offer` |
 | `accept_split` | the other party | `Disputed` with an offer | buyer gets `buyer_amount`; seller gets the rest minus the fee; → `Split` |
 | `seller_refund` | seller | any open state | buyer gets the remaining price; everyone's deposit returned; → `SellerRefunded` |
 
 `create_deal` also takes both parties' `Reputation` addresses (they may not exist yet for new wallets). Allowing `confirm` in `Active` lets service buyers confirm match by match before the seller marks everything delivered.
 
-**On every close:** deposits go back to their owners, except in `refund_undelivered`. Then `Reputation` for both wallets is updated (created on first use with `init_if_needed`) and the `Deal` and vault accounts are closed.
+**On every close:** deposits go back to their owners, except in `refund_undelivered`. Then the buyer's `as_buyer` and the seller's `as_seller` are updated (accounts created on first use with `init_if_needed`; a disagreement on the deal stops counting as open) and the `Deal` and vault accounts are closed.
 
 **Fee:** `fee_bps` of every amount paid to the seller goes to `Config.treasury`. Buyers' refunds pay no fee.
 
