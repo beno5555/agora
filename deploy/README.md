@@ -30,7 +30,7 @@ browser ──https──▶ Caddy (:443, Let's Encrypt cert) ──http──�
 
 ## Before you start
 
-- **Live server:** droplet `agora`, IP `46.101.154.81`, site https://agora-market.duckdns.org.
+- **Live server: none right now.** We removed the droplet `agora` (IP `46.101.154.81`, site https://agora-market.duckdns.org) because the free $5 DigitalOcean credit was about to run out. To bring the site back, follow the setup below on a new droplet and point the DuckDNS name at its IP.
 - **On the dev PC:** Windows (the script uses Windows' own `tar`), PowerShell 7.4+, the .NET 10 SDK, Node.js 22+ and npm, OpenSSH (built into Windows).
 - **Access:** only PCs whose SSH key is on the droplet can deploy (now Sandro's). To add someone, append their `~/.ssh/id_ed25519.pub` to `/root/.ssh/authorized_keys` on the droplet.
 

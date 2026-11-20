@@ -2,13 +2,13 @@
 
 **A peer-to-peer marketplace on Solana for gaming items, in-game currency and game services, where both buyer and seller put money on the line.**
 
-**Live on Solana devnet: https://agora-market.duckdns.org**
+> **The website is currently down.** We hosted it on DigitalOcean using the free $5 credit, and since that credit was about to run out, we removed the server. The steps below worked while it was live; [`deploy/`](deploy/) shows how to host it again.
 
 Built for Colosseum's **Crypto World's Fair** (Build Station Tbilisi).
 
 ## Try it
 
-It's free: everything runs on devnet with a test stablecoin.
+It's free: everything runs on devnet with a test stablecoin. (The site at https://agora-market.duckdns.org is down for now, see above.)
 
 1. Install the [Phantom](https://phantom.com) browser extension. In Settings → Developer Settings, turn on **Testnet Mode** and pick **Solana Devnet**.
 2. Send your wallet address to **@sandrobenashvili** on Telegram to get test USDC and devnet SOL.
@@ -56,7 +56,7 @@ All of it is the product, built during the hackathon.
 | [`program/`](program/) | The Solana program (Rust, Anchor). It enforces every rule above and holds the funds. |
 | [`backend/`](backend/) | The .NET API: listings, deal pages, notifications, sign-in. It builds unsigned transactions and reads deal accounts from Solana. Also an Admin tool and the end-to-end tests. |
 | [`frontend/`](frontend/) | The Angular web app, with Phantom for signing. |
-| [`deploy/`](deploy/) | How the live site is hosted and deployed. |
+| [`deploy/`](deploy/) | How the site was hosted and deployed, and how to host it again. |
 | [`docs/`](docs/) | Product plan, technical design, visual design, and the team's working notes. |
 | `CLAUDE.md`, `.claude/` | Development tooling. Not product code. |
 

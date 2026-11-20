@@ -11,7 +11,7 @@ It is also meant to be shared with regular Claude chats (for example as claude.a
 **The full product plan is in [`docs/PLAN.md`](docs/PLAN.md):** settlement rules, fees, the alpha build plan, positioning and research evidence. Read it before working on product or architecture. Keep plan details there, not here. **The technical design is in [`docs/architecture/`](docs/architecture/README.md):** read the relevant file before writing code. **Latest progress, blockers and next steps:** [`docs/currentstatus/STATUS.md`](docs/currentstatus/STATUS.md). Read it at the start of a session. **Known issues left for later:** [`docs/currentstatus/ISSUES.md`](docs/currentstatus/ISSUES.md) — check it at the start of a session too. **Planned work that isn't urgent:** [`docs/currentstatus/BACKLOG.md`](docs/currentstatus/BACKLOG.md); add an item there when a task is agreed on but deferred.
 
 - **Event:** Colosseum's Crypto World's Fair (Build Station Tbilisi; partners Colosseum, Superteam Georgia, Solana). https://colosseum.com/worldsfair/resources
-- **Submitted** on Oct 13 on the Colosseum portal and the Superteam Georgia Track (Superteam Earn). **Presentation:** Oct 14, offline Demo Day. **Results:** Oct 27. **Live site:** https://agora-market.duckdns.org (devnet).
+- **Submitted** on Oct 13 on the Colosseum portal and the Superteam Georgia Track (Superteam Earn). **Presentation:** Oct 14, offline Demo Day. **Results:** Oct 27. **Live site:** https://agora-market.duckdns.org (devnet), **down since Nov 2026**: the DigitalOcean droplet was removed before its free $5 credit ran out.
 
 ### Team
 | Member | Role |

@@ -4,6 +4,8 @@ A snapshot of where things stand, kept short; history is in `git log`. Plan: [`.
 
 **Submitted** (Oct 13) on the Colosseum portal and the Superteam Georgia Track. **Presentation:** Oct 14, offline Demo Day. **Results:** Oct 27.
 
+**The website is down (noted Nov 20):** we removed the DigitalOcean droplet because the free $5 credit was about to run out, so https://agora-market.duckdns.org no longer answers. The program and test stablecoin are still on devnet. [`deploy/README.md`](../../deploy/README.md) has the steps to host it again.
+
 ## Where we are
 
 | Part | State |
